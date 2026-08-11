@@ -1,0 +1,119 @@
+.camp {
+  width: 100%;
+}
+
+.camp__viewport {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--line-200);
+  background: var(--surface-0);
+  box-shadow: 0 10px 30px rgba(16, 21, 29, 0.08);
+  touch-action: pan-y; /* dikey scroll serbest, yatay swipe biz yakalarız */
+}
+
+.camp__track {
+  display: flex;
+  will-change: transform;
+}
+
+.camp__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+/* ---- Banner (tam genişlik, temsili görsel paneli) ---- */
+.camp__banner {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  height: 320px;
+  background:
+    radial-gradient(90% 120% at 20% 20%, color-mix(in srgb, var(--accent-2) 55%, transparent) 0%, transparent 60%),
+    linear-gradient(135deg, #0a0e14 0%, color-mix(in srgb, var(--accent) 60%, #0a0e14) 100%);
+  background-size: cover;
+  background-position: center;
+}
+
+/* Enerji/ışık hüzmesi hissi veren dekoratif halkalar */
+.camp__glow {
+  position: absolute;
+  inset: -20% -10%;
+  background:
+    conic-gradient(from 210deg at 30% 50%,
+      transparent 0deg,
+      color-mix(in srgb, var(--accent-2) 90%, transparent) 60deg,
+      transparent 130deg,
+      color-mix(in srgb, #ff8a3d 80%, transparent) 200deg,
+      transparent 280deg,
+      color-mix(in srgb, var(--accent-2) 90%, transparent) 340deg,
+      transparent 360deg);
+  filter: blur(26px);
+  opacity: 0.55;
+}
+
+/* ---- Oklar ---- */
+.camp__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--ink-900);
+  box-shadow: 0 3px 12px rgba(16, 21, 29, 0.22);
+  opacity: 0;
+  transition: opacity 0.18s ease, background 0.15s ease;
+  z-index: 2;
+}
+
+.camp:hover .camp__arrow,
+.camp__arrow:focus-visible {
+  opacity: 1;
+}
+
+.camp__arrow:hover {
+  background: #fff;
+}
+
+.camp__arrow--prev { left: 14px; }
+.camp__arrow--next { right: 14px; }
+
+/* ---- Dots ---- */
+.camp__dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.camp__dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: var(--ink-300);
+  transition: width 0.2s ease, background 0.2s ease;
+}
+
+.camp__dot--active {
+  width: 26px;
+  background: var(--signal-600);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 760px) {
+  .camp__banner {
+    height: 180px;
+  }
+  .camp__arrow {
+    opacity: 1;
+    width: 36px;
+    height: 36px;
+  }
+}

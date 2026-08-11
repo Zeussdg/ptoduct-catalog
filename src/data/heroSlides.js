@@ -1,0 +1,77 @@
+// Hero slider slaytları.
+// Görseller temsilidir: her slayt bir ürün grubunu ikon + degrade ile
+// tanıtır ve tıklandığında ilgili kategori filtresine yönlendirir.
+// `to` alanları ProductsPage'in okuduğu URL parametreleriyle eşleşir.
+
+export const heroSlides = [
+  {
+    slug: "network",
+    eyebrow: "Ağ & Network",
+    title: "Switch, Router & Access Point",
+    desc: "TENDA · TELESIS · HUAWEI kurumsal ağ çözümleri",
+    icon: "network",
+    to: "/?kategori=ag-network",
+    accent: "#1f5fd1",
+    accent2: "#3f8ae0",
+  },
+  {
+    slug: "switch",
+    eyebrow: "Switchler",
+    title: "Yönetilebilir & PoE Switchler",
+    desc: "5–48 port, gigabit ve PoE seçenekleriyle",
+    icon: "switch",
+    to: "/?kategori=ag-network&altkategori=ag-network--switchler",
+    accent: "#0f766e",
+    accent2: "#22a89b",
+  },
+  {
+    slug: "camera",
+    eyebrow: "Güvenlik Sistemleri",
+    title: "IP Kameralar & Kayıt Cihazları",
+    desc: "HIKVISION dome, bullet ve NVR/DVR ailesi",
+    icon: "camera",
+    to: "/?kategori=guvenlik-sistemleri",
+    accent: "#7c3aed",
+    accent2: "#a06bf0",
+  },
+  {
+    slug: "fiber",
+    eyebrow: "Fiber Optik",
+    title: "Fiber Kablo & Patch Çözümleri",
+    desc: "Patch cord, pigtail, ODF ve adaptörler",
+    icon: "fiber",
+    to: "/?kategori=fiber-optik",
+    accent: "#c2410c",
+    accent2: "#e8823f",
+  },
+  {
+    slug: "cabling",
+    eyebrow: "Kablolama",
+    title: "CAT6 Kablo & Patch Panel",
+    desc: "Data kabloları, keystone ve düzenleyiciler",
+    icon: "cable",
+    to: "/?kategori=kablolama",
+    accent: "#b5730a",
+    accent2: "#d99a2b",
+  },
+  {
+    slug: "ups",
+    eyebrow: "Güç & Enerji",
+    title: "Kesintisiz Güç Kaynakları",
+    desc: "Line interactive & online UPS, aküler",
+    icon: "ups",
+    to: "/?kategori=guc-enerji",
+    accent: "#be123c",
+    accent2: "#e04a6b",
+  },
+  {
+    slug: "printer",
+    eyebrow: "Yazıcı & Sarf",
+    title: "Lazer & Tanklı Yazıcılar",
+    desc: "Mono, çok fonksiyonlu ve tanklı modeller",
+    icon: "printer",
+    to: "/?kategori=yazici-sarf",
+    accent: "#334155",
+    accent2: "#5b6b81",
+  },
+];
