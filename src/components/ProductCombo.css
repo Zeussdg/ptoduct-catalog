@@ -2,10 +2,14 @@
   position: relative;
   width: 100%;
   min-width: 0;
+  z-index: 1;
+}
+.pcombo--open {
+  z-index: 9999;
 }
 
 .pcombo__trigger {
-  width: 100%;
+   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -44,11 +48,12 @@
 }
 
 .pcombo__panel {
-  position: absolute;
+   position: absolute;
   top: calc(100% + 4px);
   left: 0;
   right: 0;
-  z-index: 30;
+  z-index: 99999;
+
   background: var(--surface-0);
   border: 1px solid var(--line-200);
   border-radius: var(--radius-md);
@@ -64,6 +69,8 @@
   padding: 8px 10px;
   font-size: 13px;
   margin-bottom: 6px;
+  position: relative;
+  z-index: 10000;
 }
 
 .pcombo__search:focus-visible {

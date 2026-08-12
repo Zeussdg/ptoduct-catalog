@@ -6,6 +6,7 @@ import QuoteRow from "../components/QuoteRow";
 import QuoteSummary from "../components/QuoteSummary";
 import QuoteWarning from "../components/QuoteWarning";
 import "./QuoteBuilderPage.css";
+import { useCart } from "../context/CartContext";
 
 // Ürün stok durumu: stok alanı yoksa "stokta" say (mevcut davranışı bozma).
 function isInStock(p) {
@@ -22,18 +23,23 @@ const categoryOptions = categories.flatMap((main) =>
   main.subCategories.map((sub) => ({
     value: sub.slug,
     label: `${main.name} › ${sub.name}`,
-  }))
+  })),
 );
 
 const newRow = (uid) => ({ uid, categorySlug: "", productId: null, qty: 1 });
 
 export default function QuoteBuilderPage() {
-  const uidRef = useRef(1);
-  const [rows, setRows] = useState(() => [newRow(0)]);
+  const { addItem } = useCart();
+  const uidRef = useRef(6);
+  const [rows, setRows] = useState(() =>
+    Array.from({ length: 6 }, (_, i) => newRow(i)),
+  );
   const [onlyInStock, setOnlyInStock] = useState(false);
 
   const patchRow = (uid, patch) =>
-    setRows((prev) => prev.map((r) => (r.uid === uid ? { ...r, ...patch } : r)));
+    setRows((prev) =>
+      prev.map((r) => (r.uid === uid ? { ...r, ...patch } : r)),
+    );
 
   const handleCategoryChange = (uid, slug) =>
     // Kategori değişince ürün seçimi sıfırlanır (yeni kategoriye ait değil).
@@ -48,20 +54,36 @@ export default function QuoteBuilderPage() {
       return next.length ? next : [newRow(uidRef.current++)];
     });
 
-  const addRow = () =>
-    setRows((prev) => [...prev, newRow(uidRef.current++)]);
+  const addRow = () => setRows((prev) => [...prev, newRow(uidRef.current++)]);
 
   const clearAll = () => {
     const hasSelection = rows.some((r) => r.productId);
-    if (hasSelection && !window.confirm("Seçilen tüm ürünler temizlensin mi?")) return;
+    if (hasSelection && !window.confirm("Seçilen tüm ürünler temizlensin mi?"))
+      return;
     setRows([newRow(uidRef.current++)]);
+  };
+  const handleAddToCart = () => {
+    const selectedRows = rows.filter((row) => row.productId != null);
+
+    if (selectedRows.length === 0) {
+      alert("Lütfen sepete eklemek için en az bir ürün seçiniz.");
+      return;
+    }
+
+    selectedRows.forEach((row) => {
+      const product = productById.get(row.productId);
+
+      if (product) {
+        addItem(product, row.qty);
+      }
+    });
   };
 
   // Satır bazında seçilebilir ürün listesi (kategori + stok filtresi)
   const productsForCategory = (slug) => {
     if (!slug) return [];
     return products.filter(
-      (p) => p.categorySlug === slug && (!onlyInStock || isInStock(p))
+      (p) => p.categorySlug === slug && (!onlyInStock || isInStock(p)),
     );
   };
 
@@ -122,7 +144,11 @@ export default function QuoteBuilderPage() {
                   row={row}
                   categoryOptions={categoryOptions}
                   products={productsForCategory(row.categorySlug)}
-                  product={row.productId != null ? productById.get(row.productId) : null}
+                  product={
+                    row.productId != null
+                      ? productById.get(row.productId)
+                      : null
+                  }
                   onCategoryChange={handleCategoryChange}
                   onProductChange={handleProductChange}
                   onQtyChange={handleQtyChange}
@@ -139,6 +165,14 @@ export default function QuoteBuilderPage() {
           <div className="qbp__side">
             <QuoteSummary totalsByCurrency={totalsByCurrency} />
             <QuoteWarning />
+
+            <button
+              type="button"
+              className="qbp__add-to-cart"
+              onClick={handleAddToCart}
+            >
+              🛒 Sepete Taşı
+            </button>
           </div>
         </div>
       </div>

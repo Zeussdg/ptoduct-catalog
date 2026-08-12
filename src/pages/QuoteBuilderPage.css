@@ -89,12 +89,15 @@
 }
 
 .qbp__table {
-  flex: 1;
+  flex: 1 1 0;
   min-width: 0;
+  max-height: calc(100vh - var(--header-h) - 32px);
   background: var(--surface-0);
   border: 1px solid var(--line-200);
   border-radius: var(--radius-md);
   padding: 8px 16px 16px;
+  position: relative;
+  z-index: 1;
 }
 
 .qbp__table-scroll {
@@ -319,4 +322,25 @@
     top: 10px;
     right: 0;
   }
+}
+.qbp__add-to-cart {
+  width: 100%;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 13px 16px;
+  background: var(--signal-600);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.qbp__add-to-cart:hover {
+  background: var(--signal-700);
+  transform: translateY(-1px);
+}
+
+.qbp__add-to-cart:active {
+  transform: translateY(0);
 }

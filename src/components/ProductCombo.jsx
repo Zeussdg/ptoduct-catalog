@@ -13,7 +13,7 @@ export default function ProductCombo({ options, value, onChange, disabled }) {
 
   const selected = useMemo(
     () => options.find((p) => p.id === value) || null,
-    [options, value]
+    [options, value],
   );
 
   const filtered = useMemo(() => {
@@ -23,7 +23,7 @@ export default function ProductCombo({ options, value, onChange, disabled }) {
       (p) =>
         TR_LOWER(p.name).includes(q) ||
         TR_LOWER(p.brand).includes(q) ||
-        TR_LOWER(p.stockCode).includes(q)
+        TR_LOWER(p.stockCode).includes(q),
     );
   }, [options, query]);
 
@@ -31,7 +31,8 @@ export default function ProductCombo({ options, value, onChange, disabled }) {
   useEffect(() => {
     if (!open) return undefined;
     const onDoc = (e) => {
-      if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
+      if (rootRef.current && !rootRef.current.contains(e.target))
+        setOpen(false);
     };
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
@@ -54,17 +55,21 @@ export default function ProductCombo({ options, value, onChange, disabled }) {
       : "Ürün Seçiniz";
 
   return (
-    <div className="pcombo" ref={rootRef}>
+    <div className={"pcombo" + (open ? " pcombo--open" : "")} ref={rootRef}>
       <button
         type="button"
-        className={"pcombo__trigger" + (selected ? "" : " pcombo__trigger--empty")}
+        className={
+          "pcombo__trigger" + (selected ? "" : " pcombo__trigger--empty")
+        }
         onClick={() => !disabled && setOpen((o) => !o)}
         disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={open}
       >
         <span className="pcombo__label">{label}</span>
-        <span className="pcombo__caret" aria-hidden="true">▾</span>
+        <span className="pcombo__caret" aria-hidden="true">
+          ▾
+        </span>
       </button>
 
       {open && (
@@ -85,13 +90,17 @@ export default function ProductCombo({ options, value, onChange, disabled }) {
               <li key={p.id}>
                 <button
                   type="button"
-                  className={"pcombo__opt" + (p.id === value ? " pcombo__opt--active" : "")}
+                  className={
+                    "pcombo__opt" +
+                    (p.id === value ? " pcombo__opt--active" : "")
+                  }
                   onClick={() => pick(p)}
                   role="option"
                   aria-selected={p.id === value}
                 >
                   <span className="pcombo__opt-name">
-                    <span className="pcombo__opt-brand">{p.brand}</span> {p.name}
+                    <span className="pcombo__opt-brand">{p.brand}</span>{" "}
+                    {p.name}
                   </span>
                   <span className="pcombo__opt-code mono">{p.stockCode}</span>
                 </button>

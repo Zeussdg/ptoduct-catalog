@@ -9,12 +9,7 @@ import { robotoRegularBase64, robotoBoldBase64 } from "./robotoFont";
 
 // ---- Gönderen firma bilgisi -------------------------------------------------
 // Kendi firma bilgilerinizi buradan düzenleyin; teklifin başlığında görünür.
-const COMPANY = {
-  name: "Ürün Kataloğu Ticaret A.Ş.",
-  line1: "TENDA · TELESIS · HUAWEI · HIKVISION Yetkili Satıcısı",
-  phone: "+90 (000) 000 00 00",
-  email: "satis@firmaniz.com",
-};
+
 
 const FONT = "Roboto";
 const SIGNAL = [31, 95, 209]; // --signal-600
@@ -41,9 +36,16 @@ function quoteMeta() {
   return { date, no, fileDate };
 }
 
-export async function generateQuotePdf({ items, totalsByCurrency, contact, margin }) {
+export async function generateQuotePdf({
+  items,
+  totalsByCurrency,
+  seller ={},
+  contact={},
+  margin,
+}) {
   const marginPct = Number(margin) || 0;
   const factor = 1 + marginPct / 100;
+  
   const meta = quoteMeta();
 
   const doc = new jsPDF({ unit: "mm", format: "a4" });
@@ -55,14 +57,23 @@ export async function generateQuotePdf({ items, totalsByCurrency, contact, margi
   doc.setFont(FONT, "bold");
   doc.setFontSize(15);
   doc.setTextColor(...INK);
-  doc.text(COMPANY.name, M, 20);
+  doc.text(seller.firma || "—", M, 20);
 
-  doc.setFont(FONT, "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(...INK_500);
-  doc.text(COMPANY.line1, M, 26);
-  doc.text(`Tel: ${COMPANY.phone}`, M, 31);
-  doc.text(`E-posta: ${COMPANY.email}`, M, 36);
+doc.setFont(FONT, "normal");
+doc.setFontSize(9);
+doc.setTextColor(...INK_500);
+
+if (seller.yetkili) {
+  doc.text(`Yetkili: ${seller.yetkili}`, M, 26);
+}
+
+if (seller.telefon) {
+  doc.text(`Tel: ${seller.telefon}`, M, 31);
+}
+
+if (seller.eposta) {
+  doc.text(`E-posta: ${seller.eposta}`, M, 36);
+}
 
   // ---- Başlık: teklif bilgisi (sağ) ----
   doc.setFont(FONT, "bold");
@@ -112,20 +123,37 @@ export async function generateQuotePdf({ items, totalsByCurrency, contact, margi
   }
 
   // ---- Kalem tablosu ----
-  const body = items.map((it) => {
-    const { product, qty } = it;
-    const unit = product.price != null ? formatPrice(product.price, product.currency) : "Fiyat isteyin";
-    const line = product.price != null ? formatPrice(product.price * qty, product.currency) : "—";
+ const body = items.map((it) => {
+  const { product, qty } = it;
+
+  if (product.price == null) {
     return [
       product.brand || "",
       product.name || "",
       product.stockCode || "",
       String(qty),
-      unit,
+      "Fiyat isteyin",
       product.currency || "",
-      line,
+      "—",
     ];
-  });
+  }
+
+  // Kâr marjı eklenmiş birim fiyat
+  const unitPrice = product.price * factor;
+
+  // Kâr marjı eklenmiş birim fiyat × adet
+  const lineTotal = unitPrice * qty;
+
+  return [
+    product.brand || "",
+    product.name || "",
+    product.stockCode || "",
+    String(qty),
+    formatPrice(unitPrice, product.currency),
+    product.currency || "",
+    formatPrice(lineTotal, product.currency),
+  ];
+});
 
   autoTable(doc, {
     startY: y + 4,
@@ -169,26 +197,52 @@ export async function generateQuotePdf({ items, totalsByCurrency, contact, margi
     doc.text("Fiyatlandırılabilir ürün bulunmuyor.", boxX, sy);
   }
 
-  currencies.forEach((cur, idx) => {
-    const before = totalsByCurrency[cur];
-    const marginAmt = before * (marginPct / 100);
-    const after = before * factor;
+ currencies.forEach((cur, idx) => {
+  const before = Number(totalsByCurrency[cur]) || 0;
 
-    if (idx > 0) sy += 3;
-    drawSummaryLine(`Ara Toplam (${cur})`, formatPrice(before, cur), { color: INK_500 });
-    drawSummaryLine(`Kâr Marjı (%${marginPct})`, `+${formatPrice(marginAmt, cur)}`, { color: INK_500 });
+  // Kâr marjı
+  const marginAmt = before * (marginPct / 100);
 
-    // sonrası vurgulu satır
-    doc.setDrawColor(227, 231, 236);
-    doc.setLineWidth(0.3);
-    doc.line(boxX, sy - 2, pageW - M, sy - 2);
-    drawSummaryLine(`Teklif Toplamı (${cur})`, formatPrice(after, cur), {
+  // Kâr marjı eklenmiş tutar
+  const after = before + marginAmt;
+
+  // KDV, artık kâr eklenmiş tutar üzerinden hesaplanıyor
+  const vatAmt = after * 0.20;
+
+  // KDV dahil genel toplam
+  const grandTotal = after + vatAmt;
+
+  if (idx > 0) sy += 3;
+
+  // Ürünlerin ham toplamı
+  drawSummaryLine(
+    `Ara Toplam (${cur})`,
+    formatPrice(after, cur),
+    { color: INK_500 }
+  );
+  // KDV
+  drawSummaryLine(
+    `KDV (%20)`,
+    `+${formatPrice(vatAmt, cur)}`,
+    { color: INK_500 }
+  );
+
+  // Genel toplam
+  doc.setDrawColor(227, 231, 236);
+  doc.setLineWidth(0.3);
+  doc.line(boxX, sy - 2, pageW - M, sy - 2);
+
+  drawSummaryLine(
+    `Genel Toplam (${cur})`,
+    formatPrice(grandTotal, cur),
+    {
       bold: true,
       size: 11,
       color: SIGNAL,
       gap: 7,
-    });
-  });
+    }
+  );
+});
 
   // ---- Alt not ----
   const pageH = doc.internal.pageSize.getHeight();

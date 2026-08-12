@@ -5,6 +5,12 @@
   top: 0;
   z-index: 40;
 }
+.hdr__brand-logo img {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}
 
 .hdr__inner {
   max-width: var(--container-max);

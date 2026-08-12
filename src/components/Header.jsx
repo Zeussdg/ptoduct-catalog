@@ -9,9 +9,11 @@ export default function Header() {
     <header className="hdr">
       <div className="hdr__inner">
         <Link to="/" className="hdr__brand">
-          <span className="hdr__brand-mark">TT</span>
+        <div className="hdr__brand-logo">
+         <img  src="\public\logo.jpeg" alt="logo" />
+          </div>
           <span className="hdr__brand-text">
-            <span className="hdr__brand-name">TENDA · TELESIS · HUAWEI · HIKVISION</span>
+            <span className="hdr__brand-name">B2B</span>
             <span className="hdr__brand-sub">Ürün Kataloğu</span>
           </span>
         </Link>

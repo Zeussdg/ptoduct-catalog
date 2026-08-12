@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
+import Footer from "./components/Footer";
 import CartDrawer from "./components/CartDrawer";
 import ProductsPage from "./pages/ProductsPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/teklif-sihirbazi" element={<QuoteBuilderPage />} />
         <Route path="/is-ortaklarimiz" element={<PartnersPage />} />
       </Routes>
+      <Footer />
       <CartDrawer />
     </>
   );
