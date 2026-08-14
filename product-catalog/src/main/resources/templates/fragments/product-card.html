@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="tr">
+<body>
+<article class="pcard" th:fragment="card(product)">
+  <a th:href="@{'/urun/' + ${product.id}}" class="pcard__link">
+    <div class="pcard__top">
+      <span class="pcard__brand" th:text="${product.brand}">Marka</span>
+      <span class="pcard__code mono" th:text="${product.stockCode}">KOD</span>
+    </div>
+    <h3 class="pcard__name" th:text="${product.name}">Ürün adı</h3>
+    <span class="pcard__category" th:text="${product.category != null ? product.category.name : ''}">Kategori</span>
+  </a>
+
+  <div class="pcard__bottom">
+    <span class="pcard__price" th:text="${@priceFormatter.format(product.price, product.currency)}">₺0,00</span>
+    <button type="button" class="pcard__add js-add-to-cart"
+            th:attr="data-id=${product.id},data-name=${product.name},data-brand=${product.brand},data-code=${product.stockCode},data-price=${product.price},data-currency=${product.currency.name()}"
+            th:aria-label="${product.name} + ' sepete ekle'">
+      + Sepete Ekle
+    </button>
+  </div>
+</article>
+</body>
+</html>

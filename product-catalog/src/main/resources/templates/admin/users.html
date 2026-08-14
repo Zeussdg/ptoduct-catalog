@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Kullanıcı Yönetimi')}"></head>
+<body>
+<div class="adm">
+  <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+  <div class="adm__main">
+    <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
+    <main class="adm__content">
+      <h1 class="adp__title">Kullanıcı Yönetimi</h1>
+      <p class="adp__subtitle">Yalnızca SUPER_ADMIN erişebilir — roller ve admin hesapları burada yönetilir</p>
+      <p th:if="${error}" th:text="${error}" style="color:var(--danger-600)">Hata</p>
+
+      <form class="adp__card" method="post" th:action="@{/admin/users}">
+        <h2 style="font-size:14px;margin:0 0 12px">Yeni Kullanıcı / Admin Oluştur</h2>
+        <div class="adp__form-grid">
+          <label class="adp__field"><span>E-posta</span><input type="email" name="email" required/></label>
+          <label class="adp__field"><span>Kullanıcı Adı</span><input name="username"/></label>
+          <label class="adp__field"><span>Şifre</span><input type="password" name="password" minlength="8" required/></label>
+          <label class="adp__field"><span>Rol</span>
+            <select name="role">
+              <option th:each="r : ${T(com.ikibm.catalog.entity.Role).values()}" th:value="${r}" th:text="${r}"
+                      th:selected="${r.name() == 'ADMIN'}">ADMIN</option>
+            </select></label>
+          <label class="adp__field"><span>Ad</span><input name="name"/></label>
+          <label class="adp__field"><span>Soyad</span><input name="surname"/></label>
+        </div>
+        <button class="adp__btn" type="submit">Oluştur</button>
+      </form>
+
+      <div class="adp__toolbar">
+        <h2 style="font-size:14px;margin:0">Tüm Kullanıcılar</h2>
+        <form method="get" th:action="@{/admin/users}" style="margin:0">
+          <select class="adp__select-inline" name="role" onchange="this.form.submit()">
+            <option value="" th:selected="${roleFilter == null or roleFilter == ''}">Tüm roller</option>
+            <option th:each="r : ${T(com.ikibm.catalog.entity.Role).values()}" th:value="${r}" th:text="${r}"
+                    th:selected="${roleFilter == r.name()}">ADMIN</option>
+          </select>
+        </form>
+      </div>
+
+      <div class="adp__card">
+        <table class="adp__table">
+          <thead><tr><th>E-posta</th><th>Ad Soyad</th><th>Rol</th><th>Durum</th><th></th></tr></thead>
+          <tbody>
+            <tr th:each="u : ${users}" th:with="isSelf=${currentUser != null and u.id == currentUser.id}">
+              <td th:text="${u.email}">e-posta</td>
+              <td><span th:text="${u.name}">Ad</span> <span th:text="${u.surname}">Soyad</span></td>
+              <td>
+                <form method="post" th:action="@{'/admin/users/' + ${u.id} + '/role'}" style="margin:0">
+                  <select class="adp__select-inline" name="role" th:disabled="${isSelf}" onchange="this.form.submit()">
+                    <option th:each="r : ${T(com.ikibm.catalog.entity.Role).values()}" th:value="${r}" th:text="${r}"
+                            th:selected="${u.role == r}">ADMIN</option>
+                  </select>
+                </form>
+              </td>
+              <td>
+                <form method="post" th:action="@{'/admin/users/' + ${u.id} + '/status'}" style="margin:0">
+                  <select class="adp__select-inline" name="status" th:disabled="${isSelf}" onchange="this.form.submit()">
+                    <option th:each="s : ${T(com.ikibm.catalog.entity.UserStatus).values()}" th:value="${s}" th:text="${s}"
+                            th:selected="${u.status == s}">ACTIVE</option>
+                  </select>
+                </form>
+              </td>
+              <td>
+                <form th:unless="${isSelf}" method="post" th:action="@{'/admin/users/' + ${u.id} + '/delete'}" style="margin:0"
+                      th:attr="data-confirm='&quot;' + ${u.email} + '&quot; kullanıcısını silmek istediğinize emin misiniz?'">
+                  <button type="submit" class="adp__btn adp__btn--sm adp__btn--danger">Sil</button>
+                </form>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

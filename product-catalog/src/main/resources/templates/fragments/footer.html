@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="tr">
+<body>
+<footer class="ftr" aria-labelledby="ftr-heading" th:fragment="footer">
+  <h2 id="ftr-heading" class="ftr__sr-only">Site altbilgisi</h2>
+
+  <div class="ftr__inner">
+    <div class="ftr__col ftr__col--brand">
+      <a th:href="@{/}" class="ftr__brand">
+        <img class="ftr__brand-logo" th:src="@{/logo.jpeg}" alt=""/>
+        <span class="ftr__brand-text">
+          <span class="ftr__brand-name" th:text="${site.brandName}">2M Bilişim</span>
+          <span class="ftr__brand-sub" th:text="${site.tagline}">Ürün Kataloğu</span>
+        </span>
+      </a>
+      <p class="ftr__desc" th:text="${site.description}">Açıklama</p>
+    </div>
+
+    <nav class="ftr__col" aria-label="Hızlı menü">
+      <h3 class="ftr__title">Hızlı Menü</h3>
+      <ul class="ftr__links">
+        <li><a th:href="@{/}" class="ftr__link">Ürünler</a></li>
+        <li><a th:href="@{/teklif-sihirbazi}" class="ftr__link">Teklif Sihirbazı</a></li>
+        <li><a th:href="@{/is-ortaklarimiz}" class="ftr__link">İş Ortaklarımız</a></li>
+        <li><button type="button" class="ftr__link ftr__link--btn" id="cartOpenFooter">Sepet</button></li>
+      </ul>
+    </nav>
+
+    <nav class="ftr__col" aria-label="Ürün kategorileri">
+      <h3 class="ftr__title">Ürün Kategorileri</h3>
+      <ul class="ftr__links">
+        <li th:each="cat : ${navCategories}">
+          <a th:href="@{/(kategori=${cat.slug})}" class="ftr__link" th:text="${cat.name}">Kategori</a>
+        </li>
+        <li><a th:href="@{/}" class="ftr__link ftr__link--muted">Tüm Kategoriler</a></li>
+      </ul>
+    </nav>
+
+    <div class="ftr__col">
+      <h3 class="ftr__title">İletişim</h3>
+      <p class="ftr__desc">
+        Fiyat ve teklif talepleriniz için ürünlerinizi sepete ekleyip
+        <a th:href="@{/teklif-sihirbazi}" class="ftr__link ftr__link--inline">Teklif Sihirbazı</a>
+        üzerinden bize iletebilirsiniz.
+      </p>
+    </div>
+  </div>
+
+  <div class="ftr__bottom">
+    <div class="ftr__bottom-inner">
+      <p class="ftr__copy">
+        © <span th:text="${#dates.year(#dates.createNow())}">2026</span>
+        <span th:text="${site.brandName}">2M Bilişim</span>
+        <span th:text="${site.tagline}">Ürün Kataloğu</span>. Tüm hakları saklıdır.
+      </p>
+      <ul class="ftr__legal" aria-label="Yasal bilgiler">
+        <li><span class="ftr__legal-link" title="Yakında">Gizlilik Politikası</span></li>
+        <li><span class="ftr__legal-link" title="Yakında">KVKK</span></li>
+        <li><span class="ftr__legal-link" title="Yakında">Kullanım Koşulları</span></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

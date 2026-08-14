@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<header class="hdr" th:fragment="navbar">
+  <div class="hdr__inner">
+    <a th:href="@{/}" class="hdr__brand">
+      <div class="hdr__brand-logo">
+        <img th:src="@{/logo.jpeg}" alt="logo"/>
+      </div>
+      <span class="hdr__brand-text">
+        <span class="hdr__brand-name" th:text="${site.brandName}">2M Bilişim</span>
+        <span class="hdr__brand-sub" th:text="${site.tagline}">Ürün Kataloğu</span>
+      </span>
+    </a>
+
+    <nav class="hdr__nav" aria-label="Ana menü">
+      <a th:href="@{/}" class="hdr__nav-link"
+         th:classappend="${currentPath == '/'} ? ' hdr__nav-link--active'">Ürünler</a>
+      <a th:href="@{/teklif-sihirbazi}" class="hdr__nav-link"
+         th:classappend="${#strings.startsWith(currentPath,'/teklif-sihirbazi')} ? ' hdr__nav-link--active'">Teklif Sihirbazı</a>
+      <a th:href="@{/is-ortaklarimiz}" class="hdr__nav-link"
+         th:classappend="${#strings.startsWith(currentPath,'/is-ortaklarimiz')} ? ' hdr__nav-link--active'">İş Ortaklarımız</a>
+    </nav>
+
+    <div class="hdr__actions" style="display:flex;align-items:center;gap:10px">
+      <a sec:authorize="isAuthenticated()" th:href="@{/account}" class="hdr__nav-link">Hesabım</a>
+      <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="hdr__nav-link">Giriş</a>
+
+      <button type="button" class="hdr__cart" id="cartOpenBtn" aria-label="Sepeti aç">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M3 4h2l1.6 10.6a2 2 0 0 0 2 1.7h7.4a2 2 0 0 0 2-1.6L20 8H6"
+                stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="9.5" cy="20" r="1.4" fill="currentColor"/>
+          <circle cx="17" cy="20" r="1.4" fill="currentColor"/>
+        </svg>
+        <span>Sepet</span>
+        <span class="hdr__cart-badge" id="cartBadge" hidden>0</span>
+      </button>
+    </div>
+  </div>
+</header>
+</body>
+</html>

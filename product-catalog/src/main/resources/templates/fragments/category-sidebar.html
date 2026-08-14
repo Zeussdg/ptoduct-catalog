@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="tr">
+<body>
+<th:block th:fragment="sidebar">
+  <button type="button" class="catsb__mobile-toggle" id="catsbToggle" aria-expanded="false">
+    <span th:text="${kategori == null or kategori == '' ? 'Tüm Kategoriler' : kategori}">Tüm Kategoriler</span>
+    <span class="catsb__mobile-chevron">›</span>
+  </button>
+
+  <nav class="catsb" id="catsbNav">
+    <div class="catsb__label">Kategoriler</div>
+
+    <a th:href="@{/}" class="catsb__all"
+       th:classappend="${kategori == null or kategori == ''} ? ' catsb__all--active'">
+      <span>Tüm Ürünler</span>
+      <span class="catg__count" th:text="${allCount}">0</span>
+    </a>
+
+    <div class="catsb__list">
+      <div class="catg" th:each="node : ${sidebar}" th:if="${node.count > 0}">
+        <a th:href="@{/(kategori=${node.slug})}" class="catg__main"
+           th:classappend="${kategori == node.slug and (altkategori == null or altkategori == '')} ? ' catg__main--active'">
+          <span class="catg__chevron" th:classappend="${kategori == node.slug} ? ' catg__chevron--open'" aria-hidden="true">›</span>
+          <span class="catg__main-label" th:text="${node.name}">Kategori</span>
+          <span class="catg__count" th:text="${node.count}">0</span>
+        </a>
+
+        <ul class="catg__subs" th:if="${kategori == node.slug}">
+          <li th:each="child : ${node.children}" th:if="${child.count > 0}">
+            <a th:href="@{/(kategori=${node.slug},altkategori=${child.slug})}" class="catg__sub"
+               th:classappend="${altkategori == child.slug} ? ' catg__sub--active'">
+              <span th:text="${child.name}">Alt kategori</span>
+              <span class="catg__count" th:text="${child.count}">0</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</th:block>
+</body>
+</html>

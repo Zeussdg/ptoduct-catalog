@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="tr">
+<body>
+<section class="hero" aria-roledescription="carousel" aria-label="Öne çıkan ürün kategorileri"
+         data-carousel="hero" th:fragment="heroSlider(slides)">
+  <div class="hero__viewport">
+    <div class="hero__track">
+      <div class="hero__slide" th:each="slide : ${slides}"
+           th:style="'--accent:' + ${slide.accent} + ';--accent-2:' + ${slide.accent2}">
+        <a th:href="@{${slide.to}}" class="hero__card">
+          <div class="hero__card-text">
+            <span class="hero__eyebrow" th:text="${slide.eyebrow}">Kategori</span>
+            <h2 class="hero__title" th:text="${slide.title}">Başlık</h2>
+            <p class="hero__desc" th:text="${slide.desc}">Açıklama</p>
+            <span class="hero__cta">
+              Ürünleri gör
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </div>
+          <div class="hero__card-art" aria-hidden="true">
+            <th:block th:replace="~{fragments/hero-icons :: icon(${slide.icon})}"></th:block>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <button type="button" class="hero__arrow hero__arrow--prev" data-carousel-prev aria-label="Önceki">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button type="button" class="hero__arrow hero__arrow--next" data-carousel-next aria-label="Sonraki">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="hero__dots" role="tablist" aria-label="Slayt seçimi" data-carousel-dots></div>
+</section>
+</body>
+</html>

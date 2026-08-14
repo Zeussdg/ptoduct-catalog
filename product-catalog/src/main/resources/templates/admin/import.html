@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Excel İçe Aktar')}"></head>
+<body>
+<div class="adm">
+  <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+  <div class="adm__main">
+    <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
+    <main class="adm__content">
+      <h1 class="adp__title">Excel'den İçe Aktar</h1>
+      <p class="adp__subtitle">
+        Ürün listesi Excel dosyası (.xlsx) yükleyin. Başlık satırı ve sütunlar otomatik tespit edilir;
+        kategoriler ürün adına göre sınıflandırılır. Aynı stok kodlu ürünler güncellenir.
+      </p>
+
+      <p th:if="${error}" th:text="${error}" style="color:var(--danger-600)">Hata</p>
+
+      <div class="adp__card" th:if="${report != null}">
+        <h2 style="font-size:15px;margin:0 0 8px" th:text="${report.ok ? 'İçe Aktarma Tamamlandı' : 'İçe Aktarma Başarısız'}">Sonuç</h2>
+        <p th:text="${report.message}" th:style="'color:' + (${report.ok} ? 'var(--signal-600)' : 'var(--danger-600)')">Özet</p>
+        <table th:if="${report.ok}" class="adp__table" style="max-width:420px">
+          <tbody>
+            <tr><td>Okunan satır</td><td th:text="${report.rowsRead}">0</td></tr>
+            <tr><td>Eklenen</td><td th:text="${report.created}">0</td></tr>
+            <tr><td>Güncellenen</td><td th:text="${report.updated}">0</td></tr>
+            <tr><td>Tekrar (atlanan)</td><td th:text="${report.duplicates}">0</td></tr>
+            <tr><td>Boş (atlanan)</td><td th:text="${report.skipped}">0</td></tr>
+            <tr><td>Sınıflandırılamayan</td><td th:text="${report.unclassified}">0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <form class="adp__card" method="post" enctype="multipart/form-data" th:action="@{/admin/import}">
+        <label class="adp__field">
+          <span>Excel Dosyası (.xlsx)</span>
+          <input type="file" name="file" accept=".xlsx,.xls" required/>
+        </label>
+        <button class="adp__btn" type="submit">İçe Aktar</button>
+      </form>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

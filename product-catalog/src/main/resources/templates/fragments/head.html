@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(pageTitle)">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}"/>
+  <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}"/>
+  <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : ''}"/>
+  <title th:text="${pageTitle} + ' · ' + ${site.brandName}">Ürün Kataloğu</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <link rel="stylesheet" th:href="@{/css/tokens.css}"/>
+  <link rel="stylesheet" th:href="@{/css/Header.css}"/>
+  <link rel="stylesheet" th:href="@{/css/Footer.css}"/>
+  <link rel="stylesheet" th:href="@{/css/HeroSlider.css}"/>
+  <link rel="stylesheet" th:href="@{/css/CampaignSlider.css}"/>
+  <link rel="stylesheet" th:href="@{/css/CategorySidebar.css}"/>
+  <link rel="stylesheet" th:href="@{/css/ProductsPage.css}"/>
+  <link rel="stylesheet" th:href="@{/css/ProductToolbar.css}"/>
+  <link rel="stylesheet" th:href="@{/css/ProductGrid.css}"/>
+  <link rel="stylesheet" th:href="@{/css/ProductCard.css}"/>
+  <link rel="stylesheet" th:href="@{/css/ProductThumb.css}"/>
+  <link rel="stylesheet" th:href="@{/css/Pagination.css}"/>
+  <link rel="stylesheet" th:href="@{/css/ProductDetailPage.css}"/>
+  <link rel="stylesheet" th:href="@{/css/PartnersPage.css}"/>
+  <link rel="stylesheet" th:href="@{/css/QuoteBuilderPage.css}"/>
+  <link rel="stylesheet" th:href="@{/css/QuoteCards.css}"/>
+  <link rel="stylesheet" th:href="@{/css/ProductCombo.css}"/>
+  <link rel="stylesheet" th:href="@{/css/CartDrawer.css}"/>
+  <link rel="stylesheet" th:href="@{/css/LoginPage.css}"/>
+  <link rel="stylesheet" th:href="@{/css/customerPages.css}"/>
+</head>
+<body></body>
+</html>

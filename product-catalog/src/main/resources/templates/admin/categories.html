@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Kategoriler')}"></head>
+<body>
+<div class="adm">
+  <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+  <div class="adm__main">
+    <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
+    <main class="adm__content">
+      <h1 class="adp__title">Kategoriler</h1>
+      <p th:if="${error}" th:text="${error}" style="color:var(--danger-600)">Hata</p>
+
+      <form class="adp__card" method="post" th:action="@{/admin/categories}">
+        <div class="adp__form-grid">
+          <label class="adp__field"><span>Kategori Adı</span><input name="name" required/></label>
+          <label class="adp__field"><span>Slug</span><input name="slug" required/></label>
+          <label class="adp__field"><span>Üst Kategori</span>
+            <select name="parentId">
+              <option value="">— (Ana kategori)</option>
+              <option th:each="c : ${categories}" th:value="${c.id}"
+                      th:text="${#strings.repeat('— ', c.depth) + c.name}">Kategori</option>
+            </select></label>
+        </div>
+        <button class="adp__btn" type="submit">Kategori Ekle</button>
+      </form>
+
+      <div class="adp__card">
+        <table class="adp__table">
+          <thead><tr><th>Kategori</th><th>Slug</th><th>Durum</th><th></th></tr></thead>
+          <tbody>
+            <tr th:each="c : ${categories}">
+              <td th:text="${#strings.repeat('— ', c.depth) + c.name}">Kategori</td>
+              <td class="mono" th:text="${c.slug}">slug</td>
+              <td>
+                <form method="post" th:action="@{'/admin/categories/' + ${c.id} + '/toggle'}" style="margin:0">
+                  <button type="submit" class="adp__badge" th:classappend="${!c.isActive} ? ' adp__badge--muted'"
+                          style="border:none;cursor:pointer" th:text="${c.isActive ? 'Aktif' : 'Pasif'}">Aktif</button>
+                </form>
+              </td>
+              <td>
+                <form method="post" th:action="@{'/admin/categories/' + ${c.id} + '/delete'}" style="margin:0"
+                      th:attr="data-confirm='&quot;' + ${c.name} + '&quot; kategorisini silmek istediğinize emin misiniz?'">
+                  <button type="submit" class="adp__btn adp__btn--sm adp__btn--danger">Sil</button>
+                </form>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

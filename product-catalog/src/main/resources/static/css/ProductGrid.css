@@ -1,0 +1,42 @@
+.pgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+  min-width: 0;
+}
+
+.pgrid > * {
+  min-width: 0;
+}
+
+.pgrid__empty {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--ink-500);
+  border: 1px dashed var(--line-200);
+  border-radius: var(--radius-md);
+}
+
+.pgrid__empty p {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-700);
+}
+
+.pgrid__empty span {
+  font-size: 12.5px;
+}
+
+@media (max-width: 640px) {
+  .pgrid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 380px) {
+  .pgrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

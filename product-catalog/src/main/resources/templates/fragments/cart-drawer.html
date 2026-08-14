@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="tr">
+<body>
+<!-- İstemci sepeti drawer'ı. İçerik cart.js tarafından localStorage'dan render edilir. -->
+<th:block th:fragment="drawer">
+  <div id="cartOverlay" class="cdrw__overlay" aria-hidden="true"></div>
+  <aside id="cartDrawer" class="cdrw" aria-label="Sepet">
+    <div class="cdrw__head">
+      <h2 id="cartTitle">Sepet</h2>
+      <button type="button" class="cdrw__close" id="cartClose" aria-label="Kapat">×</button>
+    </div>
+    <div id="cartContent"></div>
+  </aside>
+</th:block>
+</body>
+</html>

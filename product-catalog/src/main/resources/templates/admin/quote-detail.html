@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Teklif #' + ${quote.id})}"></head>
+<body>
+<div class="adm">
+  <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+  <div class="adm__main">
+    <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
+    <main class="adm__content">
+      <h1 class="adp__title" th:text="'Teklif #' + ${quote.id}">Teklif #1</h1>
+
+      <div class="adp__card">
+        <h2 style="font-size:14px;margin:0 0 8px">Müşteri Bilgileri</h2>
+        <p style="margin:0" th:text="${quote.user.companyName}">Firma</p>
+        <p style="margin:0;color:var(--ink-500)">
+          <span th:text="${quote.user.name}">Ad</span> <span th:text="${quote.user.surname}">Soyad</span>
+          · <span th:text="${quote.user.email}">e-posta</span> · <span th:text="${quote.user.phone}">telefon</span>
+        </p>
+      </div>
+
+      <div class="adp__card">
+        <table class="adp__table">
+          <thead><tr><th>Ürün</th><th>Kod</th><th>Adet</th><th>Birim Fiyat</th><th>Toplam</th></tr></thead>
+          <tbody>
+            <tr th:each="item : ${quote.items}">
+              <td th:text="${item.productName}">Ürün</td>
+              <td class="mono" th:text="${item.productCode}">KOD</td>
+              <td th:text="${item.qty}">1</td>
+              <td th:text="${@priceFormatter.format(item.unitPrice, item.currency)}">₺0,00</td>
+              <td th:text="${@priceFormatter.format(item.totalPrice, item.currency)}">₺0,00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="adp__card">
+        <form method="post" th:action="@{'/admin/quotes/' + ${quote.id} + '/status'}">
+          <label class="adp__field"><span>Durum</span>
+            <select name="status">
+              <option th:each="s : ${T(com.ikibm.catalog.entity.QuoteStatus).values()}"
+                      th:value="${s}" th:text="${s}" th:selected="${quote.status == s}">PENDING</option>
+            </select></label>
+          <label class="adp__field"><span>Admin Notu</span>
+            <textarea rows="3" name="adminNote" th:text="${quote.adminNote}"></textarea></label>
+          <button class="adp__btn" type="submit">Kaydet</button>
+        </form>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

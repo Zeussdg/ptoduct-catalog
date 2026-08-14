@@ -1,0 +1,255 @@
+.ftr {
+  margin-top: 56px;
+  background: var(--ink-900);
+  color: rgba(255, 255, 255, 0.72);
+  border-top: 3px solid var(--signal-600);
+}
+
+.ftr__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.ftr__inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 48px 24px 40px;
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1.3fr;
+  gap: 40px;
+}
+
+.ftr__col {
+  min-width: 0;
+}
+
+/* ---- Firma kolonu ---- */
+
+.ftr__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ftr__brand-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: #fff;
+  flex: none;
+}
+
+.ftr__brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.ftr__brand-name {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.ftr__brand-sub {
+  color: var(--ink-300);
+  font-size: 11.5px;
+  margin-top: 2px;
+}
+
+.ftr__desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.6);
+  max-width: 34ch;
+}
+
+.ftr__social {
+  list-style: none;
+  margin: 20px 0 0;
+  padding: 0;
+  display: flex;
+  gap: 10px;
+}
+
+.ftr__social-link {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.72);
+  transition: color 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+}
+
+.ftr__social-link:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ---- Başlıklar ---- */
+
+.ftr__title {
+  margin: 0 0 16px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---- Link listeleri ---- */
+
+.ftr__links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.ftr__link {
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 13px;
+  line-height: 1.4;
+  transition: color 0.12s ease;
+}
+
+.ftr__link:hover {
+  color: #fff;
+}
+
+.ftr__link--btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.66);
+}
+
+.ftr__link--muted {
+  color: var(--signal-600);
+  font-weight: 500;
+}
+
+.ftr__link--muted:hover {
+  color: #6f9df0;
+}
+
+.ftr__link--inline {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ---- İletişim kolonu ---- */
+
+.ftr__contact {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ftr__contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.66);
+}
+
+.ftr__contact-item svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--ink-300);
+}
+
+/* ---- Alt footer ---- */
+
+.ftr__bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ftr__bottom-inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ftr__copy {
+  margin: 0;
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.ftr__legal {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.ftr__legal-link {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: default;
+}
+
+/* ---- Responsive ---- */
+
+@media (max-width: 900px) {
+  .ftr__inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px 24px;
+    padding: 40px 16px 32px;
+  }
+  .ftr__col--brand {
+    grid-column: 1 / -1;
+  }
+  .ftr__bottom-inner {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 560px) {
+  .ftr {
+    margin-top: 40px;
+  }
+  .ftr__inner {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .ftr__bottom-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}

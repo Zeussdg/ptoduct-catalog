@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${isEdit} ? 'Ürünü Düzenle' : 'Yeni Ürün')}"></head>
+<body>
+<div class="adm">
+  <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+  <div class="adm__main">
+    <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
+    <main class="adm__content">
+      <h1 class="adp__title" th:text="${isEdit} ? 'Ürünü Düzenle' : 'Yeni Ürün'">Yeni Ürün</h1>
+      <p th:if="${error}" th:text="${error}" style="color:var(--danger-600)">Hata</p>
+
+      <form class="adp__card" method="post"
+            th:action="${isEdit} ? @{'/admin/products/' + ${product.id}} : @{/admin/products}">
+        <div class="adp__form-grid">
+          <label class="adp__field"><span>Ürün Adı</span>
+            <input name="name" th:value="${form.name}" required/></label>
+          <label class="adp__field"><span>Ürün Kodu</span>
+            <input name="stockCode" th:value="${form.stockCode}" required/></label>
+          <label class="adp__field"><span>Marka</span>
+            <input name="brand" th:value="${form.brand}"/></label>
+          <label class="adp__field"><span>Kategori</span>
+            <select name="categoryId">
+              <option value="">Kategorisiz</option>
+              <option th:each="c : ${categories}" th:value="${c.id}"
+                      th:text="${#strings.repeat('— ', c.depth) + c.name}"
+                      th:selected="${form.categoryId != null and form.categoryId == c.id}">Kategori</option>
+            </select></label>
+          <label class="adp__field"><span>Fiyat</span>
+            <input type="number" step="0.01" name="price" th:value="${form.price}" required/></label>
+          <label class="adp__field"><span>İndirimli Fiyat</span>
+            <input type="number" step="0.01" name="discountPrice" th:value="${form.discountPrice}"/></label>
+          <label class="adp__field"><span>Para Birimi</span>
+            <select name="currency">
+              <option value="TRY" th:selected="${form.currency == 'TRY'}">TRY</option>
+              <option value="USD" th:selected="${form.currency == 'USD'}">USD</option>
+              <option value="EUR" th:selected="${form.currency == 'EUR'}">EUR</option>
+            </select></label>
+          <label class="adp__field"><span>Durum</span>
+            <select name="isActive">
+              <option value="true" th:selected="${form.isActive}">Aktif</option>
+              <option value="false" th:selected="${!form.isActive}">Pasif</option>
+            </select></label>
+        </div>
+        <label class="adp__field"><span>Açıklama</span>
+          <textarea rows="4" name="description" th:text="${form.description}"></textarea></label>
+        <button class="adp__btn" type="submit">Kaydet</button>
+      </form>
+
+      <div class="adp__card" th:if="${isEdit}">
+        <h2 style="font-size:15px;margin:0 0 12px">Görseller</h2>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+          <div th:each="img : ${images}" style="text-align:center">
+            <img th:src="${img.url}" alt="" style="width:96px;height:96px;object-fit:cover;border-radius:6px;border:1px solid var(--line-200)"/>
+            <div style="display:flex;gap:4px;margin-top:6px;justify-content:center">
+              <form method="post" th:action="@{'/admin/products/' + ${product.id} + '/images/' + ${img.id} + '/primary'}" style="margin:0">
+                <button type="submit" class="adp__badge" th:classappend="${!img.isPrimary} ? ' adp__badge--muted'"
+                        style="border:none;cursor:pointer" th:text="${img.isPrimary ? 'Ana' : 'Ana Yap'}">Ana Yap</button>
+              </form>
+              <form method="post" th:action="@{'/admin/products/' + ${product.id} + '/images/' + ${img.id} + '/delete'}" style="margin:0">
+                <button type="submit" class="adp__badge adp__badge--danger" style="border:none;cursor:pointer">Sil</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <form method="post" enctype="multipart/form-data" th:action="@{'/admin/products/' + ${product.id} + '/images'}">
+          <input type="file" name="image" accept="image/*" required/>
+          <label style="margin-left:8px"><input type="checkbox" name="isPrimary" value="true"/> Birincil yap</label>
+          <button class="adp__btn adp__btn--sm" type="submit" style="margin-left:8px">Yükle</button>
+        </form>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

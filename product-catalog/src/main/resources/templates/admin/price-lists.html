@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Fiyatlandırma')}"></head>
+<body>
+<div class="adm">
+  <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+  <div class="adm__main">
+    <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
+    <main class="adm__content">
+      <h1 class="adp__title">Fiyatlandırma</h1>
+      <p class="adp__subtitle">
+        Fiyat listeleri ve müşteriye özel fiyatlandırma altyapısı. Ürün bazlı standart fiyat/indirim için
+        Ürünler sayfasını kullanın.
+      </p>
+
+      <form class="adp__card" method="post" th:action="@{/admin/price-lists}">
+        <label class="adp__field"><span>Yeni Fiyat Listesi</span><input name="name" required/></label>
+        <button class="adp__btn" type="submit">Ekle</button>
+      </form>
+
+      <div class="adp__card">
+        <div th:if="${#lists.isEmpty(priceLists)}" class="adp__empty">Fiyat listesi yok.</div>
+        <table th:unless="${#lists.isEmpty(priceLists)}" class="adp__table">
+          <thead><tr><th>Ad</th><th>Durum</th></tr></thead>
+          <tbody>
+            <tr th:each="pl : ${priceLists}">
+              <td th:text="${pl.name}">Ad</td>
+              <td><span class="adp__badge" th:classappend="${!pl.isActive} ? ' adp__badge--muted'"
+                        th:text="${pl.isActive ? 'Aktif' : 'Pasif'}">Aktif</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

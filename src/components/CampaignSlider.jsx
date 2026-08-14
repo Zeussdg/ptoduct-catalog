@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { campaigns } from "../data/campaigns";
+import { campaignsApi } from "../services/campaignsApi";
 import "./CampaignSlider.css";
 
 const AUTOPLAY_MS = 6000;
@@ -18,8 +19,24 @@ export default function CampaignSlider() {
   const [animate, setAnimate] = useState(true);
   const [paused, setPaused] = useState(false);
   const [drag, setDrag] = useState(0); // aktif swipe sırasında px kayma
+  const [bannerImages, setBannerImages] = useState({}); // campaignId -> url
   const timer = useRef(null);
   const touch = useRef({ x: 0, active: false });
+
+  // Admin panelinden yüklenen kampanya görsellerini çek. Görseli olmayan
+  // kampanyalarda degrade "glow" fallback korunur.
+  useEffect(() => {
+    let active = true;
+    campaignsApi
+      .listBanners()
+      .then(({ banners }) => {
+        if (active) setBannerImages(Object.fromEntries(banners.map((b) => [b.campaignId, b.url])));
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const activeDot = (pos - 1 + count) % count;
 
@@ -91,26 +108,29 @@ export default function CampaignSlider() {
           }}
           onTransitionEnd={handleTransitionEnd}
         >
-          {extended.map((slide, i) => (
-            <div
-              className="camp__slide"
-              key={`${slide.id}-${i}`}
-              aria-hidden={i !== pos}
-              style={{ "--accent": slide.accent, "--accent-2": slide.accent2 }}
-            >
-              {/* Temsili görsel paneli (tam genişlik, tıklanabilir) */}
-              <Link
-                to={slide.to}
-                className="camp__banner"
-                aria-label={`${slide.title} — ${slide.brand}`}
-                tabIndex={i === pos ? 0 : -1}
-                draggable="false"
-                style={slide.image ? { backgroundImage: `url(${slide.image})` } : undefined}
+          {extended.map((slide, i) => {
+            const bannerUrl = bannerImages[slide.id];
+            return (
+              <div
+                className="camp__slide"
+                key={`${slide.id}-${i}`}
+                aria-hidden={i !== pos}
+                style={{ "--accent": slide.accent, "--accent-2": slide.accent2 }}
               >
-                {!slide.image && <span className="camp__glow" aria-hidden="true" />}
-              </Link>
-            </div>
-          ))}
+                {/* Görsel paneli (tam genişlik, tıklanabilir) — görsel admin panelinden gelir */}
+                <Link
+                  to={slide.to}
+                  className="camp__banner"
+                  aria-label={`${slide.title} — ${slide.brand}`}
+                  tabIndex={i === pos ? 0 : -1}
+                  draggable="false"
+                  style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
+                >
+                  {!bannerUrl && <span className="camp__glow" aria-hidden="true" />}
+                </Link>
+              </div>
+            );
+          })}
         </div>
 
         <button type="button" className="camp__arrow camp__arrow--prev" onClick={goPrev} aria-label="Önceki kampanya">

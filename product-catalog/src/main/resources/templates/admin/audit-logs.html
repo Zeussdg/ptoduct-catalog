@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Audit Logs')}"></head>
+<body>
+<div class="adm">
+  <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+  <div class="adm__main">
+    <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
+    <main class="adm__content">
+      <h1 class="adp__title">Audit Logs</h1>
+      <p class="adp__subtitle">Admin ve Süper Admin işlem kayıtları</p>
+
+      <div class="adp__card">
+        <div th:if="${#lists.isEmpty(logs)}" class="adp__empty">Kayıt yok.</div>
+        <table th:unless="${#lists.isEmpty(logs)}" class="adp__table">
+          <thead><tr><th>Tarih</th><th>Kullanıcı</th><th>İşlem</th><th>Varlık</th></tr></thead>
+          <tbody>
+            <tr th:each="log : ${logs}">
+              <td th:text="${@fmt.dateTime(log.createdAt)}">01.01.2026 10:00</td>
+              <td th:text="${log.actor != null ? log.actor.email : 'Sistem'}">Sistem</td>
+              <td><span class="adp__badge" th:text="${log.action}">ACTION</span></td>
+              <td class="mono" th:text="${log.entityType} + ' #' + ${log.entityId}">Entity #1</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

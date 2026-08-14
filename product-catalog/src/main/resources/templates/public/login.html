@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Giriş Yap')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="loginpg">
+  <form class="loginpg__card" method="post" th:action="@{/login}">
+    <h1 class="loginpg__title">Giriş Yap</h1>
+    <p class="loginpg__subtitle">Hesabınıza erişmek için giriş yapın</p>
+
+    <div class="loginpg__error" th:if="${param.error}">E-posta/kullanıcı adı veya şifre hatalı</div>
+    <div class="loginpg__error" th:if="${param.logout}" style="background:var(--signal-50);color:var(--signal-700)">Çıkış yapıldı</div>
+
+    <label class="loginpg__field">
+      <span>E-posta veya kullanıcı adı</span>
+      <input type="text" name="identifier" autocomplete="username" required/>
+    </label>
+
+    <label class="loginpg__field">
+      <span>Şifre</span>
+      <div class="loginpg__password-wrap">
+        <input type="password" name="password" id="loginPassword" autocomplete="current-password" required/>
+        <button type="button" class="loginpg__toggle-pw" id="togglePw" aria-label="Şifreyi göster">Göster</button>
+      </div>
+    </label>
+
+    <label class="loginpg__remember">
+      <input type="checkbox" name="remember-me"/>
+      <span>Beni hatırla</span>
+    </label>
+
+    <button type="submit" class="loginpg__submit">Giriş Yap</button>
+  </form>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script>
+  (function () {
+    var btn = document.getElementById('togglePw');
+    var pw = document.getElementById('loginPassword');
+    if (btn && pw) {
+      btn.addEventListener('click', function () {
+        var show = pw.type === 'password';
+        pw.type = show ? 'text' : 'password';
+        btn.textContent = show ? 'Gizle' : 'Göster';
+      });
+    }
+  })();
+</script>
+</body>
+</html>

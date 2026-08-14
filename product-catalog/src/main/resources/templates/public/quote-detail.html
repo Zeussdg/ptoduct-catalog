@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Teklif #' + ${quote.id})}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="custpg">
+  <h1 class="custpg__title">
+    Teklif <span th:text="'#' + ${quote.id}">#1</span>
+    <span class="custpg__badge" th:text="${@quoteStatus.label(quote.status)}">Beklemede</span>
+  </h1>
+
+  <div class="custpg__card">
+    <table class="custpg__table">
+      <thead>
+        <tr><th>Ürün</th><th>Ürün Kodu</th><th>Adet</th><th>Birim Fiyat</th><th>Toplam</th></tr>
+      </thead>
+      <tbody>
+        <tr th:each="item : ${quote.items}">
+          <td th:text="${item.productName}">Ürün</td>
+          <td class="mono" th:text="${item.productCode}">KOD</td>
+          <td th:text="${item.qty}">1</td>
+          <td th:text="${@priceFormatter.format(item.unitPrice, item.currency)}">₺0,00</td>
+          <td th:text="${@priceFormatter.format(item.totalPrice, item.currency)}">₺0,00</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="custpg__card" th:if="${quote.adminNote != null and quote.adminNote != ''}">
+    <strong>Admin Notu:</strong>
+    <p th:text="${quote.adminNote}">Not</p>
+  </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/cart-drawer :: drawer}"></div>
+<script th:src="@{/js/cart.js}"></script>
+</body>
+</html>

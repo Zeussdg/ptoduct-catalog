@@ -1,8 +1,10 @@
-// Kampanya banner slaytları.
-// Görseller temsilidir: her banner degrade + temsili ürün ikonu + marka
-// metniyle bir kampanyayı tanıtır ve ilgili kategori filtresine yönlendirir.
-// Gerçek kampanya görseli geldiğinde `image` alanına URL verilerek arka
-// plan görseli kullanılabilir.
+// Kampanya banner slaytları (metin/link/renk — sabit içerik).
+// Her banner degrade + temsili ürün ikonu + marka metniyle bir kampanyayı
+// tanıtır ve ilgili kategori filtresine yönlendirir.
+// Arka plan görselleri artık bu dosyada değil, admin panelinden yüklenip
+// /api/campaigns/banners üzerinden servis edilir (bkz. CampaignSlider). Buradaki
+// `id` değerleri backend allowlist'i (server/src/constants/campaignIds.js) ile
+// eşleşmelidir.
 
 export const campaigns = [
   {
@@ -15,7 +17,6 @@ export const campaigns = [
     cta: "UPS modellerini gör",
     to: "/?kategori=guc-enerji",
     icon: "ups",
-    image: null,
     accent: "#0b3fa8",
     accent2: "#2f6be0",
   },
@@ -29,7 +30,6 @@ export const campaigns = [
     cta: "Kameraları keşfet",
     to: "/?kategori=guvenlik-sistemleri",
     icon: "camera",
-    image: null,
     accent: "#5b21b6",
     accent2: "#8b4ff0",
   },
@@ -43,7 +43,6 @@ export const campaigns = [
     cta: "Ağ ürünlerine göz at",
     to: "/?kategori=ag-network",
     icon: "network",
-    image: null,
     accent: "#0f766e",
     accent2: "#22a89b",
   },
@@ -57,7 +56,6 @@ export const campaigns = [
     cta: "Fiber çözümleri",
     to: "/?kategori=fiber-optik",
     icon: "fiber",
-    image: null,
     accent: "#b3480a",
     accent2: "#e8823f",
   },
@@ -71,7 +69,6 @@ export const campaigns = [
     cta: "Kurumsal ürünler",
     to: "/?kategori=ag-network&altkategori=ag-network--switchler",
     icon: "switch",
-    image: null,
     accent: "#a1102f",
     accent2: "#e04a6b",
   },

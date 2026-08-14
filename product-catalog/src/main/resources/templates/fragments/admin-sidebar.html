@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="tr">
+<body>
+<aside class="adm__sidebar" th:fragment="sidebar">
+  <a th:href="@{/}" class="adm__brand">Ürün Kataloğu</a>
+  <nav class="adm__nav">
+    <a th:href="@{/admin}" class="adm__navlink" th:classappend="${currentPath == '/admin'} ? ' adm__navlink--active'">Dashboard</a>
+    <a th:href="@{/admin/products}" class="adm__navlink" th:classappend="${#strings.startsWith(currentPath,'/admin/products')} ? ' adm__navlink--active'">Ürünler</a>
+    <a th:href="@{/admin/import}" class="adm__navlink" th:classappend="${#strings.startsWith(currentPath,'/admin/import')} ? ' adm__navlink--active'">Excel İçe Aktar</a>
+    <a th:href="@{/admin/categories}" class="adm__navlink" th:classappend="${#strings.startsWith(currentPath,'/admin/categories')} ? ' adm__navlink--active'">Kategoriler</a>
+    <a th:href="@{/admin/campaign-banners}" class="adm__navlink" th:classappend="${#strings.startsWith(currentPath,'/admin/campaign-banners')} ? ' adm__navlink--active'">Kampanya Görselleri</a>
+    <a th:href="@{/admin/price-lists}" class="adm__navlink" th:classappend="${#strings.startsWith(currentPath,'/admin/price-lists')} ? ' adm__navlink--active'">Fiyatlandırma</a>
+    <a th:href="@{/admin/quotes}" class="adm__navlink" th:classappend="${#strings.startsWith(currentPath,'/admin/quotes')} ? ' adm__navlink--active'">Teklifler</a>
+    <a th:href="@{/admin/customers}" class="adm__navlink" th:classappend="${#strings.startsWith(currentPath,'/admin/customers')} ? ' adm__navlink--active'">Müşteriler</a>
+
+    <th:block th:if="${currentUser != null and currentUser.role == 'SUPER_ADMIN'}">
+      <div class="adm__navdivider">Süper Admin</div>
+      <a th:href="@{/admin/users}" class="adm__navlink" th:classappend="${#strings.startsWith(currentPath,'/admin/users')} ? ' adm__navlink--active'">Kullanıcı Yönetimi</a>
+      <a th:href="@{/admin/audit-logs}" class="adm__navlink" th:classappend="${#strings.startsWith(currentPath,'/admin/audit-logs')} ? ' adm__navlink--active'">Audit Logs</a>
+    </th:block>
+  </nav>
+</aside>
+
+<header class="adm__topbar" th:fragment="topbar">
+  <div class="adm__topbar-user">
+    <span class="adm__topbar-name" th:if="${currentUser != null}">
+      <span th:text="${currentUser.displayName}">Admin</span>
+      <span class="adm__topbar-role" th:text="'(' + ${currentUser.role} + ')'">(ADMIN)</span>
+    </span>
+  </div>
+  <form method="post" th:action="@{/logout}" style="margin:0">
+    <button type="submit" class="adm__logout">Çıkış Yap</button>
+  </form>
+</header>
+</body>
+</html>

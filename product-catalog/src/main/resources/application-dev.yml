@@ -1,0 +1,18 @@
+# Dev profili: MySQL olmadan yerel demo/smoke-test için gömülü H2.
+# Çalıştırma: java -jar product-catalog.jar --spring.profiles.active=dev
+# Flyway kapatılır; şema Hibernate tarafından entity'lerden üretilir; DataSeeder
+# aynı şekilde 544 ürün + admin yükler. ÜRETİMDE KULLANMAYIN.
+spring:
+  datasource:
+    url: jdbc:h2:mem:catalog;DB_CLOSE_DELAY=-1;MODE=MySQL
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: false

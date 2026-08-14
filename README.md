@@ -1,19 +1,26 @@
 # Ürün Kataloğu
 
-TENDA · TELESIS · HUAWEI · HIKVISION ve diğer markaların ürünlerini listeleyen
+2M BILISIM ve diğer markaların ürünlerini listeleyen
 bağımsız bir B2B ürün katalog uygulaması. Sepet, ödeme veya kampanya gibi
 e-ticaret özellikleri içermez; ürünlere hızlı erişim ve fiyat teklifi
 hazırlamaya yönelik basit bir sepet/teklif listesi sunar.
+
+Proje ayrıca kendi backend'i (Node.js/Express + Prisma/MySQL), JWT+HttpOnly
+cookie tabanlı authentication, rol bazlı yetkilendirme (CUSTOMER / ADMIN /
+SUPER_ADMIN) ve bir admin paneli içerir — bkz. [Backend](#backend-server).
 
 ## Kurulum ve çalıştırma
 
 ```bash
 npm install
 npm run import-products   # data/products.xlsx → src/data/*.json (varsa)
-npm run dev               # geliştirme sunucusu
+npm run dev               # geliştirme sunucusu (client, :5173)
 npm run build             # production derlemesi (dist/ klasörü)
 npm run preview           # production derlemesini yerelde önizle
 ```
+
+Client, backend API'sine `VITE_API_URL` üzerinden bağlanır (bkz. `.env.example`).
+Backend'i ayrıca çalıştırmak gerekir — bkz. [Backend](#backend-server).
 
 ## Proje yapısı
 
@@ -25,11 +32,18 @@ scripts/
   categoryMap.js          kategori sınıflandırma kuralları + slug yardımcıları
 src/
   components/     Header, HeroSlider, CategorySidebar, ProductCard, ...
-  pages/          ProductsPage, ProductDetailPage, PartnersPage
+  pages/          ProductsPage, ProductDetailPage, PartnersPage, LoginPage, ...
+  pages/admin/    Admin paneli sayfaları (Dashboard, Ürünler, Teklifler, ...)
   data/           products.json + categories.json (üretilen), *.js (shim'ler),
                   partners.js, heroSlides.js
-  context/        CartContext (sepet state'i)
+  context/        CartContext (misafir sepet/teklif listesi), AuthContext (oturum)
+  layouts/        PublicLayout (Header/Footer/CartDrawer), AdminLayout (sidebar)
+  routes/         ProtectedRoute, RoleBasedRoute (frontend route guard'ları)
+  services/       apiClient + backend API servis modülleri
   styles/         tokens.css (renk, tipografi, layout değişkenleri)
+server/
+  src/            Express API (controllers/services/routes/middleware/config)
+  prisma/         schema.prisma, migrations/, seed.js
 ```
 
 ## Excel'den ürün içe aktarma (Excel → JSON → React)
@@ -98,3 +112,52 @@ değişmeden kalır.
 - Ürün görselleri şu an `null`; `image` alanına gerçek görsel URL'i
   eklendiğinde `ProductCard` ve `ProductDetailPage` otomatik gösterecek
   şekilde hazır (şu an marka adı ile placeholder gösteriliyor).
+
+## Backend (`server/`)
+
+Node.js + Express API, Prisma ORM ile MySQL'e bağlanır. JWT authentication
+HttpOnly cookie içinde tutulur; yetkilendirme (CUSTOMER/ADMIN/SUPER_ADMIN)
+tamamen backend'de `requireAuth`/`requireRole` middleware'leri ile uygulanır.
+
+### Kurulum
+
+```bash
+cd server
+npm install
+cp .env.example .env      # DATABASE_URL, JWT_*, S3_* değerlerini doldurun
+```
+
+`DATABASE_URL`, gerçek bir MySQL sunucusunu göstermelidir (yerel MySQL,
+Docker, veya bir bulut MySQL servisi). **Bu ortamda yerel bir MySQL sunucusu
+bulunmadığından migration bu oturumda çalıştırılamadı** — `schema.prisma`
+`npx prisma validate` ile doğrulandı ve Prisma Client `npx prisma generate`
+ile üretildi, ancak gerçek tabloları oluşturmak için aşağıdaki adımı gerçek
+bir MySQL bağlantısıyla siz çalıştırmalısınız:
+
+```bash
+npx prisma migrate dev --name init   # tabloları oluşturur
+npm run prisma:seed                  # src/data/products.json + categories.json'ı
+                                      # aktarır, bootstrap bir SUPER_ADMIN oluşturur
+                                      # (konsola yazdırılan e-posta/şifre ile giriş yapıp
+                                      # şifreyi değiştirin — yalnızca geliştirme amaçlıdır)
+npm run dev                          # API sunucusu (:4000)
+```
+
+### Harici müşteri veritabanı entegrasyonu — DISCOVERY BEKLİYOR
+
+Mevcut müşterilerin tutulduğu harici veritabanının **gerçek yapısı henüz
+bilinmiyor** (database engine, tablo/kolon adları, customer ID tipi, email/
+password alanlarının var olup olmadığı, password formatı — hiçbiri
+varsayılmadı). `server/src/services/externalCustomer/README.md` dosyası,
+discovery aşamasında belirlenmesi gereken tüm noktaları ve gerçek bilgi
+geldiğinde izlenecek 13 adımlık süreci listeler. Bu netleşene kadar sistem
+`MockExternalCustomerAdapter` (sahte, yalnızca development amaçlı veri)
+kullanır ve login akışı yalnızca Product Catalog'un kendi `users` tablosuna
+karşı çalışır.
+
+### Ortam değişkenleri
+
+Bkz. `server/.env.example` — MySQL bağlantısı, JWT sırları, S3-uyumlu object
+storage (görsel yükleme) ve harici DB (`EXTERNAL_DB_*`, hepsi opsiyonel/boş)
+değişkenlerinin tümü orada dokümante edilmiştir. `.env` dosyaları asla
+commit edilmez (`.gitignore`'da).

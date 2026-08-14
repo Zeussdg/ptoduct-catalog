@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Müşteriler')}"></head>
+<body>
+<div class="adm">
+  <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+  <div class="adm__main">
+    <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
+    <main class="adm__content">
+      <h1 class="adp__title">Müşteriler</h1>
+      <p class="adp__subtitle">CUSTOMER rolündeki tüm kullanıcılar</p>
+
+      <div class="adp__card">
+        <div th:if="${#lists.isEmpty(customers)}" class="adp__empty">Müşteri bulunamadı.</div>
+        <table th:unless="${#lists.isEmpty(customers)}" class="adp__table">
+          <thead><tr><th>Firma</th><th>Ad Soyad</th><th>E-posta</th><th>Durum</th><th></th></tr></thead>
+          <tbody>
+            <tr th:each="c : ${customers}">
+              <td th:text="${c.companyName != null ? c.companyName : '—'}">—</td>
+              <td><span th:text="${c.name}">Ad</span> <span th:text="${c.surname}">Soyad</span></td>
+              <td th:text="${c.email}">e-posta</td>
+              <td><span class="adp__badge" th:classappend="${c.status.name() != 'ACTIVE'} ? ' adp__badge--muted'"
+                        th:text="${c.status}">ACTIVE</span></td>
+              <td><a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{'/admin/customers/' + ${c.id}}">Detay</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

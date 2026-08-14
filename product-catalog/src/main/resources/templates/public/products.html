@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Ürünler')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="ppage">
+  <div th:if="${showHero}" th:replace="~{fragments/hero-slider :: heroSlider(${heroSlides})}"></div>
+
+  <div class="ppage__inner">
+    <div th:replace="~{fragments/category-sidebar :: sidebar}"></div>
+
+    <main class="ppage__main">
+      <div th:if="${showHero}" class="ppage__campaigns">
+        <div th:replace="~{fragments/campaign-slider :: campaignSlider(${campaigns})}"></div>
+      </div>
+
+      <form class="ptb" method="get" action="/" id="toolbarForm">
+        <input type="hidden" name="kategori" th:if="${kategori != null and kategori != ''}" th:value="${kategori}"/>
+        <input type="hidden" name="altkategori" th:if="${altkategori != null and altkategori != ''}" th:value="${altkategori}"/>
+
+        <div class="ptb__heading">
+          <h1 class="ptb__title" th:text="${activeCategoryLabel}">Tüm Ürünler</h1>
+          <span class="ptb__count" th:text="'Toplam ' + ${totalElements} + ' ürün'">Toplam 0 ürün</span>
+        </div>
+
+        <div class="ptb__controls">
+          <div class="ptb__search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M20 20L16.5 16.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <input type="text" name="q" id="searchInput" th:value="${q}"
+                   placeholder="Ürün adı, marka, stok kodu veya kategori ara..."/>
+            <button type="button" class="ptb__clear" th:if="${q != null and q != ''}" aria-label="Aramayı temizle"
+                    onclick="document.getElementById('searchInput').value='';document.getElementById('toolbarForm').submit();">×</button>
+          </div>
+
+          <select class="ptb__select" name="marka" aria-label="Marka filtrele" onchange="this.form.submit()">
+            <option value="">Tüm Markalar</option>
+            <option th:each="b : ${brands}" th:value="${b}" th:text="${b}" th:selected="${b == marka}">Marka</option>
+          </select>
+
+          <select class="ptb__select" name="sirala" aria-label="Sıralama" onchange="this.form.submit()">
+            <option value="relevance" th:selected="${sirala == null or sirala == 'relevance'}">Önerilen Sıralama</option>
+            <option value="price-asc" th:selected="${sirala == 'price-asc'}">Fiyat: Düşükten Yükseğe</option>
+            <option value="price-desc" th:selected="${sirala == 'price-desc'}">Fiyat: Yüksekten Düşüğe</option>
+            <option value="name-asc" th:selected="${sirala == 'name-asc'}">İsim: A - Z</option>
+          </select>
+        </div>
+      </form>
+
+      <p class="ppage__range" th:if="${totalElements > 20}">
+        <span th:text="${totalElements}">0</span> ürün içinden
+        <strong><span th:text="${fromIndex}">1</span>–<span th:text="${toIndex}">20</span></strong>
+        arası gösteriliyor · Sayfa <span th:text="${currentPage}">1</span>/<span th:text="${totalPages}">1</span>
+      </p>
+
+      <div th:if="${#lists.isEmpty(products)}" class="pgrid__empty">
+        <p>Aramanızla eşleşen ürün bulunamadı.</p>
+        <span>Farklı bir anahtar kelime veya kategori deneyin.</span>
+      </div>
+
+      <div th:unless="${#lists.isEmpty(products)}" class="pgrid">
+        <th:block th:each="product : ${products}">
+          <div th:replace="~{fragments/product-card :: card(${product})}"></div>
+        </th:block>
+      </div>
+
+      <div th:replace="~{fragments/pagination :: pagination(${currentPage}, ${totalPages}, ${baseQuery})}"></div>
+    </main>
+  </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/cart-drawer :: drawer}"></div>
+
+<script th:src="@{/js/carousels.js}"></script>
+<script th:src="@{/js/category-sidebar.js}"></script>
+<script th:src="@{/js/cart.js}"></script>
+</body>
+</html>

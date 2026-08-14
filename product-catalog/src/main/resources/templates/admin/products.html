@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Ürünler')}"></head>
+<body>
+<div class="adm">
+  <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+  <div class="adm__main">
+    <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
+    <main class="adm__content">
+      <div class="adp__toolbar">
+        <div>
+          <h1 class="adp__title">Ürünler</h1>
+          <p class="adp__subtitle">Ürün kataloğunu yönetin</p>
+        </div>
+        <a class="adp__btn" th:href="@{/admin/products/new}">+ Yeni Ürün</a>
+      </div>
+
+      <p th:if="${error}" th:text="${error}" style="color:var(--danger-600)">Hata</p>
+      <p th:if="${message}" th:text="${message}" style="color:var(--signal-600)">Tamam</p>
+
+      <div class="adp__card">
+        <div th:if="${#lists.isEmpty(products)}" class="adp__empty">Ürün bulunamadı.</div>
+        <table th:unless="${#lists.isEmpty(products)}" class="adp__table">
+          <thead><tr><th>Ürün</th><th>Kod</th><th>Kategori</th><th>Fiyat</th><th>Durum</th><th></th></tr></thead>
+          <tbody>
+            <tr th:each="p : ${products}">
+              <td th:text="${p.name}">Ürün</td>
+              <td class="mono" th:text="${p.stockCode}">KOD</td>
+              <td th:text="${p.category != null ? p.category.name : '—'}">—</td>
+              <td th:text="${@priceFormatter.format(p.effectivePrice, p.currency)}">₺0,00</td>
+              <td>
+                <form method="post" th:action="@{'/admin/products/' + ${p.id} + '/toggle'}" style="margin:0">
+                  <button type="submit" class="adp__badge" th:classappend="${!p.isActive} ? ' adp__badge--muted'"
+                          style="border:none;cursor:pointer" th:text="${p.isActive ? 'Aktif' : 'Pasif'}">Aktif</button>
+                </form>
+              </td>
+              <td style="display:flex;gap:6px">
+                <a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{'/admin/products/' + ${p.id} + '/edit'}">Düzenle</a>
+                <form method="post" th:action="@{'/admin/products/' + ${p.id} + '/delete'}" style="margin:0"
+                      data-confirm="Bu ürünü silmek istediğinize emin misiniz?">
+                  <button type="submit" class="adp__btn adp__btn--sm adp__btn--danger">Sil</button>
+                </form>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

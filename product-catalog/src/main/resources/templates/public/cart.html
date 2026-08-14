@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Sepetim')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="custpg">
+  <h1 class="custpg__title">Sepetim</h1>
+
+  <div class="custpg__card">
+    <div th:if="${#lists.isEmpty(cart.items)}" class="custpg__empty">Sepetiniz boş.</div>
+
+    <table th:unless="${#lists.isEmpty(cart.items)}" class="custpg__table">
+      <thead>
+        <tr><th>Ürün</th><th>Adet</th><th>Birim Fiyat</th><th>Toplam</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr th:each="item : ${cart.items}">
+          <td th:text="${item.product != null ? item.product.name : ''}">Ürün</td>
+          <td>
+            <form method="post" th:action="@{'/cart/items/' + ${item.id}}" style="margin:0">
+              <input type="number" min="1" class="custpg__qty-input" name="qty"
+                     th:value="${item.qty}" onchange="this.form.submit()"/>
+            </form>
+          </td>
+          <td th:text="${@priceFormatter.format(item.unitPrice, item.currency)}">₺0,00</td>
+          <td th:text="${@priceFormatter.format(item.lineTotal, item.currency)}">₺0,00</td>
+          <td>
+            <form method="post" th:action="@{'/cart/items/' + ${item.id} + '/delete'}" style="margin:0">
+              <button class="custpg__btn custpg__btn--danger" type="submit">Sil</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <form th:unless="${#lists.isEmpty(cart.items)}" method="post" th:action="@{/quotes}">
+    <button class="custpg__btn" type="submit">Teklif İste</button>
+  </form>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/cart-drawer :: drawer}"></div>
+<script th:src="@{/js/cart.js}"></script>
+</body>
+</html>

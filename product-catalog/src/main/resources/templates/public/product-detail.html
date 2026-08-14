@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${product.name})}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="pdetail">
+  <div class="pdetail__inner">
+    <button type="button" class="pdetail__back" onclick="history.back()">← Geri</button>
+
+    <div class="pdetail__breadcrumb" th:if="${mainCat != null}">
+      <a th:href="@{/(kategori=${mainCat.slug})}" th:text="${mainCat.name}">Ana Kategori</a>
+      <th:block th:if="${subCat != null}">
+        <span>/</span>
+        <a th:href="@{/(kategori=${mainCat.slug},altkategori=${subCat.slug})}" th:text="${subCat.name}">Kategori</a>
+      </th:block>
+    </div>
+
+    <div class="pdetail__layout">
+      <div class="pdetail__image">
+        <div class="pdetail__image-placeholder">
+          <span th:text="${product.brand}">Marka</span>
+        </div>
+      </div>
+
+      <div class="pdetail__info">
+        <span class="pdetail__brand" th:text="${product.brand}">Marka</span>
+        <h1 class="pdetail__name" th:text="${product.name}">Ürün adı</h1>
+        <span class="pdetail__code mono" th:text="'Stok Kodu: ' + ${product.stockCode}">Stok Kodu: —</span>
+
+        <div class="pdetail__price-row">
+          <span class="pdetail__price" th:text="${@priceFormatter.format(product.price, product.currency)}">₺0,00</span>
+        </div>
+
+        <div class="pdetail__add-row">
+          <div class="pdetail__qty" data-qtybox>
+            <button type="button" data-qtyminus>−</button>
+            <span class="mono" data-qtyval id="detailQty">1</span>
+            <button type="button" data-qtyplus>+</button>
+          </div>
+          <button type="button" class="pdetail__add-btn js-add-to-cart"
+                  data-qty-target="detailQty"
+                  th:attr="data-id=${product.id},data-name=${product.name},data-brand=${product.brand},data-code=${product.stockCode},data-price=${product.price},data-currency=${product.currency.name()}">
+            Sepete Ekle
+          </button>
+        </div>
+
+        <dl class="pdetail__specs">
+          <div><dt>Marka</dt><dd th:text="${product.brand}">—</dd></div>
+          <div><dt>Stok Kodu</dt><dd class="mono" th:text="${product.stockCode}">—</dd></div>
+          <div th:if="${mainCat != null}"><dt>Ana Kategori</dt><dd th:text="${mainCat.name}">—</dd></div>
+          <div th:if="${subCat != null}"><dt>Kategori</dt><dd th:text="${subCat.name}">—</dd></div>
+          <div><dt>Para Birimi</dt><dd th:text="${product.currency.name()}">TRY</dd></div>
+        </dl>
+
+        <div class="pdetail__desc" th:if="${product.description != null and product.description != ''}">
+          <h2>Açıklama</h2>
+          <p th:text="${product.description}">Açıklama</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="pdetail__related" th:if="${!#lists.isEmpty(related)}">
+      <h2>Bu kategoriden diğer ürünler</h2>
+      <ul>
+        <li th:each="r : ${related}">
+          <a th:href="@{'/urun/' + ${r.id}}">
+            <span class="pdetail__related-brand" th:text="${r.brand}">Marka</span>
+            <span class="pdetail__related-name" th:text="${r.name}">Ürün</span>
+            <span class="pdetail__related-price mono" th:text="${@priceFormatter.format(r.price, r.currency)}">₺0,00</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/cart-drawer :: drawer}"></div>
+<script th:src="@{/js/cart.js}"></script>
+</body>
+</html>

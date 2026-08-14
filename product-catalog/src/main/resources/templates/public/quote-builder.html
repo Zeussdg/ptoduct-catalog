@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Teklif Sihirbazı')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="qbp">
+  <div class="qbp__inner">
+    <nav class="qbp__breadcrumb" aria-label="Breadcrumb">
+      <a th:href="@{/}">Anasayfa</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">Teklif Sihirbazı</span>
+    </nav>
+
+    <div class="qbp__actions">
+      <button type="button" class="qbp__clear" id="qbpClear">⟳ Temizle</button>
+      <button type="button" class="qbp__stock" id="qbpStock" aria-pressed="false">
+        <span class="qbp__stock-box" aria-hidden="true"></span>
+        Stoktaki Ürünler
+      </button>
+    </div>
+
+    <div class="qbp__layout">
+      <section class="qbp__table" aria-label="Ürün tablosu">
+        <div class="qbp__table-scroll">
+          <div class="qrow qrow--head" aria-hidden="true">
+            <div class="qrow__cat">Kategori</div>
+            <div class="qrow__thumb">Görsel</div>
+            <div class="qrow__product">Ürün</div>
+            <div class="qrow__qty">Adet</div>
+            <div class="qrow__price">B.Fiyat</div>
+            <div class="qrow__total">Tutar</div>
+            <div class="qrow__remove"></div>
+          </div>
+          <div id="qrows"></div>
+        </div>
+        <button type="button" class="qbp__add" id="qbpAddRow">+ Ürün Ekle</button>
+      </section>
+
+      <div class="qbp__side">
+        <aside class="qsum" aria-label="Toplam" id="quoteSummary">
+          <h2 class="qsum__title">Toplam</h2>
+          <p class="qsum__empty">Henüz ürün seçilmedi.</p>
+        </aside>
+
+        <aside class="qwarn" role="note" aria-label="Uyarı">
+          <h3 class="qwarn__title"><span aria-hidden="true">⚠</span> Uyarı</h3>
+          <p class="qwarn__lead">Tüm bilgiler tavsiye niteliğindedir.</p>
+          <p class="qwarn__text">
+            Ürünlerin teknik özellikleri ve donanım uyumluluk bilgileri üretici verilerine göre
+            değişiklik gösterebilir. Fiyatlar döviz bazında geçerlidir ve haber verilmeden
+            değişebilir. Donanım uyumsuzluğundan doğabilecek hatalardan firmamız sorumlu değildir.
+          </p>
+        </aside>
+
+        <button type="button" class="qbp__add-to-cart" id="qbpToCart">🛒 Sepete Taşı</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Satır şablonu (JS klonlar) — kategori seçenekleri sunucu tarafında render edilir -->
+<template id="qrowTemplate">
+  <div class="qrow">
+    <div class="qrow__cat" data-label="Kategori">
+      <select class="qsel js-cat" aria-label="Kategori seç">
+        <option value="">Kategori Seç</option>
+        <option th:each="opt : ${categoryOptions}" th:value="${opt.value}" th:text="${opt.label}">Ana › Alt</option>
+      </select>
+    </div>
+    <div class="qrow__thumb" data-label="Görsel">
+      <span class="pthumb pthumb--ph js-thumb" style="width:34px;height:34px" aria-hidden="true"></span>
+    </div>
+    <div class="qrow__product" data-label="Ürün">
+      <div class="pcombo js-combo">
+        <button type="button" class="pcombo__trigger pcombo__trigger--empty js-combo-trigger" disabled aria-haspopup="listbox" aria-expanded="false">
+          <span class="pcombo__label">Lütfen önce kategori seçiniz</span>
+          <span class="pcombo__caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="pcombo__panel js-combo-panel" hidden>
+          <input type="text" class="pcombo__search js-combo-search" placeholder="Ürün ara (ad, marka, stok kodu)…"/>
+          <ul class="pcombo__list js-combo-list" role="listbox"></ul>
+        </div>
+      </div>
+    </div>
+    <div class="qrow__qty" data-label="Adet">
+      <div class="qqty qqty--disabled js-qty">
+        <button type="button" data-qm disabled aria-label="Azalt">−</button>
+        <input type="number" min="1" value="1" disabled aria-label="Adet"/>
+        <button type="button" data-qp disabled aria-label="Artır">+</button>
+      </div>
+    </div>
+    <div class="qrow__price mono js-price" data-label="B.Fiyat">—</div>
+    <div class="qrow__total mono js-total" data-label="Tutar">—</div>
+    <div class="qrow__remove">
+      <button type="button" class="js-remove" aria-label="Satırı sil">×</button>
+    </div>
+  </div>
+</template>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/cart-drawer :: drawer}"></div>
+<script th:src="@{/js/cart.js}"></script>
+<script th:src="@{/js/quote-builder.js}"></script>
+</body>
+</html>

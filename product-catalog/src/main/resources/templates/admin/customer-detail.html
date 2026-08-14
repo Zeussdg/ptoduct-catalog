@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${customer.companyName != null ? customer.companyName : customer.email})}"></head>
+<body>
+<div class="adm">
+  <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+  <div class="adm__main">
+    <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
+    <main class="adm__content">
+      <h1 class="adp__title" th:text="${customer.companyName != null ? customer.companyName : customer.email}">Müşteri</h1>
+
+      <div class="adp__card">
+        <p style="margin:0">
+          <span th:text="${customer.name}">Ad</span> <span th:text="${customer.surname}">Soyad</span>
+          · <span th:text="${customer.email}">e-posta</span> · <span th:text="${customer.phone}">telefon</span>
+        </p>
+      </div>
+
+      <div class="adp__card">
+        <h2 style="font-size:14px;margin:0 0 12px">Teklif Geçmişi</h2>
+        <div th:if="${#lists.isEmpty(quotes)}" class="adp__empty">Teklif geçmişi yok.</div>
+        <table th:unless="${#lists.isEmpty(quotes)}" class="adp__table">
+          <thead><tr><th>Teklif No</th><th>Durum</th><th>Tarih</th><th></th></tr></thead>
+          <tbody>
+            <tr th:each="q : ${quotes}">
+              <td th:text="'#' + ${q.id}">#1</td>
+              <td><span class="adp__badge" th:text="${q.status}">PENDING</span></td>
+              <td th:text="${@fmt.date(q.createdAt)}">01.01.2026</td>
+              <td><a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{'/admin/quotes/' + ${q.id}}">Detay</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

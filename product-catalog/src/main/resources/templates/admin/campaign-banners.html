@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Kampanya Görselleri')}"></head>
+<body>
+<div class="adm">
+  <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+  <div class="adm__main">
+    <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
+    <main class="adm__content">
+      <h1 class="adp__title">Kampanya Görselleri</h1>
+      <p class="adp__subtitle">
+        Ana sayfadaki kampanya slider'ında her kampanyanın arka plan görselini yönetin.
+        Görsel yüklenmemişse kampanya degrade fonuyla gösterilir.
+      </p>
+      <p th:if="${error}" th:text="${error}" style="color:var(--danger-600)">Hata</p>
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div th:each="c : ${campaigns}" class="adp__card"
+             style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+          <div th:style="'width:220px;height:96px;border-radius:8px;border:1px solid var(--line-200);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;'
+                 + (${c.image != null} ? 'background:center/cover no-repeat url(' + ${c.image} + ')'
+                                       : 'background:linear-gradient(135deg,' + ${c.accent} + ',' + ${c.accent2} + ')')">
+            <span th:if="${c.image == null}" style="color:#fff">Görsel yok</span>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:12px;color:var(--ink-500)" th:text="${c.brand}">Marka</div>
+            <div style="font-size:15px;font-weight:600" th:text="${c.title}">Başlık</div>
+            <div style="font-size:13px;color:var(--ink-500)" th:text="${c.subtitle}">Alt başlık</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <form method="post" enctype="multipart/form-data"
+                  th:action="@{'/admin/campaign-banners/' + ${c.id} + '/image'}" style="margin:0">
+              <input type="file" name="image" accept="image/*" required style="max-width:180px"/>
+              <button class="adp__btn adp__btn--sm" type="submit" th:text="${c.image != null ? 'Değiştir' : 'Yükle'}">Yükle</button>
+            </form>
+            <form th:if="${c.image != null}" method="post"
+                  th:action="@{'/admin/campaign-banners/' + ${c.id} + '/delete'}" style="margin:0"
+                  data-confirm="Bu kampanya görselini silmek istiyor musunuz?">
+              <button class="adp__btn adp__btn--sm adp__btn--danger" type="submit">Sil</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

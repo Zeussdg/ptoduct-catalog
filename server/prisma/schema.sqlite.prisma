@@ -1,0 +1,291 @@
+// GEÇİCİ / YALNIZCA YEREL GÖZDEN GEÇİRME AMAÇLI.
+// Bu dosya, gerçek MySQL kurulmadığı durumlarda admin panelini hızlıca yerel
+// olarak gezebilmek için schema.prisma'nın SQLite'a uyarlanmış bir kopyasıdır
+// (MySQL'e özel @db.Decimal/@db.Text/@db.VarChar native type attribute'ları
+// SQLite'ta desteklenmediği için kaldırıldı). Projenin asıl/onaylanmış şeması
+// hâlâ schema.prisma'dır (provider: mysql) — bu dosya onu değiştirmez.
+//
+// Kullanım:
+//   npx prisma generate --schema=prisma/schema.sqlite.prisma
+//   npx prisma migrate dev --schema=prisma/schema.sqlite.prisma --name init
+//   node --env-file=.env prisma/seed.js
+//
+// Gerçek MySQL'e geçerken: `npx prisma generate` (argümansız) çalıştırıp
+// asıl schema.prisma'dan client'ı yeniden üretmeniz yeterli.
+
+datasource db {
+  provider = "sqlite"
+  url      = env("SQLITE_DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum QuoteStatus {
+  PENDING
+  REVIEWING
+  OFFERED
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+enum Currency {
+  TRY
+  USD
+  EUR
+}
+
+model User {
+  id           Int        @id @default(autoincrement())
+  email        String     @unique
+  username     String?    @unique
+  passwordHash String?    @map("password_hash")
+  role         Role       @default(CUSTOMER)
+  status       UserStatus @default(ACTIVE)
+  companyName  String?    @map("company_name")
+  name         String?
+  surname      String?
+  phone        String?
+  lastLoginAt  DateTime?  @map("last_login_at")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  cart               Cart?
+  quotes             Quote[]
+  sessions           Session[]
+  auditLogs          AuditLog[]         @relation("AuditLogActor")
+  customerPrices     CustomerPrice[]
+  externalIdentities ExternalIdentity[]
+
+  @@map("users")
+}
+
+model ExternalIdentity {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  source     String
+  externalId String   @map("external_id")
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([source, externalId])
+  @@index([userId])
+  @@map("external_identities")
+}
+
+model Session {
+  id           Int       @id @default(autoincrement())
+  userId       Int       @map("user_id")
+  refreshToken String    @unique @map("refresh_token")
+  userAgent    String?   @map("user_agent")
+  ipAddress    String?   @map("ip_address")
+  rememberMe   Boolean   @default(false) @map("remember_me")
+  expiresAt    DateTime  @map("expires_at")
+  revokedAt    DateTime? @map("revoked_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Category {
+  id        Int        @id @default(autoincrement())
+  name      String
+  slug      String     @unique
+  parentId  Int?       @map("parent_id")
+  sortOrder Int        @default(0) @map("sort_order")
+  isActive  Boolean    @default(true) @map("is_active")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  parent   Category?  @relation("CategoryChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children Category[] @relation("CategoryChildren")
+  products Product[]
+
+  @@index([parentId])
+  @@map("categories")
+}
+
+model Product {
+  id            Int      @id @default(autoincrement())
+  brand         String?
+  name          String
+  stockCode     String   @unique @map("stock_code")
+  categoryId    Int?     @map("category_id")
+  description   String?
+  price         Decimal
+  discountPrice Decimal? @map("discount_price")
+  currency      Currency @default(TRY)
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  category       Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  images         ProductImage[]
+  cartItems      CartItem[]
+  quoteItems     QuoteItem[]
+  customerPrices CustomerPrice[]
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@map("products")
+}
+
+model ProductImage {
+  id        Int      @id @default(autoincrement())
+  productId Int      @map("product_id")
+  key       String
+  url       String
+  isPrimary Boolean  @default(false) @map("is_primary")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+// Ana sayfadaki kampanya slider'ının arka plan görselleri (bkz. schema.prisma'daki
+// asıl model). SQLite'ta @db.Text desteklenmediği için url düz String'tir.
+model CampaignBanner {
+  id         Int      @id @default(autoincrement())
+  campaignId String   @unique @map("campaign_id")
+  key        String
+  url        String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("campaign_banners")
+}
+
+model PriceList {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  customerPrices CustomerPrice[]
+
+  @@map("price_lists")
+}
+
+model CustomerPrice {
+  id          Int       @id @default(autoincrement())
+  userId      Int       @map("user_id")
+  productId   Int       @map("product_id")
+  priceListId Int?      @map("price_list_id")
+  price       Decimal
+  currency    Currency  @default(TRY)
+  validFrom   DateTime? @map("valid_from")
+  validTo     DateTime? @map("valid_to")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  priceList PriceList? @relation(fields: [priceListId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, productId])
+  @@map("customer_prices")
+}
+
+model Cart {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  cartId    Int      @map("cart_id")
+  productId Int      @map("product_id")
+  qty       Int      @default(1)
+  unitPrice Decimal  @map("unit_price")
+  currency  Currency @map("currency")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([cartId, productId])
+  @@map("cart_items")
+}
+
+model Quote {
+  id        Int         @id @default(autoincrement())
+  userId    Int         @map("user_id")
+  status    QuoteStatus @default(PENDING)
+  note      String?
+  adminNote String?     @map("admin_note")
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items QuoteItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("quotes")
+}
+
+model QuoteItem {
+  id          Int      @id @default(autoincrement())
+  quoteId     Int      @map("quote_id")
+  productId   Int?     @map("product_id")
+  productName String   @map("product_name")
+  productCode String   @map("product_code")
+  qty         Int
+  unitPrice   Decimal  @map("unit_price")
+  totalPrice  Decimal  @map("total_price")
+  currency    Currency @map("currency")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  quote   Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([quoteId])
+  @@map("quote_items")
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  actorId    Int?     @map("actor_id")
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String?  @map("entity_id")
+  metadata   Json?
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  actor User? @relation("AuditLogActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}

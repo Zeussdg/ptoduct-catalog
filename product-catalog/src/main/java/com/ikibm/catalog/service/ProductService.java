@@ -1,0 +1,170 @@
+package com.ikibm.catalog.service;
+
+import com.ikibm.catalog.dto.ProductForm;
+import com.ikibm.catalog.entity.Currency;
+import com.ikibm.catalog.entity.Product;
+import com.ikibm.catalog.entity.ProductImage;
+import com.ikibm.catalog.exception.ConflictException;
+import com.ikibm.catalog.exception.NotFoundException;
+import com.ikibm.catalog.repository.CategoryRepository;
+import com.ikibm.catalog.repository.ProductImageRepository;
+import com.ikibm.catalog.repository.ProductRepository;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+public class ProductService {
+
+    public static final int PAGE_SIZE = 20;
+
+    private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository;
+    private final ProductImageRepository productImageRepository;
+    private final StorageService storageService;
+
+    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository,
+                          ProductImageRepository productImageRepository, StorageService storageService) {
+        this.productRepository = productRepository;
+        this.categoryRepository = categoryRepository;
+        this.productImageRepository = productImageRepository;
+        this.storageService = storageService;
+    }
+
+    // ---- vitrin (okuma) ----
+
+    public Page<Product> catalog(String q, String marka, String kategori, String altkategori, String sirala, int page) {
+        Specification<Product> spec = Specification.where(ProductSpecifications.activeOnly())
+                .and(ProductSpecifications.search(q))
+                .and(ProductSpecifications.brand(marka));
+        if (altkategori != null && !altkategori.isBlank()) {
+            spec = spec.and(ProductSpecifications.subCategory(altkategori));
+        } else if (kategori != null && !kategori.isBlank()) {
+            spec = spec.and(ProductSpecifications.mainCategory(kategori));
+        }
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), PAGE_SIZE, sortOf(sirala));
+        return productRepository.findAll(spec, pageable);
+    }
+
+    private Sort sortOf(String sirala) {
+        if (sirala == null) return Sort.by("id").ascending();
+        return switch (sirala) {
+            case "price-asc" -> Sort.by("price").ascending();
+            case "price-desc" -> Sort.by("price").descending();
+            case "name-asc" -> Sort.by("name").ascending();
+            default -> Sort.by("id").ascending();
+        };
+    }
+
+    public List<String> brands() { return productRepository.findDistinctBrands(); }
+
+    public Product getById(Integer id) {
+        return productRepository.findById(id).orElseThrow(() -> new NotFoundException("Ürün bulunamadı"));
+    }
+
+    public List<Product> related(Product product) {
+        if (product.getCategory() == null) return List.of();
+        return productRepository.findTop4ByCategory_SlugAndIsActiveTrueAndIdNot(
+                product.getCategory().getSlug(), product.getId());
+    }
+
+    public long activeCount() { return productRepository.countByIsActiveTrue(); }
+
+    // ---- admin ----
+
+    public Page<Product> adminList(int page) {
+        return productRepository.findAll(PageRequest.of(Math.max(0, page - 1), PAGE_SIZE, Sort.by("id").ascending()));
+    }
+
+    public long totalCount() { return productRepository.count(); }
+
+    @Transactional
+    public Product create(ProductForm f) {
+        if (productRepository.existsByStockCode(f.getStockCode())) {
+            throw new ConflictException("Bu stok kodu zaten kayıtlı");
+        }
+        Product p = new Product();
+        apply(p, f);
+        return productRepository.save(p);
+    }
+
+    @Transactional
+    public Product update(Integer id, ProductForm f) {
+        Product p = getById(id);
+        apply(p, f);
+        return productRepository.save(p);
+    }
+
+    private void apply(Product p, ProductForm f) {
+        p.setBrand(f.getBrand());
+        p.setName(f.getName());
+        p.setStockCode(f.getStockCode());
+        p.setDescription(f.getDescription());
+        p.setPrice(f.getPrice());
+        p.setDiscountPrice(f.getDiscountPrice());
+        p.setCurrency(parseCurrency(f.getCurrency()));
+        p.setIsActive(f.getIsActive() != null ? f.getIsActive() : Boolean.TRUE);
+        p.setCategory(f.getCategoryId() != null ? categoryRepository.getReferenceById(f.getCategoryId()) : null);
+    }
+
+    private Currency parseCurrency(String c) {
+        try { return c == null ? Currency.TRY : Currency.valueOf(c); }
+        catch (IllegalArgumentException e) { return Currency.TRY; }
+    }
+
+    @Transactional
+    public void delete(Integer id) {
+        Product p = getById(id);
+        try {
+            productRepository.delete(p);
+            productRepository.flush();
+        } catch (DataIntegrityViolationException e) {
+            throw new ConflictException("Bu ürün sepetlerde kullanılıyor, silmek yerine pasif yapabilirsiniz");
+        }
+    }
+
+    @Transactional
+    public void toggleActive(Integer id) {
+        Product p = getById(id);
+        p.setIsActive(!Boolean.TRUE.equals(p.getIsActive()));
+        productRepository.save(p);
+    }
+
+    @Transactional
+    public ProductImage addImage(Integer productId, byte[] bytes, String contentType, String originalName, boolean primary) {
+        Product p = getById(productId);
+        StorageService.Uploaded up = storageService.uploadProductImage(productId, bytes, contentType, originalName);
+        if (primary) productImageRepository.clearPrimary(productId);
+        ProductImage img = new ProductImage();
+        img.setProduct(p);
+        img.setKey(up.key());
+        img.setUrl(up.url());
+        img.setIsPrimary(primary);
+        img.setSortOrder(productImageRepository.maxSortOrder(productId) + 1);
+        return productImageRepository.save(img);
+    }
+
+    @Transactional
+    public void deleteImage(Integer productId, Integer imageId) {
+        ProductImage img = productImageRepository.findByIdAndProduct_Id(imageId, productId)
+                .orElseThrow(() -> new NotFoundException("Görsel bulunamadı"));
+        storageService.deleteObject(img.getKey());
+        productImageRepository.delete(img);
+    }
+
+    @Transactional
+    public void setPrimaryImage(Integer productId, Integer imageId) {
+        ProductImage img = productImageRepository.findByIdAndProduct_Id(imageId, productId)
+                .orElseThrow(() -> new NotFoundException("Görsel bulunamadı"));
+        productImageRepository.clearPrimary(productId);
+        img.setIsPrimary(true);
+        productImageRepository.save(img);
+    }
+}

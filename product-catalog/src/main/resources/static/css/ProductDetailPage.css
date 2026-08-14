@@ -1,0 +1,232 @@
+.pdetail__inner {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 20px 24px 60px;
+}
+
+.pdetail__notfound {
+  padding: 80px 20px;
+  text-align: center;
+  color: var(--ink-500);
+}
+
+.pdetail__back {
+  background: none;
+  border: none;
+  color: var(--ink-500);
+  font-size: 13px;
+  padding: 0;
+  margin-bottom: 14px;
+}
+
+.pdetail__back:hover {
+  color: var(--ink-900);
+}
+
+.pdetail__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink-500);
+  margin-bottom: 20px;
+}
+
+.pdetail__breadcrumb a:hover {
+  color: var(--signal-700);
+}
+
+.pdetail__layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 32px;
+}
+
+.pdetail__image-placeholder {
+  aspect-ratio: 1;
+  background: var(--surface-100);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+}
+
+.pdetail__image-placeholder span {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-300);
+  letter-spacing: 0.06em;
+}
+
+.pdetail__brand {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--signal-700);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.pdetail__name {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 6px 0 8px;
+  color: var(--ink-900);
+}
+
+.pdetail__code {
+  font-size: 12.5px;
+  color: var(--ink-500);
+}
+
+.pdetail__price-row {
+  margin: 18px 0;
+  padding: 14px 0;
+  border-top: 1px solid var(--line-200);
+  border-bottom: 1px solid var(--line-200);
+}
+
+.pdetail__price {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.pdetail__add-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.pdetail__qty {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+}
+
+.pdetail__qty button {
+  background: none;
+  border: none;
+  font-size: 17px;
+  color: var(--ink-700);
+}
+
+.pdetail__add-btn {
+  flex: 1;
+  background: var(--ink-900);
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pdetail__add-btn:hover {
+  background: var(--signal-700);
+}
+
+.pdetail__specs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 20px;
+  margin: 0 0 24px;
+  padding: 16px;
+  background: var(--surface-50);
+  border-radius: var(--radius-md);
+}
+
+.pdetail__specs dt {
+  font-size: 10.5px;
+  color: var(--ink-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.pdetail__specs dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.pdetail__desc h2 {
+  font-size: 14px;
+  margin: 0 0 8px;
+}
+
+.pdetail__desc p {
+  font-size: 13.5px;
+  color: var(--ink-700);
+  line-height: 1.6;
+}
+
+.pdetail__related {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line-200);
+}
+
+.pdetail__related h2 {
+  font-size: 14px;
+  margin: 0 0 12px;
+}
+
+.pdetail__related ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.pdetail__related a {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+
+.pdetail__related a:hover {
+  border-color: var(--ink-300);
+}
+
+.pdetail__related-brand {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--signal-700);
+}
+
+.pdetail__related-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.pdetail__related-price {
+  font-size: 12.5px;
+  color: var(--ink-700);
+}
+
+@media (max-width: 640px) {
+  .pdetail__layout {
+    grid-template-columns: 1fr;
+  }
+  .pdetail__image-placeholder {
+    max-width: 260px;
+    margin: 0 auto;
+  }
+  .pdetail__specs {
+    grid-template-columns: 1fr 1fr;
+  }
+}

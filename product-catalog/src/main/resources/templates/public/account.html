@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Hesabım')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="custpg">
+  <h1 class="custpg__title">Hesabım</h1>
+
+  <form class="custpg__card" method="post" th:action="@{/account}">
+    <label class="custpg__field">
+      <span>E-posta</span>
+      <input type="text" th:value="${user.email}" disabled/>
+    </label>
+    <label class="custpg__field">
+      <span>Ad</span>
+      <input name="name" th:value="${user.name}"/>
+    </label>
+    <label class="custpg__field">
+      <span>Soyad</span>
+      <input name="surname" th:value="${user.surname}"/>
+    </label>
+    <label class="custpg__field">
+      <span>Firma</span>
+      <input name="companyName" th:value="${user.companyName}"/>
+    </label>
+    <label class="custpg__field">
+      <span>Telefon</span>
+      <input name="phone" th:value="${user.phone}"/>
+    </label>
+    <p th:if="${profileMessage}" th:text="${profileMessage}" style="color:var(--signal-600)">Kaydedildi</p>
+    <button class="custpg__btn" type="submit">Profili Kaydet</button>
+  </form>
+
+  <form class="custpg__card" method="post" th:action="@{/account/password}">
+    <h2 style="font-size:15px;margin:0 0 12px">Şifre Değiştir</h2>
+    <label class="custpg__field">
+      <span>Mevcut Şifre</span>
+      <input type="password" name="currentPassword" required/>
+    </label>
+    <label class="custpg__field">
+      <span>Yeni Şifre</span>
+      <input type="password" name="newPassword" minlength="8" required/>
+    </label>
+    <label class="custpg__field">
+      <span>Yeni Şifre (Tekrar)</span>
+      <input type="password" name="confirmPassword" minlength="8" required/>
+    </label>
+    <p th:if="${pwError}" th:text="${pwError}" style="color:var(--danger-600)">Hata</p>
+    <p th:if="${pwMessage}" th:text="${pwMessage}" style="color:var(--signal-600)">Tamam</p>
+    <button class="custpg__btn" type="submit">Şifreyi Değiştir</button>
+  </form>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/cart-drawer :: drawer}"></div>
+<script th:src="@{/js/cart.js}"></script>
+</body>
+</html>

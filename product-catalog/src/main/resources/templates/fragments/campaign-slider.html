@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="tr">
+<body>
+<div class="camp" aria-roledescription="carousel" aria-label="Kampanyalar"
+     data-carousel="camp" th:fragment="campaignSlider(campaigns)">
+  <div class="camp__viewport">
+    <div class="camp__track">
+      <div class="camp__slide" th:each="slide : ${campaigns}"
+           th:style="'--accent:' + ${slide.accent} + ';--accent-2:' + ${slide.accent2}">
+        <a th:href="@{${slide.to}}" class="camp__banner"
+           th:attr="aria-label=${slide.title} + ' — ' + ${slide.brand}"
+           th:style="${slide.image != null} ? ('background-image:url(' + ${slide.image} + ')') : null">
+          <span th:if="${slide.image == null}" class="camp__glow" aria-hidden="true"></span>
+        </a>
+      </div>
+    </div>
+
+    <button type="button" class="camp__arrow camp__arrow--prev" data-carousel-prev aria-label="Önceki kampanya">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button type="button" class="camp__arrow camp__arrow--next" data-carousel-next aria-label="Sonraki kampanya">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="camp__dots" role="tablist" aria-label="Kampanya seçimi" data-carousel-dots></div>
+</div>
+</body>
+</html>

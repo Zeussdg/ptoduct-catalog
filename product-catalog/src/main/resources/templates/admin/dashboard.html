@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Dashboard')}"></head>
+<body>
+<div class="adm">
+  <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+  <div class="adm__main">
+    <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
+    <main class="adm__content">
+      <h1 class="adp__title">Dashboard</h1>
+      <p class="adp__subtitle">Genel bakış</p>
+
+      <div class="adp__kpis">
+        <div class="adp__kpi">
+          <div class="adp__kpi-value" th:text="${totalProducts}">0</div>
+          <div class="adp__kpi-label">Toplam Ürün</div>
+        </div>
+        <div class="adp__kpi">
+          <div class="adp__kpi-value" th:text="${totalCustomers}">0</div>
+          <div class="adp__kpi-label">Toplam Müşteri</div>
+        </div>
+        <div class="adp__kpi">
+          <div class="adp__kpi-value" th:text="${pendingQuotes}">0</div>
+          <div class="adp__kpi-label">Bekleyen Teklifler</div>
+        </div>
+      </div>
+
+      <div class="adp__card">
+        <h2 style="font-size:15px;margin:0 0 12px">Son Teklifler</h2>
+        <div th:if="${#lists.isEmpty(recentQuotes)}" class="adp__empty">Henüz teklif yok.</div>
+        <table th:unless="${#lists.isEmpty(recentQuotes)}" class="adp__table">
+          <thead><tr><th>Teklif No</th><th>Müşteri</th><th>Durum</th><th>Tarih</th><th></th></tr></thead>
+          <tbody>
+            <tr th:each="q : ${recentQuotes}">
+              <td th:text="'#' + ${q.id}">#1</td>
+              <td th:text="${q.user.companyName != null ? q.user.companyName : q.user.email}">Müşteri</td>
+              <td><span class="adp__badge" th:text="${q.status}">PENDING</span></td>
+              <td th:text="${@fmt.date(q.createdAt)}">01.01.2026</td>
+              <td><a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{'/admin/quotes/' + ${q.id}}">Detay</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

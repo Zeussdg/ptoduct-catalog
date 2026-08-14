@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('İş Ortaklarımız')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="partners">
+  <div class="partners__inner">
+    <header class="partners__head">
+      <span class="partners__eyebrow">Çözüm Ortaklarımız</span>
+      <h1 class="partners__title">İş Ortaklarımız</h1>
+      <p class="partners__lead">
+        Ağ, güvenlik, enerji ve altyapı alanlarında birlikte çalıştığımız markalar.
+        Distribütörlüğünü ve çözüm ortaklığını yürüttüğümüz bu firmaların ürünlerini
+        katalogumuzda bulabilirsiniz.
+      </p>
+    </header>
+
+    <ul class="partners__grid">
+      <li th:each="p : ${partners}">
+        <article class="pcard2" th:style="'--accent:' + ${p.accent}">
+          <div class="pcard2__top">
+            <div class="pcard2__logo">
+              <img th:if="${p.logo != null and p.logo != ''}" th:src="@{${p.logo}}" th:alt="${p.name} + ' logosu'"/>
+              <span th:unless="${p.logo != null and p.logo != ''}" class="pcard2__logo-ph" th:text="${p.initials()}">AB</span>
+            </div>
+            <span class="pcard2__cat" th:text="${p.category}">Kategori</span>
+          </div>
+
+          <h2 class="pcard2__name" th:text="${p.name}">Firma</h2>
+          <p class="pcard2__desc" th:text="${p.description}">Açıklama</p>
+
+          <a th:if="${p.website != null and p.website != ''}" class="pcard2__link"
+             th:href="${p.website}" target="_blank" rel="noopener noreferrer">
+            Web sitesi
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M7 17L17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </article>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/cart-drawer :: drawer}"></div>
+<script th:src="@{/js/cart.js}"></script>
+</body>
+</html>
