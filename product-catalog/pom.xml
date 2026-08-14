@@ -19,7 +19,7 @@
   <description>2M Bilisim urun katalogu - Spring Boot + Thymeleaf</description>
 
   <properties>
-    <java.version>21</java.version>
+    <java.version>25</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <awssdk.version>2.28.29</awssdk.version>
     <openpdf.version>2.0.3</openpdf.version>
