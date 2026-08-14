@@ -161,6 +161,24 @@
   width: 16px;
 }
 
+.cdrw__qty-input {
+  width: 44px;
+  text-align: center;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--ink-900);
+  padding: 0;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.cdrw__qty-input::-webkit-outer-spin-button,
+.cdrw__qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 .cdrw__item-price {
   font-size: 13px;
   font-weight: 600;
@@ -331,10 +349,15 @@
   font-size: 16px;
 }
 
-.cdrw__pdf {
+.cdrw__actions {
   margin-top: auto;
-  width: 100%;
-  background: var(--ink-900);
+  display: flex;
+  gap: 8px;
+}
+
+.cdrw__pdf,
+.cdrw__whatsapp {
+  flex: 1;
   border: none;
   color: #fff;
   padding: 12px;
@@ -344,11 +367,21 @@
   transition: opacity 0.12s ease;
 }
 
-.cdrw__pdf:hover:not(:disabled) {
+.cdrw__pdf {
+  background: var(--ink-900);
+}
+
+.cdrw__whatsapp {
+  background: #25d366;
+}
+
+.cdrw__pdf:hover:not(:disabled),
+.cdrw__whatsapp:hover:not(:disabled) {
   opacity: 0.88;
 }
 
-.cdrw__pdf:disabled {
+.cdrw__pdf:disabled,
+.cdrw__whatsapp:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -375,8 +408,9 @@
   .cdrw__list {
     overflow: visible;
   }
-  .cdrw__pdf {
+  .cdrw__actions {
     margin-top: 16px;
+    flex-direction: column;
   }
 }
 

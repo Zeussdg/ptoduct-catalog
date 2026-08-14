@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCart } from "../context/CartContext";
 import { formatPrice } from "../utils/format";
 import "./CartDrawer.css";
@@ -31,6 +31,7 @@ export default function CartDrawer() {
   });
   const [margin, setMargin] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   const marginPct = Number(margin) || 0;
   const factor = 1 + marginPct / 100;
@@ -58,6 +59,43 @@ export default function CartDrawer() {
       alert("PDF oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.");
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const handleWhatsApp = async () => {
+    setSharing(true);
+    try {
+      const { generateQuotePdf } = await import("../utils/quotePdf");
+      const { buildQuoteText, shareQuoteOnWhatsApp } = await import(
+        "../utils/quoteWhatsApp"
+      );
+      // PDF'i indirmeden yalnızca Blob olarak üret; paylaşım kanalı karar verir.
+      const { blob, fileName } = await generateQuotePdf({
+        items,
+        totalsByCurrency,
+        seller,
+        contact,
+        margin: marginPct,
+        download: false,
+      });
+      const text = buildQuoteText({
+        items,
+        totalsByCurrency,
+        seller,
+        contact,
+        margin: marginPct,
+      });
+      await shareQuoteOnWhatsApp({
+        blob,
+        fileName,
+        text,
+        phone: contact.telefon,
+      });
+    } catch (err) {
+      console.error("WhatsApp paylaşımı başarısız:", err);
+      alert("Teklif paylaşılırken bir hata oluştu. Lütfen tekrar deneyin.");
+    } finally {
+      setSharing(false);
     }
   };
 
@@ -189,6 +227,18 @@ export default function CartDrawer() {
                         placeholder="İlgili kişi"
                       />
                     </label>
+
+                    <label className="cdrw__field">
+                      <span>Telefon (WhatsApp)</span>
+                      <input
+                        type="tel"
+                        value={contact.telefon}
+                        onChange={(e) =>
+                          updateContact("telefon", e.target.value)
+                        }
+                        placeholder="+90 ..."
+                      />
+                    </label>
                   </div>
                 </div>
 
@@ -256,14 +306,25 @@ export default function CartDrawer() {
                   })}
                 </div>
 
-                <button
-                  type="button"
-                  className="cdrw__pdf"
-                  onClick={handlePdf}
-                  disabled={generating || currencies.length === 0}
-                >
-                  {generating ? "PDF hazırlanıyor…" : "Teklifi PDF'e geçir"}
-                </button>
+                <div className="cdrw__actions">
+                  <button
+                    type="button"
+                    className="cdrw__pdf"
+                    onClick={handlePdf}
+                    disabled={generating || sharing || currencies.length === 0}
+                  >
+                    {generating ? "PDF hazırlanıyor…" : "Teklifi PDF'e geçir"}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="cdrw__whatsapp"
+                    onClick={handleWhatsApp}
+                    disabled={sharing || generating || currencies.length === 0}
+                  >
+                    {sharing ? "Paylaşılıyor…" : "WhatsApp'tan Paylaş"}
+                  </button>
+                </div>
               </div>
             )}
 
@@ -281,23 +342,11 @@ export default function CartDrawer() {
                     </div>
 
                     <div className="cdrw__item-controls">
-                      <div className="cdrw__qty">
-                        <button
-                          type="button"
-                          onClick={() => setQty(product.id, qty - 1)}
-                          aria-label="Azalt"
-                        >
-                          −
-                        </button>
-                        <span className="mono">{qty}</span>
-                        <button
-                          type="button"
-                          onClick={() => setQty(product.id, qty + 1)}
-                          aria-label="Artır"
-                        >
-                          +
-                        </button>
-                      </div>
+                      <QtyControl
+                        id={product.id}
+                        qty={qty}
+                        setQty={setQty}
+                      />
                       <span className="cdrw__item-price mono">
                         {product.price != null
                           ? formatPrice(product.price * qty, product.currency)
@@ -387,5 +436,55 @@ export default function CartDrawer() {
         )}
       </aside>
     </>
+  );
+}
+
+// Sepet satırında adet kontrolü: − / + butonları + klavyeden yazılabilir alan.
+// Yerel "draft" string tutar; kullanıcı alanı boşaltınca setQty(0) ile ürün
+// kazara silinmesin diye yalnızca geçerli (>0 tamsayı) değerde setQty çağrılır.
+function QtyControl({ id, qty, setQty }) {
+  const [draft, setDraft] = useState(String(qty));
+
+  // Adet dışarıdan değişirse (− / + veya başka yol) taslağı senkronla.
+  useEffect(() => {
+    setDraft(String(qty));
+  }, [qty]);
+
+  const handleChange = (e) => {
+    const val = e.target.value;
+    setDraft(val);
+    const n = parseInt(val, 10);
+    if (Number.isFinite(n) && n > 0) {
+      setQty(id, n);
+    }
+  };
+
+  const handleBlur = () => {
+    const n = parseInt(draft, 10);
+    if (!Number.isFinite(n) || n <= 0) {
+      setDraft(String(qty)); // geçersiz/boş → eski adede dön
+    }
+  };
+
+  return (
+    <div className="cdrw__qty">
+      <button type="button" onClick={() => setQty(id, qty - 1)} aria-label="Azalt">
+        −
+      </button>
+      <input
+        type="number"
+        min="1"
+        inputMode="numeric"
+        className="cdrw__qty-input mono"
+        value={draft}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        onFocus={(e) => e.target.select()}
+        aria-label="Adet"
+      />
+      <button type="button" onClick={() => setQty(id, qty + 1)} aria-label="Artır">
+        +
+      </button>
+    </div>
   );
 }

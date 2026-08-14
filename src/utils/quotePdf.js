@@ -42,6 +42,7 @@ export async function generateQuotePdf({
   seller ={},
   contact={},
   margin,
+  download = true,
 }) {
   const marginPct = Number(margin) || 0;
   const factor = 1 + marginPct / 100;
@@ -256,5 +257,13 @@ if (seller.eposta) {
     { maxWidth: pageW - 2 * M }
   );
 
-  doc.save(`teklif-${meta.fileDate}.pdf`);
+  const fileName = `teklif-${meta.fileDate}.pdf`;
+
+  // İndirme (PDF butonu) her zaman bunu ister; paylaşımda ise sadece Blob
+  // lazım olduğundan indirme atlanabilir.
+  if (download) {
+    doc.save(fileName);
+  }
+
+  return { blob: doc.output("blob"), fileName, meta };
 }
