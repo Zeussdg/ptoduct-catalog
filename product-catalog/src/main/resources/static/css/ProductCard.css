@@ -94,3 +94,29 @@
 .pcard__add:hover {
   background: var(--signal-700);
 }
+
+.pcard__thumb {
+  height: 140px;
+  background: var(--surface-100);
+  border: 1px solid var(--line-100);
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.pcard__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.pcard__thumb-ph {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--ink-300);
+  text-transform: uppercase;
+}

@@ -1,18 +1,36 @@
 package com.ikibm.catalog.dto;
 
 import com.ikibm.catalog.entity.Product;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
-/** Ürün ekle/düzenle form modeli. */
+/** Ürün ekle/düzenle form modeli (+ Bean Validation). */
 public class ProductForm {
+    @Size(max = 255)
     private String brand;
+
+    @NotBlank(message = "Ürün adı zorunludur")
+    @Size(max = 255)
     private String name;
+
+    @NotBlank(message = "Stok kodu zorunludur")
+    @Size(max = 191)
     private String stockCode;
+
     private Integer categoryId;
     private String description;
+
+    @NotNull(message = "Fiyat zorunludur")
+    @DecimalMin(value = "0.0", message = "Fiyat negatif olamaz")
     private BigDecimal price;
+
+    @DecimalMin(value = "0.0", message = "İndirimli fiyat negatif olamaz")
     private BigDecimal discountPrice;
+
     private String currency = "TRY";
     private Boolean isActive = true;
 

@@ -2,79 +2,77 @@ package com.ikibm.catalog.service;
 
 import com.ikibm.catalog.config.AppProperties;
 import com.ikibm.catalog.exception.ConflictException;
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.S3Configuration;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import java.net.URI;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 /**
- * S3 uyumlu görsel deposu (AWS SDK v2). Node s3Service anahtar şemasını yansıtır:
+ * Yerel disk tabanlı görsel deposu. Dosyalar yapılandırılabilir bir kök klasöre
+ * (varsayılan ./uploads) anahtar şemasıyla yazılır:
  *   products/{productId}/{uuid}-{ad}  ·  campaigns/{campaignId}/{uuid}-{ad}
- * S3 yapılandırılmamışsa (dev) yükleme açık bir hata ile reddedilir.
+ * URL'ler /uploads/{key} altından servis edilir (bkz. WebConfig resource handler).
  */
 @Service
 public class StorageService {
 
-    private final AppProperties.S3 props;
-    private volatile S3Client client;
+    private static final String PUBLIC_BASE = "/uploads";
+
+    private final Path root;
 
     public StorageService(AppProperties appProperties) {
-        this.props = appProperties.getS3();
+        this.root = Paths.get(appProperties.getUpload().getDir()).toAbsolutePath().normalize();
+    }
+
+    @PostConstruct
+    void init() {
+        try {
+            Files.createDirectories(root);
+        } catch (IOException e) {
+            throw new IllegalStateException("Yükleme klasörü oluşturulamadı: " + root, e);
+        }
     }
 
     public boolean isConfigured() {
-        return props.isConfigured();
-    }
-
-    private S3Client client() {
-        if (!props.isConfigured()) {
-            throw new ConflictException("S3 yapılandırılmamış — görsel yükleme devre dışı (S3_* ayarlarını verin).");
-        }
-        if (client == null) {
-            synchronized (this) {
-                if (client == null) {
-                    var b = S3Client.builder()
-                            .region(Region.of(props.getRegion() == null || props.getRegion().isBlank() ? "us-east-1" : props.getRegion()))
-                            .credentialsProvider(StaticCredentialsProvider.create(
-                                    AwsBasicCredentials.create(props.getAccessKeyId(), props.getSecretAccessKey())))
-                            .serviceConfiguration(S3Configuration.builder()
-                                    .pathStyleAccessEnabled(props.isForcePathStyle()).build());
-                    if (props.getEndpoint() != null && !props.getEndpoint().isBlank()) {
-                        b = b.endpointOverride(URI.create(props.getEndpoint()));
-                    }
-                    client = b.build();
-                }
-            }
-        }
-        return client;
+        return true;
     }
 
     public Uploaded uploadProductImage(Integer productId, byte[] bytes, String contentType, String originalName) {
-        return put("products/" + productId + "/" + UUID.randomUUID() + "-" + sanitize(originalName), bytes, contentType);
+        return put("products/" + productId, bytes, originalName);
     }
 
     public Uploaded uploadCampaignBanner(String campaignId, byte[] bytes, String contentType, String originalName) {
-        return put("campaigns/" + sanitize(campaignId) + "/" + UUID.randomUUID() + "-" + sanitize(originalName), bytes, contentType);
+        return put("campaigns/" + sanitize(campaignId), bytes, originalName);
     }
 
-    private Uploaded put(String key, byte[] bytes, String contentType) {
-        client().putObject(PutObjectRequest.builder()
-                .bucket(props.getBucket()).key(key).contentType(contentType).build(), RequestBody.fromBytes(bytes));
-        String base = props.getPublicUrlBase();
-        String url = (base != null && !base.isBlank()) ? base + "/" + key : key;
-        return new Uploaded(key, url);
+    private Uploaded put(String dirKey, byte[] bytes, String originalName) {
+        String key = dirKey + "/" + UUID.randomUUID() + "-" + sanitize(originalName);
+        Path target = root.resolve(key).normalize();
+        if (!target.startsWith(root)) {
+            throw new ConflictException("Geçersiz dosya yolu");
+        }
+        try {
+            Files.createDirectories(target.getParent());
+            Files.write(target, bytes);
+        } catch (IOException e) {
+            throw new ConflictException("Görsel kaydedilemedi: " + e.getMessage());
+        }
+        return new Uploaded(key, PUBLIC_BASE + "/" + key);
     }
 
     public void deleteObject(String key) {
-        client().deleteObject(DeleteObjectRequest.builder().bucket(props.getBucket()).key(key).build());
+        if (key == null || key.isBlank()) return;
+        Path target = root.resolve(key).normalize();
+        if (!target.startsWith(root)) return;
+        try {
+            Files.deleteIfExists(target);
+        } catch (IOException ignored) {
+            // Dosya silinemezse kırık link yerine sessiz geç (DB satırı ayrıca kaldırılır).
+        }
     }
 
     private String sanitize(String name) {

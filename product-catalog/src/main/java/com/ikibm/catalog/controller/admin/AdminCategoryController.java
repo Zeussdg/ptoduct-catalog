@@ -32,6 +32,14 @@ public class AdminCategoryController {
     public String create(@RequestParam String name, @RequestParam String slug,
                          @RequestParam(required = false) Integer parentId,
                          @AuthenticationPrincipal CatalogUserDetails me, RedirectAttributes ra) {
+        if (name == null || name.isBlank()) {
+            ra.addFlashAttribute("error", "Kategori adı zorunludur");
+            return "redirect:/admin/categories";
+        }
+        if (slug == null || !slug.matches("[a-z0-9-]+")) {
+            ra.addFlashAttribute("error", "Slug yalnızca küçük harf, rakam ve tire içerebilir (örn. ag-network)");
+            return "redirect:/admin/categories";
+        }
         try {
             Category c = categoryService.create(name, slug, parentId);
             auditLogService.record(me.getId(), "CATEGORY_CREATED", "Category", String.valueOf(c.getId()), null);

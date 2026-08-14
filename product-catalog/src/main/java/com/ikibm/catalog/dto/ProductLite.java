@@ -6,10 +6,12 @@ import java.math.BigDecimal;
 
 /** Teklif sihirbazı combobox'ı için hafif ürün gösterimi (JSON). */
 public record ProductLite(Integer id, String brand, String name, String stockCode,
-                          BigDecimal price, String currency) {
+                          BigDecimal price, String currency, String imageUrl) {
 
     public static ProductLite of(Product p) {
+        var img = p.getPrimaryImage();
         return new ProductLite(p.getId(), p.getBrand(), p.getName(), p.getStockCode(),
-                p.getPrice(), p.getCurrency() != null ? p.getCurrency().name() : "TRY");
+                p.getPrice(), p.getCurrency() != null ? p.getCurrency().name() : "TRY",
+                img != null ? img.getUrl() : null);
     }
 }

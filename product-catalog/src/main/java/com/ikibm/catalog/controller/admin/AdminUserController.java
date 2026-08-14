@@ -34,6 +34,14 @@ public class AdminUserController {
                          @RequestParam String password, @RequestParam String role,
                          @RequestParam(required = false) String name, @RequestParam(required = false) String surname,
                          @AuthenticationPrincipal CatalogUserDetails me, RedirectAttributes ra) {
+        if (email == null || !email.matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")) {
+            ra.addFlashAttribute("error", "Geçerli bir e-posta adresi girin");
+            return "redirect:/admin/users";
+        }
+        if (password == null || password.length() < 8) {
+            ra.addFlashAttribute("error", "Şifre en az 8 karakter olmalı");
+            return "redirect:/admin/users";
+        }
         try {
             User u = userService.createUser(email, username, password, role, name, surname);
             auditLogService.record(me.getId(), "USER_CREATED", "User", String.valueOf(u.getId()), null);

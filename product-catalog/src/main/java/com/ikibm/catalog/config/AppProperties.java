@@ -6,12 +6,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class AppProperties {
 
     private Seed seed = new Seed();
-    private S3 s3 = new S3();
+    private Upload upload = new Upload();
 
     public Seed getSeed() { return seed; }
     public void setSeed(Seed seed) { this.seed = seed; }
-    public S3 getS3() { return s3; }
-    public void setS3(S3 s3) { this.s3 = s3; }
+    public Upload getUpload() { return upload; }
+    public void setUpload(Upload upload) { this.upload = upload; }
 
     public static class Seed {
         private String superAdminEmail = "superadmin@2mbilisim.local";
@@ -22,32 +22,10 @@ public class AppProperties {
         public void setSuperAdminPassword(String v) { this.superAdminPassword = v; }
     }
 
-    public static class S3 {
-        private String endpoint = "";
-        private String region = "auto";
-        private String bucket = "";
-        private String accessKeyId = "";
-        private String secretAccessKey = "";
-        private String publicUrlBase = "";
-        private boolean forcePathStyle = true;
-        public String getEndpoint() { return endpoint; }
-        public void setEndpoint(String v) { this.endpoint = v; }
-        public String getRegion() { return region; }
-        public void setRegion(String v) { this.region = v; }
-        public String getBucket() { return bucket; }
-        public void setBucket(String v) { this.bucket = v; }
-        public String getAccessKeyId() { return accessKeyId; }
-        public void setAccessKeyId(String v) { this.accessKeyId = v; }
-        public String getSecretAccessKey() { return secretAccessKey; }
-        public void setSecretAccessKey(String v) { this.secretAccessKey = v; }
-        public String getPublicUrlBase() { return publicUrlBase; }
-        public void setPublicUrlBase(String v) { this.publicUrlBase = v; }
-        public boolean isForcePathStyle() { return forcePathStyle; }
-        public void setForcePathStyle(boolean v) { this.forcePathStyle = v; }
-        public boolean isConfigured() {
-            return bucket != null && !bucket.isBlank()
-                    && accessKeyId != null && !accessKeyId.isBlank()
-                    && secretAccessKey != null && !secretAccessKey.isBlank();
-        }
+    /** Yerel disk görsel deposu kök klasörü. */
+    public static class Upload {
+        private String dir = "uploads";
+        public String getDir() { return dir; }
+        public void setDir(String dir) { this.dir = dir; }
     }
 }

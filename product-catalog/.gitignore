@@ -1,4 +1,5 @@
 target/
+uploads/
 *.class
 *.log
 .env

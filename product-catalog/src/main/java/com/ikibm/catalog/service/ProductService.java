@@ -41,9 +41,13 @@ public class ProductService {
     // ---- vitrin (okuma) ----
 
     public Page<Product> catalog(String q, String marka, String kategori, String altkategori, String sirala, int page) {
-        Specification<Product> spec = Specification.where(ProductSpecifications.activeOnly())
-                .and(ProductSpecifications.search(q))
-                .and(ProductSpecifications.brand(marka));
+        Specification<Product> spec = Specification.where(ProductSpecifications.activeOnly());
+        // Spring Data JPA 4.x'te Specification.and(null) artık IllegalArgumentException fırlatıyor,
+        // bu yüzden boş filtreler için and() sadece Specification null değilse çağrılıyor.
+        Specification<Product> searchSpec = ProductSpecifications.search(q);
+        if (searchSpec != null) spec = spec.and(searchSpec);
+        Specification<Product> brandSpec = ProductSpecifications.brand(marka);
+        if (brandSpec != null) spec = spec.and(brandSpec);
         if (altkategori != null && !altkategori.isBlank()) {
             spec = spec.and(ProductSpecifications.subCategory(altkategori));
         } else if (kategori != null && !kategori.isBlank()) {
@@ -79,8 +83,13 @@ public class ProductService {
 
     // ---- admin ----
 
-    public Page<Product> adminList(int page) {
-        return productRepository.findAll(PageRequest.of(Math.max(0, page - 1), PAGE_SIZE, Sort.by("id").ascending()));
+    /** Admin ürün listesi: tüm ürünler (aktif + pasif), opsiyonel arama (ad/stok kodu/marka). */
+    public List<Product> adminList(String q) {
+        Specification<Product> spec = ProductSpecifications.search(q);
+        // Spring Data JPA 4.x'te findAll(Specification, Sort) de null Specification kabul etmiyor.
+        return spec != null
+                ? productRepository.findAll(spec, Sort.by("id").ascending())
+                : productRepository.findAll(Sort.by("id").ascending());
     }
 
     public long totalCount() { return productRepository.count(); }

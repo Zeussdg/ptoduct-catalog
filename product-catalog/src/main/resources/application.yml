@@ -37,14 +37,8 @@ app:
   seed:
     super-admin-email: ${APP_SEED_SUPER_ADMIN_EMAIL:superadmin@2mbilisim.local}
     super-admin-password: ${APP_SEED_SUPER_ADMIN_PASSWORD:ChangeMe123!}
-  s3:
-    endpoint: ${S3_ENDPOINT:}
-    region: ${S3_REGION:auto}
-    bucket: ${S3_BUCKET:}
-    access-key-id: ${S3_ACCESS_KEY_ID:}
-    secret-access-key: ${S3_SECRET_ACCESS_KEY:}
-    public-url-base: ${S3_PUBLIC_URL_BASE:}
-    force-path-style: ${S3_FORCE_PATH_STYLE:true}
+  upload:
+    dir: ${APP_UPLOAD_DIR:uploads}
 
 logging:
   level:

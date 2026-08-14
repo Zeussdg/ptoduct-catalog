@@ -10,6 +10,7 @@
     <p class="loginpg__subtitle">Hesabınıza erişmek için giriş yapın</p>
 
     <div class="loginpg__error" th:if="${param.error}">E-posta/kullanıcı adı veya şifre hatalı</div>
+    <div class="loginpg__error" th:if="${param.blocked}">Çok fazla başarısız deneme. Lütfen 15 dakika sonra tekrar deneyin.</div>
     <div class="loginpg__error" th:if="${param.logout}" style="background:var(--signal-50);color:var(--signal-700)">Çıkış yapıldı</div>
 
     <label class="loginpg__field">

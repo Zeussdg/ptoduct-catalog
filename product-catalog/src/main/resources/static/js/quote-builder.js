@@ -142,7 +142,14 @@
     t.setAttribute("aria-expanded", "false");
     row.querySelector(".js-combo-panel").setAttribute("hidden", "");
     row.querySelector(".js-combo").classList.remove("pcombo--open");
-    row.querySelector(".js-thumb").textContent = initials(p.brand);
+    var thumb = row.querySelector(".js-thumb");
+    if (p.imageUrl) {
+      thumb.classList.remove("pthumb--ph");
+      thumb.innerHTML = '<img src="' + p.imageUrl + '" alt=""/>';
+    } else {
+      thumb.classList.add("pthumb--ph");
+      thumb.textContent = initials(p.brand);
+    }
     var qtyBox = row.querySelector(".js-qty");
     qtyBox.classList.remove("qqty--disabled");
     qtyBox.querySelector("input").disabled = false;

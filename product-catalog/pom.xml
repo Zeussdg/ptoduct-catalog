@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.3.5</version>
+    <version>4.1.0</version>
     <relativePath/>
   </parent>
 
@@ -21,22 +21,9 @@
   <properties>
     <java.version>25</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <awssdk.version>2.28.29</awssdk.version>
     <openpdf.version>2.0.3</openpdf.version>
     <poi.version>5.3.0</poi.version>
   </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>software.amazon.awssdk</groupId>
-        <artifactId>bom</artifactId>
-        <version>${awssdk.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -85,11 +72,6 @@
     </dependency>
 
     <dependency>
-      <groupId>software.amazon.awssdk</groupId>
-      <artifactId>s3</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.poi</groupId>
       <artifactId>poi-ooxml</artifactId>
       <version>${poi.version}</version>
@@ -99,6 +81,12 @@
       <groupId>com.github.librepdf</groupId>
       <artifactId>openpdf</artifactId>
       <version>${openpdf.version}</version>
+    </dependency>
+
+    <!-- GEÇİCİ: QuotePdfController Jackson 2 ObjectMapper kullanıyor; Boot 4 varsayılanı Jackson 3. Native geçiş ayrı bir iş. -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-jackson2</artifactId>
     </dependency>
 
     <dependency>

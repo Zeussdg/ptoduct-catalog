@@ -59,6 +59,15 @@
   letter-spacing: 0.06em;
 }
 
+.pdetail__image-img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  background: var(--surface-100);
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-md);
+}
+
 .pdetail__brand {
   font-size: 11.5px;
   font-weight: 700;
@@ -222,7 +231,8 @@
   .pdetail__layout {
     grid-template-columns: 1fr;
   }
-  .pdetail__image-placeholder {
+  .pdetail__image-placeholder,
+  .pdetail__image-img {
     max-width: 260px;
     margin: 0 auto;
   }

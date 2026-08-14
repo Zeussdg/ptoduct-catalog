@@ -1,5 +1,6 @@
 package com.ikibm.catalog.config;
 
+import com.ikibm.catalog.security.LoginFailureHandler;
 import com.ikibm.catalog.security.LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,9 +14,11 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final LoginSuccessHandler loginSuccessHandler;
+    private final LoginFailureHandler loginFailureHandler;
 
-    public SecurityConfig(LoginSuccessHandler loginSuccessHandler) {
+    public SecurityConfig(LoginSuccessHandler loginSuccessHandler, LoginFailureHandler loginFailureHandler) {
         this.loginSuccessHandler = loginSuccessHandler;
+        this.loginFailureHandler = loginFailureHandler;
     }
 
     @Bean
@@ -31,7 +34,7 @@ public class SecurityConfig {
                 .requestMatchers(
                         "/", "/urun/**", "/is-ortaklarimiz", "/teklif-sihirbazi", "/quote/pdf",
                         "/login", "/error", "/api/catalog/**",
-                        "/css/**", "/js/**", "/images/**", "/logo/**", "/fonts/**",
+                        "/css/**", "/js/**", "/images/**", "/logo/**", "/fonts/**", "/uploads/**",
                         "/favicon.svg", "/icons.svg", "/favicon.ico"
                 ).permitAll()
                 .requestMatchers("/admin/users/**", "/admin/audit-logs/**").hasRole("SUPER_ADMIN")
@@ -45,7 +48,7 @@ public class SecurityConfig {
                 .usernameParameter("identifier")
                 .passwordParameter("password")
                 .successHandler(loginSuccessHandler)
-                .failureUrl("/login?error")
+                .failureHandler(loginFailureHandler)
                 .permitAll()
             )
             .logout(logout -> logout

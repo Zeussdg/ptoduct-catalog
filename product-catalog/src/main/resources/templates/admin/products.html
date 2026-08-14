@@ -10,10 +10,21 @@
       <div class="adp__toolbar">
         <div>
           <h1 class="adp__title">Ürünler</h1>
-          <p class="adp__subtitle">Ürün kataloğunu yönetin</p>
+          <p class="adp__subtitle">Ürün kataloğunu yönetin — düzenle ve görsel ekle</p>
         </div>
         <a class="adp__btn" th:href="@{/admin/products/new}">+ Yeni Ürün</a>
       </div>
+
+      <form method="get" th:action="@{/admin/products}"
+            style="margin:0 0 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input class="adp__select-inline" style="min-width:280px" type="text" name="q" th:value="${q}"
+               placeholder="Ürün adı, stok kodu veya marka ara..."/>
+        <button class="adp__btn adp__btn--sm" type="submit">Ara</button>
+        <a th:if="${q != null and q != ''}" class="adp__btn adp__btn--sm adp__btn--ghost"
+           th:href="@{/admin/products}">Temizle</a>
+        <span class="adp__subtitle" style="margin-left:auto"
+              th:text="'Toplam ' + ${#lists.size(products)} + ' ürün'">Toplam 0 ürün</span>
+      </form>
 
       <p th:if="${error}" th:text="${error}" style="color:var(--danger-600)">Hata</p>
       <p th:if="${message}" th:text="${message}" style="color:var(--signal-600)">Tamam</p>

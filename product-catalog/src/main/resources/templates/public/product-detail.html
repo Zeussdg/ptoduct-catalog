@@ -18,7 +18,9 @@
 
     <div class="pdetail__layout">
       <div class="pdetail__image">
-        <div class="pdetail__image-placeholder">
+        <img th:if="${product.primaryImage != null}" class="pdetail__image-img"
+             th:src="${product.primaryImage.url}" th:alt="${product.name}"/>
+        <div th:unless="${product.primaryImage != null}" class="pdetail__image-placeholder">
           <span th:text="${product.brand}">Marka</span>
         </div>
       </div>

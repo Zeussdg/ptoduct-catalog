@@ -3,6 +3,10 @@
 <body>
 <article class="pcard" th:fragment="card(product)">
   <a th:href="@{'/urun/' + ${product.id}}" class="pcard__link">
+    <div class="pcard__thumb">
+      <img th:if="${product.primaryImage != null}" th:src="${product.primaryImage.url}" alt="" loading="lazy"/>
+      <span th:unless="${product.primaryImage != null}" class="pcard__thumb-ph" th:text="${product.brand}">Marka</span>
+    </div>
     <div class="pcard__top">
       <span class="pcard__brand" th:text="${product.brand}">Marka</span>
       <span class="pcard__code mono" th:text="${product.stockCode}">KOD</span>

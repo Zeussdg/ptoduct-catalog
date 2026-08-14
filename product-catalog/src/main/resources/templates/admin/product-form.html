@@ -10,40 +10,43 @@
       <h1 class="adp__title" th:text="${isEdit} ? 'Ürünü Düzenle' : 'Yeni Ürün'">Yeni Ürün</h1>
       <p th:if="${error}" th:text="${error}" style="color:var(--danger-600)">Hata</p>
 
-      <form class="adp__card" method="post"
+      <form class="adp__card" method="post" th:object="${form}"
             th:action="${isEdit} ? @{'/admin/products/' + ${product.id}} : @{/admin/products}">
         <div class="adp__form-grid">
           <label class="adp__field"><span>Ürün Adı</span>
-            <input name="name" th:value="${form.name}" required/></label>
+            <input type="text" th:field="*{name}"/>
+            <small th:if="${#fields.hasErrors('name')}" th:errors="*{name}" style="color:var(--danger-600);font-size:11px">Hata</small></label>
           <label class="adp__field"><span>Ürün Kodu</span>
-            <input name="stockCode" th:value="${form.stockCode}" required/></label>
+            <input type="text" th:field="*{stockCode}"/>
+            <small th:if="${#fields.hasErrors('stockCode')}" th:errors="*{stockCode}" style="color:var(--danger-600);font-size:11px">Hata</small></label>
           <label class="adp__field"><span>Marka</span>
-            <input name="brand" th:value="${form.brand}"/></label>
+            <input type="text" th:field="*{brand}"/></label>
           <label class="adp__field"><span>Kategori</span>
-            <select name="categoryId">
+            <select th:field="*{categoryId}">
               <option value="">Kategorisiz</option>
               <option th:each="c : ${categories}" th:value="${c.id}"
-                      th:text="${#strings.repeat('— ', c.depth) + c.name}"
-                      th:selected="${form.categoryId != null and form.categoryId == c.id}">Kategori</option>
+                      th:text="${#strings.repeat('— ', c.depth) + c.name}">Kategori</option>
             </select></label>
           <label class="adp__field"><span>Fiyat</span>
-            <input type="number" step="0.01" name="price" th:value="${form.price}" required/></label>
+            <input type="number" step="0.01" th:field="*{price}"/>
+            <small th:if="${#fields.hasErrors('price')}" th:errors="*{price}" style="color:var(--danger-600);font-size:11px">Hata</small></label>
           <label class="adp__field"><span>İndirimli Fiyat</span>
-            <input type="number" step="0.01" name="discountPrice" th:value="${form.discountPrice}"/></label>
+            <input type="number" step="0.01" th:field="*{discountPrice}"/>
+            <small th:if="${#fields.hasErrors('discountPrice')}" th:errors="*{discountPrice}" style="color:var(--danger-600);font-size:11px">Hata</small></label>
           <label class="adp__field"><span>Para Birimi</span>
-            <select name="currency">
-              <option value="TRY" th:selected="${form.currency == 'TRY'}">TRY</option>
-              <option value="USD" th:selected="${form.currency == 'USD'}">USD</option>
-              <option value="EUR" th:selected="${form.currency == 'EUR'}">EUR</option>
+            <select th:field="*{currency}">
+              <option value="TRY">TRY</option>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
             </select></label>
           <label class="adp__field"><span>Durum</span>
-            <select name="isActive">
-              <option value="true" th:selected="${form.isActive}">Aktif</option>
-              <option value="false" th:selected="${!form.isActive}">Pasif</option>
+            <select th:field="*{isActive}">
+              <option value="true">Aktif</option>
+              <option value="false">Pasif</option>
             </select></label>
         </div>
         <label class="adp__field"><span>Açıklama</span>
-          <textarea rows="4" name="description" th:text="${form.description}"></textarea></label>
+          <textarea rows="4" th:field="*{description}"></textarea></label>
         <button class="adp__btn" type="submit">Kaydet</button>
       </form>
 
