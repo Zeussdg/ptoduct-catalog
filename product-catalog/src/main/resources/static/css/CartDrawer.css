@@ -60,7 +60,13 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  padding: 16px 18px 20px;
+  padding: 0 18px 14px;
+  scrollbar-width: none; /* Firefox: kaydırma işlevi kalır, çubuk gizlenir */
+  -ms-overflow-style: none; /* Legacy Edge/IE */
+}
+
+.cdrw__quote::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Chromium tabanlı Edge */
 }
 
 .cdrw__head {
@@ -84,6 +90,15 @@
   line-height: 1;
   color: var(--ink-500);
   padding: 2px 6px;
+}
+
+/* Sepet/teklif içeriği: kalan yüksekliği doldurup kendi içinde taşmayı yönetir */
+#cartContent {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .cdrw__empty {
@@ -231,26 +246,16 @@
 }
 
 /* ---- Teklif paneli (sol) ---- */
-.cdrw__back {
-  align-self: flex-start;
-  background: none;
-  border: none;
-  color: var(--signal-700);
-  font-size: 13px;
-  font-weight: 600;
-  padding: 0 0 12px;
-}
-
 .cdrw__form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .cdrw__field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .cdrw__field > span {
@@ -275,7 +280,7 @@
 }
 
 .cdrw__margin {
-  margin-top: 14px;
+  margin-top: 8px;
 }
 
 .cdrw__margin input {
@@ -285,9 +290,9 @@
 
 /* ---- Marj öncesi/sonrası özet ---- */
 .cdrw__summary {
-  margin-top: 16px;
+  margin-top: 8px;
   border-top: 1px solid var(--line-200);
-  padding-top: 12px;
+  padding-top: 6px;
 }
 
 .cdrw__summary-empty {
@@ -297,7 +302,7 @@
 }
 
 .cdrw__summary-group {
-  padding: 6px 0;
+  padding: 4px 0;
 }
 
 .cdrw__summary-group + .cdrw__summary-group {
@@ -360,7 +365,7 @@
   }
   .cdrw__body {
     flex-direction: column;
-    overflow-y: auto;
+    overflow: visible;
   }
   .cdrw__quote {
     width: auto;
@@ -376,7 +381,7 @@
     overflow: visible;
   }
   .cdrw__pdf {
-    margin-top: 16px;
+    margin-top: 10px;
   }
 }
 

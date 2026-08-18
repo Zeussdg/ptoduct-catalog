@@ -3,6 +3,10 @@ package com.ikibm.catalog.controller.admin;
 import com.ikibm.catalog.security.CatalogUserDetails;
 import com.ikibm.catalog.service.AuditLogService;
 import com.ikibm.catalog.service.ExcelImportService;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +31,14 @@ public class AdminImportController {
     @GetMapping
     public String form() {
         return "admin/import";
+    }
+
+    @GetMapping("/template")
+    public ResponseEntity<byte[]> template() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.setContentDisposition(ContentDisposition.attachment().filename("urun-import-sablonu.xlsx").build());
+        return ResponseEntity.ok().headers(headers).body(excelImportService.buildTemplate());
     }
 
     @PostMapping

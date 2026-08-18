@@ -1,5 +1,6 @@
 package com.ikibm.catalog.service;
 
+import com.ikibm.catalog.dto.QuotePdfRequest;
 import com.ikibm.catalog.entity.*;
 import com.ikibm.catalog.exception.ConflictException;
 import com.ikibm.catalog.exception.NotFoundException;
@@ -55,6 +56,35 @@ public class QuoteService {
         Quote saved = quoteRepository.save(quote);
         cartItemRepository.deleteAll(cart.getItems());
         return saved;
+    }
+
+    /** Sepet drawer'ının anonim "Teklifi PDF'e geçir" gönderiminden teklif kaydı oluşturur (snapshot'lı). */
+    @Transactional
+    public Quote createFromPdfRequest(QuotePdfRequest req, User authenticatedUserOrNull) {
+        if (req.items() == null || req.items().isEmpty()) return null;
+
+        Quote quote = new Quote();
+        quote.setUser(authenticatedUserOrNull);
+        quote.setStatus(QuoteStatus.PENDING);
+        if (authenticatedUserOrNull == null && req.contact() != null) {
+            quote.setGuestCompany(req.contact().firma());
+            quote.setGuestContact(req.contact().yetkili());
+        }
+
+        for (QuotePdfRequest.Item it : req.items()) {
+            QuoteItem qi = new QuoteItem();
+            qi.setQuote(quote);
+            qi.setProductName(it.name());
+            qi.setProductCode(it.code());
+            qi.setQty(it.qty());
+            BigDecimal unit = it.price() != null ? it.price() : BigDecimal.ZERO;
+            qi.setUnitPrice(unit);
+            qi.setTotalPrice(unit.multiply(BigDecimal.valueOf(it.qty())));
+            qi.setCurrency(Currency.valueOf(it.currency()));
+            quote.getItems().add(qi);
+        }
+
+        return quoteRepository.save(quote);
     }
 
     public List<Quote> listForUser(Integer userId) {

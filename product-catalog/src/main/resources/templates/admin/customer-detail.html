@@ -31,6 +31,92 @@
           </tbody>
         </table>
       </div>
+
+      <div class="adp__card">
+        <h2 style="font-size:14px;margin:0 0 12px">Toplu Özel Fiyat İçe Aktar (Excel)</h2>
+        <p style="margin:0 0 10px;color:var(--ink-500);font-size:12.5px">
+          Sütunlar: <strong>Stok Kodu</strong> (zorunlu), <strong>Fiyat</strong> (zorunlu),
+          Para Birimi (opsiyonel, boşsa ürünün kendi para birimi kullanılır),
+          Geçerlilik Başlangıç/Bitiş (opsiyonel, YYYY-AA-GG). Sütun sırası önemli değil, başlıklar otomatik tanınır.
+          Aynı ürün için tekrar yüklenirse fiyat güncellenir.
+        </p>
+        <p th:if="${error}" th:text="${error}" style="color:var(--danger-600)">Hata</p>
+        <div th:if="${priceImportReport != null}" style="margin-bottom:10px">
+          <p th:text="${priceImportReport.message}"
+             th:style="'color:' + (${priceImportReport.ok} ? 'var(--signal-600)' : 'var(--danger-600)')">Özet</p>
+          <table th:if="${priceImportReport.ok}" class="adp__table" style="max-width:420px">
+            <tbody>
+              <tr><td>Okunan satır</td><td th:text="${priceImportReport.rowsRead}">0</td></tr>
+              <tr><td>Eklenen</td><td th:text="${priceImportReport.created}">0</td></tr>
+              <tr><td>Güncellenen</td><td th:text="${priceImportReport.updated}">0</td></tr>
+              <tr><td>Bulunamayan ürün kodu</td><td th:text="${priceImportReport.notFound}">0</td></tr>
+              <tr><td>Geçersiz fiyat</td><td th:text="${priceImportReport.invalidPrice}">0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin:0 0 12px">
+          <a th:href="@{/admin/customers/price-import-template}" class="adp__btn adp__btn--sm adp__btn--ghost">Örnek Şablon İndir</a>
+        </p>
+        <form method="post" enctype="multipart/form-data" th:action="@{'/admin/customers/' + ${customer.id} + '/prices/import'}">
+          <label class="adp__field">
+            <span>Excel Dosyası (.xlsx)</span>
+            <input type="file" name="file" accept=".xlsx,.xls" required/>
+          </label>
+          <button class="adp__btn adp__btn--sm" type="submit">İçe Aktar</button>
+        </form>
+      </div>
+
+      <div class="adp__card">
+        <h2 style="font-size:14px;margin:0 0 12px">Özel Fiyatlar</h2>
+        <div th:if="${#lists.isEmpty(customerPrices)}" class="adp__empty">Bu müşteri için özel fiyat tanımlanmamış.</div>
+        <table th:unless="${#lists.isEmpty(customerPrices)}" class="adp__table" style="margin-bottom:16px">
+          <thead><tr><th>Ürün</th><th>Fiyat</th><th>Geçerlilik</th><th></th></tr></thead>
+          <tbody>
+            <tr th:each="cp : ${customerPrices}">
+              <td th:text="${cp.product.name}">Ürün</td>
+              <td th:text="${@priceFormatter.format(cp.price, cp.currency)}">₺0,00</td>
+              <td>
+                <span th:if="${cp.validFrom == null and cp.validTo == null}">Süresiz</span>
+                <span th:unless="${cp.validFrom == null and cp.validTo == null}"
+                      th:text="${(cp.validFrom != null ? @fmt.date(cp.validFrom) : '…') + ' – ' + (cp.validTo != null ? @fmt.date(cp.validTo) : '…')}">-</span>
+              </td>
+              <td>
+                <form method="post" th:action="@{'/admin/customers/' + ${customer.id} + '/prices/' + ${cp.id} + '/delete'}"
+                      th:attr="data-confirm='&quot;' + ${cp.product.name} + '&quot; için özel fiyatı silmek istediğinize emin misiniz?'">
+                  <button type="submit" class="adp__btn adp__btn--sm adp__btn--ghost">Sil</button>
+                </form>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <form method="get" th:action="@{'/admin/customers/' + ${customer.id}}">
+          <label class="adp__field"><span>Ürün ara</span>
+            <input type="text" name="q" th:value="${q}" placeholder="Ürün adı, stok kodu veya marka"/></label>
+          <button type="submit" class="adp__btn adp__btn--sm">Ara</button>
+        </form>
+
+        <form th:if="${!#lists.isEmpty(productResults)}" method="post"
+              th:action="@{'/admin/customers/' + ${customer.id} + '/prices'}" style="margin-top:12px">
+          <label class="adp__field"><span>Ürün</span>
+            <select name="productId" required>
+              <option th:each="p : ${productResults}" th:value="${p.id}"
+                      th:text="${p.name} + ' (' + ${p.stockCode} + ') — standart: ' + ${@priceFormatter.format(p.effectivePrice, p.currency)}">Ürün</option>
+            </select></label>
+          <label class="adp__field"><span>Özel Fiyat</span>
+            <input type="number" step="0.01" min="0" name="price" required/></label>
+          <label class="adp__field"><span>Para Birimi</span>
+            <select name="currency">
+              <option th:each="c : ${T(com.ikibm.catalog.entity.Currency).values()}" th:value="${c}" th:text="${c}">TRY</option>
+            </select></label>
+          <label class="adp__field"><span>Geçerlilik Başlangıç (opsiyonel)</span>
+            <input type="date" name="validFrom"/></label>
+          <label class="adp__field"><span>Geçerlilik Bitiş (opsiyonel)</span>
+            <input type="date" name="validTo"/></label>
+          <button type="submit" class="adp__btn adp__btn--sm">Özel Fiyat Ekle</button>
+        </form>
+        <p th:if="${q != null and !q.isBlank() and #lists.isEmpty(productResults)}" class="adp__empty">Aramanızla eşleşen ürün bulunamadı.</p>
+      </div>
     </main>
   </div>
 </div>

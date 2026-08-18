@@ -16,9 +16,15 @@ public class Quote {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private User user;
+
+    @Column(name = "guest_company")
+    private String guestCompany;
+
+    @Column(name = "guest_contact")
+    private String guestContact;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -46,6 +52,10 @@ public class Quote {
     public void setId(Integer id) { this.id = id; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+    public String getGuestCompany() { return guestCompany; }
+    public void setGuestCompany(String guestCompany) { this.guestCompany = guestCompany; }
+    public String getGuestContact() { return guestContact; }
+    public void setGuestContact(String guestContact) { this.guestContact = guestContact; }
     public QuoteStatus getStatus() { return status; }
     public void setStatus(QuoteStatus status) { this.status = status; }
     public String getNote() { return note; }

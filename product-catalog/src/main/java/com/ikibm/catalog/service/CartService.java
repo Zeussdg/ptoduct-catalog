@@ -1,5 +1,6 @@
 package com.ikibm.catalog.service;
 
+import com.ikibm.catalog.dto.ResolvedPrice;
 import com.ikibm.catalog.entity.*;
 import com.ikibm.catalog.exception.NotFoundException;
 import com.ikibm.catalog.repository.CartItemRepository;
@@ -16,13 +17,16 @@ public class CartService {
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final ProductService productService;
 
     public CartService(CartRepository cartRepository, CartItemRepository cartItemRepository,
-                       ProductRepository productRepository, UserRepository userRepository) {
+                       ProductRepository productRepository, UserRepository userRepository,
+                       ProductService productService) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.productService = productService;
     }
 
     @Transactional
@@ -41,15 +45,15 @@ public class CartService {
                 .filter(p -> Boolean.TRUE.equals(p.getIsActive()))
                 .orElseThrow(() -> new NotFoundException("Ürün bulunamadı"));
 
-        java.math.BigDecimal effective = product.getEffectivePrice();
+        ResolvedPrice resolved = productService.resolvePrice(product, userId);
         CartItem item = cartItemRepository.findByCart_IdAndProduct_Id(cart.getId(), productId).orElse(null);
         if (item == null) {
             item = new CartItem();
             item.setCart(cart);
             item.setProduct(product);
             item.setQty(Math.max(1, qty));
-            item.setUnitPrice(effective);
-            item.setCurrency(product.getCurrency());
+            item.setUnitPrice(resolved.price());
+            item.setCurrency(resolved.currency());
         } else {
             item.setQty(item.getQty() + Math.max(1, qty));
         }

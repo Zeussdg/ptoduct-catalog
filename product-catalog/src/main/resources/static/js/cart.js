@@ -142,7 +142,6 @@
     var quotePanel = "";
     if (quoteMode) {
       quotePanel = '<div class="cdrw__quote">'
-        + '<button type="button" class="cdrw__back" data-act="back">← Sepete dön</button>'
         + '<div class="cdrw__form">'
         + '<div class="cdrw__form-section"><h3>Teklifi Veren</h3>'
         + field("Firma", "s_firma", seller.firma, "Firma adı")
@@ -263,7 +262,6 @@
       else if (act === "rm") removeItem(id);
       else if (act === "clear") clearCart();
       else if (act === "toquote") { quoteMode = true; render(); }
-      else if (act === "back") { quoteMode = false; render(); }
       else if (act === "pdf") submitPdf();
     });
 

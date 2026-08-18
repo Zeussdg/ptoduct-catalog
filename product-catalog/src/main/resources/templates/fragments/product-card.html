@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="tr">
 <body>
-<article class="pcard" th:fragment="card(product)">
+<article class="pcard" th:fragment="card(product, price)">
   <a th:href="@{'/urun/' + ${product.id}}" class="pcard__link">
     <div class="pcard__thumb">
       <img th:if="${product.primaryImage != null}" th:src="${product.primaryImage.url}" alt="" loading="lazy"/>
@@ -16,9 +16,10 @@
   </a>
 
   <div class="pcard__bottom">
-    <span class="pcard__price" th:text="${@priceFormatter.format(product.price, product.currency)}">₺0,00</span>
+    <span th:if="${price.customerSpecific}" class="pcard__brand" style="color:var(--signal-700)">Özel Fiyat</span>
+    <span class="pcard__price" th:text="${@priceFormatter.format(price.price, price.currency)}">₺0,00</span>
     <button type="button" class="pcard__add js-add-to-cart"
-            th:attr="data-id=${product.id},data-name=${product.name},data-brand=${product.brand},data-code=${product.stockCode},data-price=${product.price},data-currency=${product.currency.name()}"
+            th:attr="data-id=${product.id},data-name=${product.name},data-brand=${product.brand},data-code=${product.stockCode},data-price=${price.price},data-currency=${price.currency.name()}"
             th:aria-label="${product.name} + ' sepete ekle'">
       + Sepete Ekle
     </button>

@@ -11,11 +11,20 @@
 
       <div class="adp__card">
         <h2 style="font-size:14px;margin:0 0 8px">Müşteri Bilgileri</h2>
-        <p style="margin:0" th:text="${quote.user.companyName}">Firma</p>
-        <p style="margin:0;color:var(--ink-500)">
-          <span th:text="${quote.user.name}">Ad</span> <span th:text="${quote.user.surname}">Soyad</span>
-          · <span th:text="${quote.user.email}">e-posta</span> · <span th:text="${quote.user.phone}">telefon</span>
-        </p>
+        <div th:if="${quote.user != null}">
+          <p style="margin:0" th:text="${quote.user.companyName}">Firma</p>
+          <p style="margin:0;color:var(--ink-500)">
+            <span th:text="${quote.user.name}">Ad</span> <span th:text="${quote.user.surname}">Soyad</span>
+            · <span th:text="${quote.user.email}">e-posta</span> · <span th:text="${quote.user.phone}">telefon</span>
+          </p>
+        </div>
+        <div th:if="${quote.user == null}">
+          <p style="margin:0" th:text="${quote.guestCompany != null ? quote.guestCompany : 'Misafir'}">Firma</p>
+          <p style="margin:0;color:var(--ink-500)">
+            <span th:text="${quote.guestContact}">Yetkili</span>
+            <span style="font-style:italic">(girişsiz "Teklifi PDF'e geçir" akışından — kayıtlı hesap yok)</span>
+          </p>
+        </div>
       </div>
 
       <div class="adp__card">

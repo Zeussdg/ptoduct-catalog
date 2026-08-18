@@ -2,10 +2,12 @@ package com.ikibm.catalog.controller;
 
 import com.ikibm.catalog.config.PresentationData;
 import com.ikibm.catalog.entity.Product;
+import com.ikibm.catalog.security.CatalogUserDetails;
 import com.ikibm.catalog.service.CampaignBannerService;
 import com.ikibm.catalog.service.CategoryService;
 import com.ikibm.catalog.service.ProductService;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,6 +40,7 @@ public class CatalogController {
             @RequestParam(required = false) String altkategori,
             @RequestParam(required = false) String sirala,
             @RequestParam(required = false, defaultValue = "1") int sayfa,
+            @AuthenticationPrincipal(errorOnInvalidType = false) CatalogUserDetails principal,
             Model model) {
 
         Page<Product> page = productService.catalog(q, marka, kategori, altkategori, sirala, sayfa);
@@ -51,6 +54,8 @@ public class CatalogController {
         boolean showHero = noFilters && currentPage == 1;
 
         model.addAttribute("products", page.getContent());
+        model.addAttribute("prices", productService.resolvePrices(page.getContent(),
+                principal != null ? principal.getId() : null));
         model.addAttribute("currentPage", currentPage);
         model.addAttribute("totalPages", Math.max(1, page.getTotalPages()));
         model.addAttribute("totalElements", total);

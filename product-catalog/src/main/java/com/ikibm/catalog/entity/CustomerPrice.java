@@ -5,7 +5,13 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-
+/**
+ * Alan	             |                        Anlamı
+user + product	     | Hangi müşteriye, hangi ürüne özel fiyat (ikili unique — aynı müşteri/ürün için tek kayıt)
+price + currency	 | Özel fiyat ve para birimi
+priceList	         | İsteğe bağlı — bu özel fiyatın hangi toplu fiyat listesinden geldiği
+validFrom / validTo	 | Fiyatın geçerlilik aralığı (kampanya/anlaşma süresi gibi)
+ */
 @Entity
 @Table(name = "customer_prices", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "product_id"}))
 public class CustomerPrice {

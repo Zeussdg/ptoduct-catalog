@@ -63,7 +63,7 @@
 
       <div th:unless="${#lists.isEmpty(products)}" class="pgrid">
         <th:block th:each="product : ${products}">
-          <div th:replace="~{fragments/product-card :: card(${product})}"></div>
+          <div th:replace="~{fragments/product-card :: card(${product}, ${prices.get(product.id)})}"></div>
         </th:block>
       </div>
 

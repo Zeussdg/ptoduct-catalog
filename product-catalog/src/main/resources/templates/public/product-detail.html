@@ -31,7 +31,8 @@
         <span class="pdetail__code mono" th:text="'Stok Kodu: ' + ${product.stockCode}">Stok Kodu: —</span>
 
         <div class="pdetail__price-row">
-          <span class="pdetail__price" th:text="${@priceFormatter.format(product.price, product.currency)}">₺0,00</span>
+          <span th:if="${price.customerSpecific}" class="pdetail__brand" style="color:var(--signal-700)">Özel Fiyat</span>
+          <span class="pdetail__price" th:text="${@priceFormatter.format(price.price, price.currency)}">₺0,00</span>
         </div>
 
         <div class="pdetail__add-row">
@@ -42,7 +43,7 @@
           </div>
           <button type="button" class="pdetail__add-btn js-add-to-cart"
                   data-qty-target="detailQty"
-                  th:attr="data-id=${product.id},data-name=${product.name},data-brand=${product.brand},data-code=${product.stockCode},data-price=${product.price},data-currency=${product.currency.name()}">
+                  th:attr="data-id=${product.id},data-name=${product.name},data-brand=${product.brand},data-code=${product.stockCode},data-price=${price.price},data-currency=${price.currency.name()}">
             Sepete Ekle
           </button>
         </div>
@@ -52,7 +53,7 @@
           <div><dt>Stok Kodu</dt><dd class="mono" th:text="${product.stockCode}">—</dd></div>
           <div th:if="${mainCat != null}"><dt>Ana Kategori</dt><dd th:text="${mainCat.name}">—</dd></div>
           <div th:if="${subCat != null}"><dt>Kategori</dt><dd th:text="${subCat.name}">—</dd></div>
-          <div><dt>Para Birimi</dt><dd th:text="${product.currency.name()}">TRY</dd></div>
+          <div><dt>Para Birimi</dt><dd th:text="${price.currency.name()}">TRY</dd></div>
         </dl>
 
         <div class="pdetail__desc" th:if="${product.description != null and product.description != ''}">
@@ -69,7 +70,7 @@
           <a th:href="@{'/urun/' + ${r.id}}">
             <span class="pdetail__related-brand" th:text="${r.brand}">Marka</span>
             <span class="pdetail__related-name" th:text="${r.name}">Ürün</span>
-            <span class="pdetail__related-price mono" th:text="${@priceFormatter.format(r.price, r.currency)}">₺0,00</span>
+            <span class="pdetail__related-price mono" th:text="${@priceFormatter.format(relatedPrices.get(r.id).price, relatedPrices.get(r.id).currency)}">₺0,00</span>
           </a>
         </li>
       </ul>

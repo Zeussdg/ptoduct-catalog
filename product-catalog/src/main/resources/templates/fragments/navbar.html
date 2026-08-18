@@ -26,6 +26,7 @@
       <a sec:authorize="hasAnyRole('ADMIN','SUPER_ADMIN')" th:href="@{/admin}" class="hdr__nav-link"
          style="color:var(--signal-700);font-weight:700">Yönetim Paneli</a>
       <a sec:authorize="isAuthenticated()" th:href="@{/account}" class="hdr__nav-link">Hesabım</a>
+      <a sec:authorize="isAuthenticated()" th:href="@{/quotes}" class="hdr__nav-link">Tekliflerim</a>
       <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="hdr__nav-link">Giriş</a>
 
       <button type="button" class="hdr__cart" id="cartOpenBtn" aria-label="Sepeti aç">

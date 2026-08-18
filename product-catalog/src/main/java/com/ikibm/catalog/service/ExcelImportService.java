@@ -7,9 +7,11 @@ import com.ikibm.catalog.repository.CategoryRepository;
 import com.ikibm.catalog.repository.ProductRepository;
 import com.ikibm.catalog.util.CategoryClassifier;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.*;
@@ -160,6 +162,27 @@ public class ExcelImportService {
                     c.setParent(main);
                     return categoryRepository.save(c);
                 }));
+    }
+
+    /** Doğru başlıklarla, örnek 1 satır içeren indirilebilir şablon (aynı COLUMN_ALIASES'tan üretilir). */
+    public byte[] buildTemplate() {
+        try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = wb.createSheet("Ürünler");
+            String[] headers = {"Marka", "Stok Kodu", "Ürün Adı", "Kategori", "Fiyat", "Para Birimi", "Açıklama"};
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) headerRow.createCell(i).setCellValue(headers[i]);
+
+            Row example = sheet.createRow(1);
+            String[] values = {"TENDA", "S999", "Örnek 5 Port Switch", "Ağ Ürünleri", "199.90", "USD", "Örnek açıklama metni"};
+            for (int i = 0; i < values.length; i++) example.createCell(i).setCellValue(values[i]);
+
+            for (int i = 0; i < headers.length; i++) sheet.autoSizeColumn(i);
+
+            wb.write(out);
+            return out.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Şablon oluşturulamadı: " + e.getMessage(), e);
+        }
     }
 
     // ---- Excel okuma ----

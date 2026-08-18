@@ -1,12 +1,15 @@
 package com.ikibm.catalog.service;
 
 import com.ikibm.catalog.dto.ProductForm;
+import com.ikibm.catalog.dto.ResolvedPrice;
+import com.ikibm.catalog.entity.CustomerPrice;
 import com.ikibm.catalog.entity.Currency;
 import com.ikibm.catalog.entity.Product;
 import com.ikibm.catalog.entity.ProductImage;
 import com.ikibm.catalog.exception.ConflictException;
 import com.ikibm.catalog.exception.NotFoundException;
 import com.ikibm.catalog.repository.CategoryRepository;
+import com.ikibm.catalog.repository.CustomerPriceRepository;
 import com.ikibm.catalog.repository.ProductImageRepository;
 import com.ikibm.catalog.repository.ProductRepository;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -18,7 +21,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ProductService {
@@ -28,13 +34,16 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
+    private final CustomerPriceRepository customerPriceRepository;
     private final StorageService storageService;
 
     public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository,
-                          ProductImageRepository productImageRepository, StorageService storageService) {
+                          ProductImageRepository productImageRepository, CustomerPriceRepository customerPriceRepository,
+                          StorageService storageService) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.productImageRepository = productImageRepository;
+        this.customerPriceRepository = customerPriceRepository;
         this.storageService = storageService;
     }
 
@@ -80,6 +89,43 @@ public class ProductService {
     }
 
     public long activeCount() { return productRepository.countByIsActiveTrue(); }
+
+    /** Bir ürünün, verilen kullanıcı için geçerli fiyatını çözer (müşteriye özel fiyat varsa, geçerlilik penceresi içindeyse onu döner). */
+    public ResolvedPrice resolvePrice(Product product, Integer userId) {
+        if (userId != null) {
+            CustomerPrice cp = customerPriceRepository.findByUser_IdAndProduct_Id(userId, product.getId()).orElse(null);
+            if (isValid(cp)) {
+                return new ResolvedPrice(cp.getPrice(), cp.getCurrency(), true);
+            }
+        }
+        return new ResolvedPrice(product.getEffectivePrice(), product.getCurrency(), false);
+    }
+
+    /** {@link #resolvePrice} metodunun toplu hali — liste sayfalarında ürün başına ayrı sorgu atmamak için. */
+    public Map<Integer, ResolvedPrice> resolvePrices(List<Product> products, Integer userId) {
+        Map<Integer, CustomerPrice> byProductId = new HashMap<>();
+        if (userId != null) {
+            for (CustomerPrice cp : customerPriceRepository.findByUser_Id(userId)) {
+                byProductId.put(cp.getProduct().getId(), cp);
+            }
+        }
+        Map<Integer, ResolvedPrice> result = new HashMap<>();
+        for (Product p : products) {
+            CustomerPrice cp = byProductId.get(p.getId());
+            result.put(p.getId(), isValid(cp)
+                    ? new ResolvedPrice(cp.getPrice(), cp.getCurrency(), true)
+                    : new ResolvedPrice(p.getEffectivePrice(), p.getCurrency(), false));
+        }
+        return result;
+    }
+
+    private boolean isValid(CustomerPrice cp) {
+        if (cp == null) return false;
+        Instant now = Instant.now();
+        if (cp.getValidFrom() != null && now.isBefore(cp.getValidFrom())) return false;
+        if (cp.getValidTo() != null && now.isAfter(cp.getValidTo())) return false;
+        return true;
+    }
 
     // ---- admin ----
 
