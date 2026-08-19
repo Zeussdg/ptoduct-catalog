@@ -47,7 +47,7 @@
           <label class="adp__field"><span>Durum</span>
             <select name="status">
               <option th:each="s : ${T(com.ikibm.catalog.entity.QuoteStatus).values()}"
-                      th:value="${s}" th:text="${s}" th:selected="${quote.status == s}">PENDING</option>
+                      th:value="${s}" th:text="${@quoteStatus.label(s)}" th:selected="${quote.status == s}">Beklemede</option>
             </select></label>
           <label class="adp__field"><span>Admin Notu</span>
             <textarea rows="3" name="adminNote" th:text="${quote.adminNote}"></textarea></label>

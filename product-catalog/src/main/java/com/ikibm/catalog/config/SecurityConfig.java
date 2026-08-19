@@ -32,15 +32,13 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                        "/", "/urun/**", "/is-ortaklarimiz", "/teklif-sihirbazi", "/quote/pdf",
-                        "/login", "/error", "/api/catalog/**",
+                        "/login", "/error",
                         "/css/**", "/js/**", "/images/**", "/logo/**", "/fonts/**", "/uploads/**",
                         "/favicon.svg", "/icons.svg", "/favicon.ico"
                 ).permitAll()
                 .requestMatchers("/admin/users/**", "/admin/audit-logs/**").hasRole("SUPER_ADMIN")
                 .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
-                .requestMatchers("/account/**", "/cart/**", "/quotes/**").authenticated()
-                .anyRequest().permitAll()
+                .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
@@ -53,7 +51,7 @@ public class SecurityConfig {
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/")
+                .logoutSuccessUrl("/login")
                 .permitAll()
             );
         return http.build();

@@ -7,7 +7,12 @@
 <div class="custpg">
   <h1 class="custpg__title">Hesabım</h1>
 
-  <p style="margin:0 0 16px"><a class="custpg__link" th:href="@{/quotes}">Tekliflerim →</a></p>
+  <p style="margin:0 0 16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+    <a class="custpg__link" th:href="@{/quotes}">Tekliflerim →</a>
+    <form method="post" th:action="@{/logout}" style="margin:0">
+      <button type="submit" class="custpg__btn custpg__btn--danger">Çıkış Yap</button>
+    </form>
+  </p>
 
   <form class="custpg__card" method="post" th:action="@{/account}">
     <label class="custpg__field">

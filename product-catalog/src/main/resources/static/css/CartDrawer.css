@@ -336,10 +336,15 @@
   font-size: 16px;
 }
 
-.cdrw__pdf {
+.cdrw__actions {
   margin-top: auto;
-  width: 100%;
-  background: var(--ink-900);
+  display: flex;
+  gap: 8px;
+}
+
+.cdrw__pdf,
+.cdrw__whatsapp {
+  flex: 1;
   border: none;
   color: #fff;
   padding: 12px;
@@ -349,11 +354,21 @@
   transition: opacity 0.12s ease;
 }
 
-.cdrw__pdf:hover:not(:disabled) {
+.cdrw__pdf {
+  background: var(--ink-900);
+}
+
+.cdrw__whatsapp {
+  background: #25d366;
+}
+
+.cdrw__pdf:hover:not(:disabled),
+.cdrw__whatsapp:hover:not(:disabled) {
   opacity: 0.88;
 }
 
-.cdrw__pdf:disabled {
+.cdrw__pdf:disabled,
+.cdrw__whatsapp:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -380,7 +395,7 @@
   .cdrw__list {
     overflow: visible;
   }
-  .cdrw__pdf {
+  .cdrw__actions {
     margin-top: 10px;
   }
 }

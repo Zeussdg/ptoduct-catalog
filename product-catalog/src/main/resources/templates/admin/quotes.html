@@ -31,7 +31,7 @@
               <td th:text="${q.user != null ? (q.user.companyName != null ? q.user.companyName : q.user.email) : (q.guestCompany != null ? q.guestCompany : (q.guestContact != null ? q.guestContact : 'Misafir'))}">Müşteri</td>
               <td th:text="${#lists.isEmpty(q.items) ? '-' : q.items[0].productName + (q.items.size() > 1 ? (' +' + (q.items.size() - 1) + ' diğer') : '')}">Ürünler</td>
               <td th:text="${@fmt.quoteTotal(q)}">Tutar</td>
-              <td><span class="adp__badge" th:text="${q.status}">PENDING</span></td>
+              <td><span class="adp__badge" th:text="${@quoteStatus.label(q.status)}">Beklemede</span></td>
               <td th:text="${@fmt.date(q.createdAt)}">01.01.2026</td>
               <td><a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{'/admin/quotes/' + ${q.id}}">Detay</a></td>
             </tr>

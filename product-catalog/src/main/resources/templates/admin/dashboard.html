@@ -7,10 +7,37 @@
   <div class="adm__main">
     <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
     <main class="adm__content">
-      <h1 class="adp__title">Dashboard</h1>
-      <p class="adp__subtitle">Genel bakış</p>
+      <h1 class="adp__title">Yönetim Paneli</h1>
+      <p class="adp__subtitle">
+        Genel Bakış
+        <span th:if="${generatedAt != null}" th:text="'· Son güncelleme: ' + ${@fmt.dateTime(generatedAt)}"></span>
+      </p>
 
       <div class="adp__kpis">
+        <div class="adp__kpi">
+          <div class="adp__kpi-value" th:text="${stats.totalQuotes}">0</div>
+          <div class="adp__kpi-label">Toplam Teklif</div>
+        </div>
+        <div class="adp__kpi">
+          <div class="adp__kpi-value" th:text="${stats.pendingQuotes}">0</div>
+          <div class="adp__kpi-label">Bekleyen Teklifler</div>
+        </div>
+        <div class="adp__kpi">
+          <div class="adp__kpi-value" th:text="${stats.monthlyQuotes}">0</div>
+          <div class="adp__kpi-label">Bu Ay Oluşturulan</div>
+        </div>
+        <div class="adp__kpi">
+          <div class="adp__kpi-value" th:text="${stats.approvedQuotes}">0</div>
+          <div class="adp__kpi-label">Onaylanan Teklifler</div>
+        </div>
+        <div class="adp__kpi">
+          <div class="adp__kpi-value" th:text="${stats.rejectedQuotes}">0</div>
+          <div class="adp__kpi-label">Reddedilen Teklifler</div>
+        </div>
+        <div class="adp__kpi">
+          <div class="adp__kpi-value" style="font-size:18px" th:text="${stats.totalAmountFormatted}">-</div>
+          <div class="adp__kpi-label">Toplam Teklif Tutarı</div>
+        </div>
         <div class="adp__kpi">
           <div class="adp__kpi-value" th:text="${totalProducts}">0</div>
           <div class="adp__kpi-label">Toplam Ürün</div>
@@ -19,10 +46,85 @@
           <div class="adp__kpi-value" th:text="${totalCustomers}">0</div>
           <div class="adp__kpi-label">Toplam Müşteri</div>
         </div>
-        <div class="adp__kpi">
-          <div class="adp__kpi-value" th:text="${pendingQuotes}">0</div>
-          <div class="adp__kpi-label">Bekleyen Teklifler</div>
+      </div>
+
+      <div class="adp__card">
+        <h2 style="font-size:15px;margin:0 0 12px">Son 6 Ay Teklif Sayısı</h2>
+        <div th:if="${#lists.isEmpty(monthlyTrend)}" class="adp__empty">Henüz yeterli veri bulunmuyor.</div>
+        <div th:unless="${#lists.isEmpty(monthlyTrend)}" class="adp__chart-bars">
+          <div class="adp__chart-bar" th:each="m : ${monthlyTrend}">
+            <div class="adp__chart-bar-track">
+              <div class="adp__chart-bar-fill"
+                   th:style="'height:' + (${maxMonthlyCount > 0} ? (${m.count} * 100 / ${maxMonthlyCount}) : 0) + '%'"></div>
+            </div>
+            <div class="adp__chart-bar-value" th:text="${m.count}">0</div>
+            <div class="adp__chart-bar-label" th:text="${m.monthLabel}">Ay</div>
+          </div>
         </div>
+      </div>
+
+      <div class="adp__dashboard-row">
+        <div class="adp__card" style="margin-bottom:0">
+          <h2 style="font-size:15px;margin:0 0 12px">Duruma Göre Teklifler</h2>
+          <div th:if="${#lists.isEmpty(statusDistribution)}" class="adp__empty">Henüz yeterli veri bulunmuyor.</div>
+          <div th:unless="${#lists.isEmpty(statusDistribution)}">
+            <div class="adp__chart-hbar-row" th:each="s : ${statusDistribution}">
+              <span class="adp__badge" th:text="${@quoteStatus.label(s.status)}">Beklemede</span>
+              <div class="adp__chart-hbar-track">
+                <div class="adp__chart-hbar-fill"
+                     th:style="'width:' + (${maxStatusCount > 0} ? (${s.count} * 100 / ${maxStatusCount}) : 0) + '%'"></div>
+              </div>
+              <span class="adp__chart-hbar-value" th:text="${s.count}">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="adp__card" style="margin-bottom:0">
+          <h2 style="font-size:15px;margin:0 0 12px">En Çok Teklif Edilen Ürünler</h2>
+          <div th:if="${#lists.isEmpty(topProducts)}" class="adp__empty">Henüz yeterli veri bulunmuyor.</div>
+          <table th:unless="${#lists.isEmpty(topProducts)}" class="adp__table">
+            <thead><tr><th>Ürün</th><th>Kod</th><th>Teklif</th><th>Adet</th></tr></thead>
+            <tbody>
+              <tr th:each="p : ${topProducts}">
+                <td th:text="${p.productName}">Ürün</td>
+                <td th:text="${p.productCode}">SKU</td>
+                <td th:text="${p.offerCount}">0</td>
+                <td>
+                  <div class="adp__inline-bar-wrap">
+                    <span th:text="${p.totalQty}">0</span>
+                    <div class="adp__inline-bar">
+                      <div class="adp__inline-bar-fill"
+                           th:style="'width:' + (${maxProductQty > 0} ? (${p.totalQty} * 100 / ${maxProductQty}) : 0) + '%'"></div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="adp__card">
+        <h2 style="font-size:15px;margin:0 0 12px">En Aktif Müşteriler</h2>
+        <div th:if="${#lists.isEmpty(topCustomers)}" class="adp__empty">Henüz yeterli veri bulunmuyor.</div>
+        <table th:unless="${#lists.isEmpty(topCustomers)}" class="adp__table">
+          <thead><tr><th>Müşteri</th><th>Teklif Sayısı</th><th>Toplam Tutar</th></tr></thead>
+          <tbody>
+            <tr th:each="c : ${topCustomers}">
+              <td th:text="${c.displayName}">Müşteri</td>
+              <td>
+                <div class="adp__inline-bar-wrap">
+                  <span th:text="${c.offerCount}">0</span>
+                  <div class="adp__inline-bar">
+                    <div class="adp__inline-bar-fill"
+                         th:style="'width:' + (${maxCustomerCount > 0} ? (${c.offerCount} * 100 / ${maxCustomerCount}) : 0) + '%'"></div>
+                  </div>
+                </div>
+              </td>
+              <td th:text="${c.totalAmountFormatted}">-</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <div class="adp__card">
@@ -36,7 +138,7 @@
               <td th:text="${q.user != null ? (q.user.companyName != null ? q.user.companyName : q.user.email) : (q.guestCompany != null ? q.guestCompany : (q.guestContact != null ? q.guestContact : 'Misafir'))}">Müşteri</td>
               <td th:text="${#lists.isEmpty(q.items) ? '-' : q.items[0].productName + (q.items.size() > 1 ? (' +' + (q.items.size() - 1) + ' diğer') : '')}">Ürünler</td>
               <td th:text="${@fmt.quoteTotal(q)}">Tutar</td>
-              <td><span class="adp__badge" th:text="${q.status}">PENDING</span></td>
+              <td><span class="adp__badge" th:text="${@quoteStatus.label(q.status)}">Beklemede</span></td>
               <td th:text="${@fmt.date(q.createdAt)}">01.01.2026</td>
               <td><a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{'/admin/quotes/' + ${q.id}}">Detay</a></td>
             </tr>

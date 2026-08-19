@@ -13,8 +13,9 @@
   var open = false;
   var quoteMode = false;
   var seller = { firma: "", yetkili: "", telefon: "", eposta: "" };
-  var contact = { firma: "", yetkili: "" };
+  var contact = { firma: "", yetkili: "", telefon: "" };
   var margin = "";
+  var sharing = false;
 
   // ---- yardımcılar ----
   function read() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; } }
@@ -152,11 +153,16 @@
         + '<div class="cdrw__form-section"><h3>Teklifi Alan</h3>'
         + field("Firma", "c_firma", contact.firma, "Müşteri firma adı")
         + field("Yetkili", "c_yetkili", contact.yetkili, "İlgili kişi")
+        + field("Telefon (WhatsApp)", "c_telefon", contact.telefon, "+90 ...", "tel")
         + '</div></div>'
         + '<label class="cdrw__field cdrw__margin"><span>Kâr Marjı (%)</span>'
         + '<input type="number" min="0" step="1" data-fld="margin" value="' + esc(margin) + '" placeholder="0"/></label>'
         + '<div class="cdrw__summary" id="cartSummary">' + summaryHtml(items) + '</div>'
+        + '<div class="cdrw__actions">'
         + '<button type="button" class="cdrw__pdf" data-act="pdf"' + (curs.length === 0 ? " disabled" : "") + '>Teklifi PDF\'e geçir</button>'
+        + '<button type="button" class="cdrw__whatsapp" data-act="whatsapp"' + (curs.length === 0 || sharing ? " disabled" : "") + '>'
+        + (sharing ? "Paylaşılıyor…" : "WhatsApp\'tan Paylaş") + '</button>'
+        + '</div>'
         + '</div>';
     }
 
@@ -171,9 +177,9 @@
     bindFormInputs();
   }
 
-  function field(label, key, val, ph) {
+  function field(label, key, val, ph, type) {
     return '<label class="cdrw__field"><span>' + label + '</span>'
-      + '<input type="text" data-fld="' + key + '" value="' + esc(val) + '" placeholder="' + ph + '"/></label>';
+      + '<input type="' + (type || "text") + '" data-fld="' + key + '" value="' + esc(val) + '" placeholder="' + ph + '"/></label>';
   }
 
   function bindFormInputs() {
@@ -205,6 +211,112 @@
     document.body.appendChild(form);
     form.submit();
     function add(f, n, v) { var i = document.createElement("input"); i.type = "hidden"; i.name = n; i.value = v; f.appendChild(i); }
+  }
+
+  // ---- WhatsApp'tan paylaş ----
+  // Teklifin okunabilir metin özetini üretir (wa.me fallback ve dosya paylaşım metni).
+  function buildQuoteText(items, totals, sellerInfo, contactInfo, marginPct) {
+    var factor = 1 + (Number(marginPct) || 0) / 100;
+    var lines = [];
+    lines.push("*FİYAT TEKLİFİ*");
+    if (sellerInfo.firma) lines.push("Teklifi veren: " + sellerInfo.firma);
+    if (contactInfo.firma || contactInfo.yetkili) {
+      var alan = [contactInfo.firma, contactInfo.yetkili].filter(function (x) { return x; }).join(" / ");
+      lines.push("Teklifi alan: " + alan);
+    }
+    lines.push("");
+
+    lines.push("*Ürünler*");
+    items.forEach(function (it) {
+      var ad = [it.brand, it.name].filter(function (x) { return x; }).join(" ");
+      if (it.price == null || isNaN(it.price)) {
+        lines.push("• " + ad + " — " + it.qty + " adet (fiyat isteyin)");
+      } else {
+        var lineTotal = it.price * factor * it.qty;
+        lines.push("• " + ad + " — " + it.qty + " adet — " + formatPrice(lineTotal, it.currency));
+      }
+    });
+    lines.push("");
+
+    var curs = Object.keys(totals);
+    if (curs.length > 0) {
+      lines.push("*Toplam (KDV dahil)*");
+      curs.forEach(function (cur) {
+        var before = Number(totals[cur]) || 0;
+        var after = before + before * ((Number(marginPct) || 0) / 100);
+        var grand = after + after * VAT;
+        lines.push(cur + ": " + formatPrice(grand, cur));
+      });
+      lines.push("");
+    }
+
+    lines.push("Bu bir fiyat teklifidir; ödeme veya satın alma işlemi içermez.");
+    return lines.join("\n");
+  }
+
+  // wa.me uluslararası format ister: sadece rakam, başında + yok.
+  function normalizePhone(phone) {
+    return String(phone || "").replace(/\D/g, "");
+  }
+
+  // Mobilde Web Share API ile gerçek PDF dosyasını paylaşır (OS paylaşım menüsü
+  // WhatsApp'ı da içerir); desteklenmiyorsa (masaüstü) yalnızca metni wa.me ile açar.
+  function shareOnWhatsApp(opts) {
+    var blob = opts.blob, fileName = opts.fileName, text = opts.text, phone = opts.phone;
+    var isMobile = typeof navigator !== "undefined"
+      && ((navigator.userAgentData && navigator.userAgentData.mobile)
+          || /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent));
+
+    if (isMobile && blob && typeof navigator !== "undefined" && navigator.canShare) {
+      var file = new File([blob], fileName, { type: "application/pdf" });
+      if (navigator.canShare({ files: [file] })) {
+        return navigator.share({ files: [file], title: fileName, text: text })
+          .then(function () { return { method: "share" }; })
+          .catch(function (err) {
+            if (err && err.name === "AbortError") return { method: "cancelled" };
+            return openWaMe(phone, text);
+          });
+      }
+    }
+    return Promise.resolve(openWaMe(phone, text));
+  }
+
+  function openWaMe(phone, text) {
+    var num = normalizePhone(phone);
+    var base = num ? ("https://wa.me/" + num) : "https://wa.me/";
+    window.open(base + "?text=" + encodeURIComponent(text), "_blank", "noopener,noreferrer");
+    return { method: "wa.me" };
+  }
+
+  function handleWhatsApp() {
+    var items = read();
+    if (items.length === 0 || sharing) return;
+    sharing = true;
+    render();
+
+    var payload = { items: items, seller: seller, contact: contact, margin: Number(margin) || 0 };
+    var csrfToken = document.querySelector('meta[name="_csrf"]');
+    var csrfHeader = document.querySelector('meta[name="_csrf_header"]');
+    var headers = { "Content-Type": "application/x-www-form-urlencoded" };
+    if (csrfToken && csrfHeader) headers[csrfHeader.getAttribute("content")] = csrfToken.getAttribute("content");
+
+    fetch("/quote/pdf", {
+      method: "POST",
+      headers: headers,
+      body: "payload=" + encodeURIComponent(JSON.stringify(payload))
+    }).then(function (res) {
+      if (!res.ok) throw new Error("PDF oluşturulamadı");
+      return res.blob();
+    }).then(function (blob) {
+      var text = buildQuoteText(items, totalsByCurrency(items), seller, contact, margin);
+      return shareOnWhatsApp({ blob: blob, fileName: "teklif.pdf", text: text, phone: contact.telefon });
+    }).catch(function (err) {
+      console.error("WhatsApp paylaşımı başarısız:", err);
+      alert("Teklif paylaşılırken bir hata oluştu. Lütfen tekrar deneyin.");
+    }).finally(function () {
+      sharing = false;
+      render();
+    });
   }
 
   // ---- olay bağlama ----
@@ -263,6 +375,7 @@
       else if (act === "clear") clearCart();
       else if (act === "toquote") { quoteMode = true; render(); }
       else if (act === "pdf") submitPdf();
+      else if (act === "whatsapp") handleWhatsApp();
     });
 
     render();

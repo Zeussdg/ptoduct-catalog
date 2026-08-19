@@ -24,7 +24,7 @@
           <tbody>
             <tr th:each="q : ${quotes}">
               <td th:text="'#' + ${q.id}">#1</td>
-              <td><span class="adp__badge" th:text="${q.status}">PENDING</span></td>
+              <td><span class="adp__badge" th:text="${@quoteStatus.label(q.status)}">Beklemede</span></td>
               <td th:text="${@fmt.date(q.createdAt)}">01.01.2026</td>
               <td><a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{'/admin/quotes/' + ${q.id}}">Detay</a></td>
             </tr>
