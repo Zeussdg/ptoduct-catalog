@@ -138,6 +138,15 @@ public class ProductService {
                 : productRepository.findAll(Sort.by("id").ascending());
     }
 
+    /** Admin ürün listesi, sayfalanmış (545 ürünü tek sayfada basmamak için, 20/sayfa). */
+    public Page<Product> adminList(String q, int page) {
+        Specification<Product> spec = ProductSpecifications.search(q);
+        Pageable pageable = PageRequest.of(Math.max(0, page - 1), PAGE_SIZE, Sort.by("id").ascending());
+        return spec != null
+                ? productRepository.findAll(spec, pageable)
+                : productRepository.findAll(pageable);
+    }
+
     public long totalCount() { return productRepository.count(); }
 
     @Transactional

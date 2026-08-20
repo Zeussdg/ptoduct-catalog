@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Siparişlerim')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="custpg">
+  <h1 class="custpg__title">Siparişlerim</h1>
+  <div class="custpg__card">
+    <div th:if="${#lists.isEmpty(orders)}" class="custpg__empty">Henüz siparişiniz yok.</div>
+
+    <table th:unless="${#lists.isEmpty(orders)}" class="custpg__table">
+      <thead>
+        <tr><th>Sipariş No</th><th>Tarih</th><th>Tutar</th><th>Durum</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr th:each="o : ${orders}">
+          <td th:text="'#' + ${o.id}">#1</td>
+          <td th:text="${@fmt.date(o.createdAt)}">01.01.2026</td>
+          <td th:text="${@fmt.orderGrandTotal(o)}">₺0,00</td>
+          <td><span class="custpg__badge" th:text="${@orderStatus.label(o.status)}">Beklemede</span></td>
+          <td><a class="custpg__link" th:href="@{'/orders/' + ${o.id}}">Detay</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/cart-drawer :: drawer}"></div>
+<script th:src="@{/js/cart.js}"></script>
+</body>
+</html>

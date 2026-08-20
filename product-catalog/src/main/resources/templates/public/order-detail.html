@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Sipariş #' + ${order.id})}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="custpg">
+  <h1 class="custpg__title">Sipariş <span th:text="'#' + ${order.id}">#1</span></h1>
+
+  <div class="custpg__card">
+    <h2 style="font-size:14px;margin:0 0 10px">Sipariş Takibi</h2>
+    <p style="margin:0 0 6px"><strong>Sipariş No:</strong> #<span th:text="${order.id}">1</span></p>
+    <p style="margin:0 0 6px"><strong>Durum:</strong>
+      <span class="custpg__badge" th:text="${@orderStatus.label(order.status)}">Beklemede</span></p>
+    <p style="margin:0 0 6px" th:if="${order.carrierName != null and order.carrierName != ''}">
+      <strong>Kargo Firması:</strong> <span th:text="${order.carrierName}"></span></p>
+    <p style="margin:0 0 6px" th:if="${order.trackingNumber != null and order.trackingNumber != ''}">
+      <strong>Takip Numarası:</strong> <span class="mono" th:text="${order.trackingNumber}"></span></p>
+    <p style="margin:0 0 6px;color:var(--ink-500)"
+       th:if="${(order.carrierName == null or order.carrierName == '') and (order.trackingNumber == null or order.trackingNumber == '')}">
+      Kargo bilgisi henüz girilmedi.</p>
+    <p style="margin:0">
+      <a class="custpg__link" th:href="@{'/quotes/' + ${order.quote.id}}">Kaynak Teklif: #<span th:text="${order.quote.id}">1</span> →</a>
+    </p>
+  </div>
+
+  <div class="custpg__card">
+    <table class="custpg__table">
+      <thead>
+        <tr><th>Ürün</th><th>Ürün Kodu</th><th>Adet</th><th>Birim Fiyat</th><th>Toplam</th></tr>
+      </thead>
+      <tbody>
+        <tr th:each="item : ${order.items}">
+          <td th:text="${item.productName}">Ürün</td>
+          <td class="mono" th:text="${item.productCode}">KOD</td>
+          <td th:text="${item.qty}">1</td>
+          <td th:text="${@priceFormatter.format(item.unitPrice, item.currency)}">₺0,00</td>
+          <td th:text="${@priceFormatter.format(item.totalPrice, item.currency)}">₺0,00</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin:10px 0 0;text-align:right;font-weight:700" th:text="'Genel Toplam (KDV Dahil): ' + ${@fmt.orderGrandTotal(order)}">Genel Toplam</p>
+  </div>
+
+  <div class="custpg__card" th:if="${order.adminNote != null and order.adminNote != ''}">
+    <strong>Not:</strong>
+    <p th:text="${order.adminNote}">Not</p>
+  </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/cart-drawer :: drawer}"></div>
+<script th:src="@{/js/cart.js}"></script>
+</body>
+</html>

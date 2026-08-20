@@ -15,7 +15,12 @@
   var seller = { firma: "", yetkili: "", telefon: "", eposta: "" };
   var contact = { firma: "", yetkili: "", telefon: "" };
   var margin = "";
-  var sharing = false;
+  var exporting = false;
+  // Aynı sepet+form içeriği (imza) için üretilen PDF'i önbelleğe alır; "PDF'e geçir"
+  // ve "WhatsApp'tan Paylaş" aynı sepeti hedefliyorsa tek /quote/pdf çağrısı (ve
+  // dolayısıyla tek kayıtlı Quote) paylaşılsın diye — sepet değişince imza değişir,
+  // önbellek doğal olarak geçersiz kalır ve yeni bir teklif haklı olarak oluşur.
+  var lastQuoteExport = null;
 
   // ---- yardımcılar ----
   function read() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; } }
@@ -64,6 +69,16 @@
     it.qty = Math.max(1, qty);
     write(items); updateBadge(); render();
   }
+  // + / - gibi tam render tetiklemeden adedi günceller; klavyeden yazarken
+  // (input olayı) her tuş vuruşunda tüm listeyi yeniden çizmemek için kullanılır,
+  // aksi halde input focus/imleç konumu kaybolur.
+  function setQtyNoRender(id, qty) {
+    var items = read();
+    var it = items.find(function (x) { return String(x.id) === String(id); });
+    if (!it) return;
+    it.qty = Math.max(1, qty);
+    write(items); updateBadge();
+  }
   function removeItem(id) {
     write(read().filter(function (x) { return String(x.id) !== String(id); }));
     updateBadge(); render();
@@ -73,6 +88,20 @@
   // ---- drawer ----
   function openDrawer() { open = true; render(); }
   function closeDrawer() { open = false; quoteMode = false; render(); }
+
+  function footerTotalsHtml(items) {
+    var totals = totalsByCurrency(items);
+    var curs = Object.keys(totals);
+    return curs.map(function (cur) {
+      return '<div class="cdrw__total-row"><span>Ara Toplam (' + cur + ')</span><span class="mono">' + formatPrice(totals[cur], cur) + '</span></div>';
+    }).join("")
+    + curs.map(function (cur) {
+      return '<div class="cdrw__total-row"><span>KDV (%20) (' + cur + ')</span><span class="mono">' + formatPrice(totals[cur] * VAT, cur) + '</span></div>';
+    }).join("")
+    + curs.map(function (cur) {
+      return '<div class="cdrw__total-row cdrw__total-row--grand"><span>Genel Toplam (' + cur + ')</span><span class="mono">' + formatPrice(totals[cur] * (1 + VAT), cur) + '</span></div>';
+    }).join("");
+  }
 
   function summaryHtml(items) {
     var totals = totalsByCurrency(items);
@@ -123,22 +152,15 @@
         + '<span class="cdrw__item-code mono">' + esc(it.code) + '</span></div>'
         + '<div class="cdrw__item-controls"><div class="cdrw__qty">'
         + '<button type="button" data-act="dec" data-id="' + esc(it.id) + '" aria-label="Azalt">−</button>'
-        + '<span class="mono">' + it.qty + '</span>'
+        + '<input type="number" min="1" inputMode="numeric" class="cdrw__qty-input mono" '
+        + 'data-act="qtyinput" data-id="' + esc(it.id) + '" value="' + it.qty + '" aria-label="Adet">'
         + '<button type="button" data-act="inc" data-id="' + esc(it.id) + '" aria-label="Artır">+</button></div>'
-        + '<span class="cdrw__item-price mono">' + line + '</span>'
+        + '<span class="cdrw__item-price mono" data-price-for="' + esc(it.id) + '">' + line + '</span>'
         + '<button type="button" class="cdrw__remove" data-act="rm" data-id="' + esc(it.id) + '" aria-label="Kaldır">Kaldır</button>'
         + '</div></li>';
     }).join("");
 
-    var footerTotals = curs.map(function (cur) {
-      return '<div class="cdrw__total-row"><span>Ara Toplam (' + cur + ')</span><span class="mono">' + formatPrice(totals[cur], cur) + '</span></div>';
-    }).join("")
-    + curs.map(function (cur) {
-      return '<div class="cdrw__total-row"><span>KDV (%20) (' + cur + ')</span><span class="mono">' + formatPrice(totals[cur] * VAT, cur) + '</span></div>';
-    }).join("")
-    + curs.map(function (cur) {
-      return '<div class="cdrw__total-row cdrw__total-row--grand"><span>Genel Toplam (' + cur + ')</span><span class="mono">' + formatPrice(totals[cur] * (1 + VAT), cur) + '</span></div>';
-    }).join("");
+    var footerTotals = footerTotalsHtml(items);
 
     var quotePanel = "";
     if (quoteMode) {
@@ -159,18 +181,20 @@
         + '<input type="number" min="0" step="1" data-fld="margin" value="' + esc(margin) + '" placeholder="0"/></label>'
         + '<div class="cdrw__summary" id="cartSummary">' + summaryHtml(items) + '</div>'
         + '<div class="cdrw__actions">'
-        + '<button type="button" class="cdrw__pdf" data-act="pdf"' + (curs.length === 0 ? " disabled" : "") + '>Teklifi PDF\'e geçir</button>'
-        + '<button type="button" class="cdrw__whatsapp" data-act="whatsapp"' + (curs.length === 0 || sharing ? " disabled" : "") + '>'
-        + (sharing ? "Paylaşılıyor…" : "WhatsApp\'tan Paylaş") + '</button>'
+        + '<button type="button" class="cdrw__pdf" data-act="pdf"' + (curs.length === 0 || exporting ? " disabled" : "") + '>'
+        + (exporting ? "Hazırlanıyor…" : "Teklifi PDF\'e geçir") + '</button>'
+        + '<button type="button" class="cdrw__whatsapp" data-act="whatsapp"' + (curs.length === 0 || exporting ? " disabled" : "") + '>'
+        + (exporting ? "Hazırlanıyor…" : "WhatsApp\'tan Paylaş") + '</button>'
         + '</div>'
         + '</div>';
     }
 
     content.innerHTML = '<div class="cdrw__body">' + quotePanel
       + '<div class="cdrw__cart"><ul class="cdrw__list">' + listHtml + '</ul>'
-      + '<div class="cdrw__footer"><div class="cdrw__totals">' + footerTotals + '</div>'
+      + '<div class="cdrw__footer"><div class="cdrw__totals" id="cartTotals">' + footerTotals + '</div>'
       + (quoteMode ? "" : '<button type="button" class="cdrw__quote-btn" data-act="toquote">Teklif Oluştur</button>')
       + '<button type="button" class="cdrw__clear" data-act="clear">Sepeti Temizle</button>'
+      + (quoteMode ? "" : '<button type="button" class="cdrw__order-btn" data-act="order">Sipariş Oluştur</button>')
       + '<p class="cdrw__note">Bu bir teklif listesidir; ödeme veya satın alma işlemi içermez.</p>'
       + '</div></div></div>';
 
@@ -195,22 +219,106 @@
         }
       });
     });
+
+    // Adet kutusu: yazarken tam render tetiklemeden sadece ilgili satırın
+    // fiyatını ve toplamları günceller (focus/imleç kaybolmasın diye).
+    Array.prototype.forEach.call(document.querySelectorAll('#cartContent [data-act="qtyinput"]'), function (inp) {
+      inp.addEventListener("input", function () {
+        var id = inp.getAttribute("data-id");
+        var n = parseInt(inp.value, 10);
+        if (!Number.isFinite(n) || n <= 0) return;
+        setQtyNoRender(id, n);
+        var items = read();
+        var it = items.find(function (x) { return String(x.id) === String(id); });
+        var priceEl = document.querySelector('[data-price-for="' + id + '"]');
+        if (priceEl && it) {
+          priceEl.textContent = (it.price == null || isNaN(it.price)) ? "—" : formatPrice(it.price * it.qty, it.currency);
+        }
+        var totalsEl = document.getElementById("cartTotals");
+        if (totalsEl) totalsEl.innerHTML = footerTotalsHtml(items);
+        if (quoteMode) {
+          var box = document.getElementById("cartSummary");
+          if (box) box.innerHTML = summaryHtml(items);
+        }
+      });
+      inp.addEventListener("blur", function () {
+        var id = inp.getAttribute("data-id");
+        var it = read().find(function (x) { return String(x.id) === String(id); });
+        if (it) inp.value = it.qty;
+      });
+      inp.addEventListener("focus", function () { inp.select(); });
+    });
   }
 
-  function submitPdf() {
+  // Aynı sepet+form imzası için daha önce üretilmiş bir PDF varsa (ör. az önce
+  // "PDF'e geçir"e basıldıysa) onu yeniden kullanır — /quote/pdf her çağrıda bir
+  // Quote kaydettiği için, aynı tekliften iki farklı dağıtım kanalı (PDF/WhatsApp)
+  // kullanılınca mükerrer kayıt oluşmasın diye. Promise'in kendisi önbelleğe alınır
+  // ki neredeyse eşzamanlı çift tıklamalar da tek isteğe düşsün.
+  function getOrCreateQuotePdf(payload) {
+    var sig = JSON.stringify(payload);
+    if (lastQuoteExport && lastQuoteExport.signature === sig) return lastQuoteExport.promise;
+    var csrfToken = document.querySelector('meta[name="_csrf"]');
+    var csrfHeader = document.querySelector('meta[name="_csrf_header"]');
+    var headers = { "Content-Type": "application/x-www-form-urlencoded" };
+    if (csrfToken && csrfHeader) headers[csrfHeader.getAttribute("content")] = csrfToken.getAttribute("content");
+    var promise = fetch("/quote/pdf", {
+      method: "POST", headers: headers, body: "payload=" + encodeURIComponent(JSON.stringify(payload))
+    }).then(function (res) {
+      if (!res.ok) throw new Error("PDF oluşturulamadı");
+      var cd = res.headers.get("Content-Disposition");
+      var filename = "teklif.pdf";
+      var m = cd && /filename="?([^";]+)"?/.exec(cd);
+      if (m) filename = m[1];
+      return res.blob().then(function (blob) { return { blob: blob, filename: filename }; });
+    });
+    lastQuoteExport = { signature: sig, promise: promise };
+    promise.catch(function () {
+      if (lastQuoteExport && lastQuoteExport.signature === sig) lastQuoteExport = null;
+    });
+    return promise;
+  }
+
+  function downloadBlob(blob, filename) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  // Sepetten tek adımda teklif + sipariş oluşturur (toptancıya tedarik siparişi).
+  function handleCreateOrderFromCart() {
     var items = read();
     if (items.length === 0) return;
+    if (!confirm("Sepetteki ürünler için toptancıya sipariş oluşturulacak. Emin misiniz?")) return;
     var form = document.createElement("form");
     form.method = "POST";
-    form.action = "/quote/pdf";
+    form.action = "/orders/from-cart";
     form.style.display = "none";
-    var payload = { items: items, seller: seller, contact: contact, margin: Number(margin) || 0 };
-    add(form, "payload", JSON.stringify(payload));
+    add(form, "payload", JSON.stringify({ items: items }));
     var token = document.querySelector('meta[name="_csrf"]');
     if (token) add(form, "_csrf", token.getAttribute("content"));
     document.body.appendChild(form);
     form.submit();
     function add(f, n, v) { var i = document.createElement("input"); i.type = "hidden"; i.name = n; i.value = v; f.appendChild(i); }
+  }
+
+  function submitPdf() {
+    var items = read();
+    if (items.length === 0 || exporting) return;
+    var payload = { items: items, seller: seller, contact: contact, margin: Number(margin) || 0 };
+    exporting = true; render();
+    getOrCreateQuotePdf(payload).then(function (r) {
+      downloadBlob(r.blob, r.filename);
+    }).catch(function (err) {
+      console.error("PDF oluşturulamadı:", err);
+      alert("PDF oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.");
+    }).finally(function () {
+      exporting = false; render();
+    });
   }
 
   // ---- WhatsApp'tan paylaş ----
@@ -290,31 +398,19 @@
 
   function handleWhatsApp() {
     var items = read();
-    if (items.length === 0 || sharing) return;
-    sharing = true;
+    if (items.length === 0 || exporting) return;
+    exporting = true;
     render();
 
     var payload = { items: items, seller: seller, contact: contact, margin: Number(margin) || 0 };
-    var csrfToken = document.querySelector('meta[name="_csrf"]');
-    var csrfHeader = document.querySelector('meta[name="_csrf_header"]');
-    var headers = { "Content-Type": "application/x-www-form-urlencoded" };
-    if (csrfToken && csrfHeader) headers[csrfHeader.getAttribute("content")] = csrfToken.getAttribute("content");
-
-    fetch("/quote/pdf", {
-      method: "POST",
-      headers: headers,
-      body: "payload=" + encodeURIComponent(JSON.stringify(payload))
-    }).then(function (res) {
-      if (!res.ok) throw new Error("PDF oluşturulamadı");
-      return res.blob();
-    }).then(function (blob) {
+    getOrCreateQuotePdf(payload).then(function (r) {
       var text = buildQuoteText(items, totalsByCurrency(items), seller, contact, margin);
-      return shareOnWhatsApp({ blob: blob, fileName: "teklif.pdf", text: text, phone: contact.telefon });
+      return shareOnWhatsApp({ blob: r.blob, fileName: r.filename, text: text, phone: contact.telefon });
     }).catch(function (err) {
       console.error("WhatsApp paylaşımı başarısız:", err);
       alert("Teklif paylaşılırken bir hata oluştu. Lütfen tekrar deneyin.");
     }).finally(function () {
-      sharing = false;
+      exporting = false;
       render();
     });
   }
@@ -376,6 +472,7 @@
       else if (act === "toquote") { quoteMode = true; render(); }
       else if (act === "pdf") submitPdf();
       else if (act === "whatsapp") handleWhatsApp();
+      else if (act === "order") handleCreateOrderFromCart();
     });
 
     render();

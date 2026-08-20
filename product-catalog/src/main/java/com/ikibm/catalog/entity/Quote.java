@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +21,14 @@ public class Quote {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "guest_company")
-    private String guestCompany;
+    @Column(name = "recipient_company")
+    private String recipientCompany;
 
-    @Column(name = "guest_contact")
-    private String guestContact;
+    @Column(name = "recipient_contact")
+    private String recipientContact;
+
+    @Column(name = "recipient_phone")
+    private String recipientPhone;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -35,6 +39,9 @@ public class Quote {
 
     @Column(name = "admin_note", columnDefinition = "TEXT")
     private String adminNote;
+
+    @Column(name = "margin_pct", nullable = false)
+    private BigDecimal marginPct = BigDecimal.ZERO;
 
     @OneToMany(mappedBy = "quote", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("id asc")
@@ -52,16 +59,20 @@ public class Quote {
     public void setId(Integer id) { this.id = id; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
-    public String getGuestCompany() { return guestCompany; }
-    public void setGuestCompany(String guestCompany) { this.guestCompany = guestCompany; }
-    public String getGuestContact() { return guestContact; }
-    public void setGuestContact(String guestContact) { this.guestContact = guestContact; }
+    public String getRecipientCompany() { return recipientCompany; }
+    public void setRecipientCompany(String recipientCompany) { this.recipientCompany = recipientCompany; }
+    public String getRecipientContact() { return recipientContact; }
+    public void setRecipientContact(String recipientContact) { this.recipientContact = recipientContact; }
+    public String getRecipientPhone() { return recipientPhone; }
+    public void setRecipientPhone(String recipientPhone) { this.recipientPhone = recipientPhone; }
     public QuoteStatus getStatus() { return status; }
     public void setStatus(QuoteStatus status) { this.status = status; }
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
     public String getAdminNote() { return adminNote; }
     public void setAdminNote(String adminNote) { this.adminNote = adminNote; }
+    public BigDecimal getMarginPct() { return marginPct; }
+    public void setMarginPct(BigDecimal marginPct) { this.marginPct = marginPct; }
     public List<QuoteItem> getItems() { return items; }
     public void setItems(List<QuoteItem> items) { this.items = items; }
     public Instant getCreatedAt() { return createdAt; }

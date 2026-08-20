@@ -23,7 +23,7 @@
         <a th:if="${q != null and q != ''}" class="adp__btn adp__btn--sm adp__btn--ghost"
            th:href="@{/admin/products}">Temizle</a>
         <span class="adp__subtitle" style="margin-left:auto"
-              th:text="'Toplam ' + ${#lists.size(products)} + ' ürün'">Toplam 0 ürün</span>
+              th:text="'Toplam ' + ${totalElements} + ' ürün'">Toplam 0 ürün</span>
       </form>
 
       <p th:if="${error}" th:text="${error}" style="color:var(--danger-600)">Hata</p>
@@ -55,6 +55,21 @@
             </tr>
           </tbody>
         </table>
+
+        <div th:if="${totalPages > 1}" style="display:flex;gap:6px;align-items:center;margin-top:14px;flex-wrap:wrap">
+          <a class="adp__btn adp__btn--sm adp__btn--ghost"
+             th:style="${currentPage == 1 ? 'pointer-events:none;opacity:.5' : ''}"
+             th:href="@{/admin/products(q=${q}, page=${currentPage - 1})}">‹ Önceki</a>
+          <th:block th:each="it : ${@paginations.items(currentPage, totalPages)}">
+            <span th:if="${it == '…'}" style="padding:0 4px;color:var(--ink-500)">…</span>
+            <a th:unless="${it == '…'}" class="adp__btn adp__btn--sm"
+               th:classappend="${it != #strings.toString(currentPage)} ? ' adp__btn--ghost'"
+               th:href="@{/admin/products(q=${q}, page=${it})}" th:text="${it}">1</a>
+          </th:block>
+          <a class="adp__btn adp__btn--sm adp__btn--ghost"
+             th:style="${currentPage == totalPages ? 'pointer-events:none;opacity:.5' : ''}"
+             th:href="@{/admin/products(q=${q}, page=${currentPage + 1})}">Sonraki ›</a>
+        </div>
       </div>
     </main>
   </div>

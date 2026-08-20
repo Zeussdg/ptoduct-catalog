@@ -10,6 +10,18 @@
     <span class="custpg__badge" th:text="${@quoteStatus.label(quote.status)}">Beklemede</span>
   </h1>
 
+  <p style="margin:0 0 16px">
+    <a th:if="${order != null}" class="custpg__btn custpg__btn--success" th:href="@{'/orders/' + ${order.id}}">Siparişi Görüntüle</a>
+    <form th:if="${order == null}" method="post" th:action="@{/orders}" style="display:inline"
+          onsubmit="return confirm('Bu teklif için sipariş oluşturmak istediğinize emin misiniz?')">
+      <input type="hidden" name="quoteId" th:value="${quote.id}"/>
+      <button type="submit" class="custpg__btn custpg__btn--success"
+              th:disabled="${quote.status.name() != 'ACCEPTED'}"
+              th:title="${quote.status.name() != 'ACCEPTED'} ? 'Sadece kabul edilen teklifler siparişe dönüştürülebilir' : ''">
+        Sipariş Oluştur</button>
+    </form>
+  </p>
+
   <div class="custpg__card">
     <table class="custpg__table">
       <thead>
@@ -25,6 +37,19 @@
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <div class="custpg__card">
+    <form method="post" th:action="@{'/quotes/' + ${quote.id} + '/status'}">
+      <label class="custpg__field"><span>Durum</span>
+        <select name="status">
+          <option th:each="s : ${T(com.ikibm.catalog.entity.QuoteStatus).values()}"
+                  th:value="${s}" th:text="${@quoteStatus.label(s)}" th:selected="${quote.status == s}">Beklemede</option>
+        </select></label>
+      <label class="custpg__field"><span>Notunuz</span>
+        <textarea rows="3" name="note" th:text="${quote.note}"></textarea></label>
+      <button class="custpg__btn" type="submit">Durumu Güncelle</button>
+    </form>
   </div>
 
   <div class="custpg__card" th:if="${quote.adminNote != null and quote.adminNote != ''}">

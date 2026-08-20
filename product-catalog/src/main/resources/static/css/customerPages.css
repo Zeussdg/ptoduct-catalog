@@ -29,12 +29,15 @@
   margin-bottom: 14px;
 }
 
-.custpg__field input {
+.custpg__field input,
+.custpg__field select,
+.custpg__field textarea {
   border: 1px solid var(--line-200);
   border-radius: var(--radius-sm);
   padding: 9px 11px;
   font-size: 14px;
   color: var(--ink-900);
+  font-family: inherit;
 }
 
 .custpg__btn {
@@ -59,6 +62,14 @@
   background: var(--surface-0);
   border: 1px solid var(--line-200);
   color: var(--danger-600);
+}
+
+.custpg__btn--success {
+  background: #25d366;
+}
+
+.custpg__btn--success:hover:not(:disabled) {
+  background: #1fb955;
 }
 
 .custpg__table {

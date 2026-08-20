@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Sipariş #' + ${order.id})}"></head>
+<body>
+<div class="adm">
+  <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+  <div class="adm__main">
+    <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
+    <main class="adm__content">
+      <h1 class="adp__title" th:text="'Sipariş #' + ${order.id}">Sipariş #1</h1>
+
+      <div class="adp__card">
+        <h2 style="font-size:14px;margin:0 0 8px">Müşteri Bilgileri</h2>
+        <p style="margin:0" th:text="${order.user.companyName}">Firma</p>
+        <p style="margin:0;color:var(--ink-500)">
+          <span th:text="${order.user.name}">Ad</span> <span th:text="${order.user.surname}">Soyad</span>
+          · <span th:text="${order.user.email}">e-posta</span> · <span th:text="${order.user.phone}">telefon</span>
+        </p>
+        <p style="margin:8px 0 0">
+          <a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{'/admin/quotes/' + ${order.quote.id}}">Kaynak Teklif: #<span th:text="${order.quote.id}">1</span></a>
+        </p>
+      </div>
+
+      <div class="adp__card">
+        <table class="adp__table">
+          <thead><tr><th>Ürün</th><th>Kod</th><th>Adet</th><th>Birim Fiyat</th><th>Toplam</th></tr></thead>
+          <tbody>
+            <tr th:each="item : ${order.items}">
+              <td th:text="${item.productName}">Ürün</td>
+              <td class="mono" th:text="${item.productCode}">KOD</td>
+              <td th:text="${item.qty}">1</td>
+              <td th:text="${@priceFormatter.format(item.unitPrice, item.currency)}">₺0,00</td>
+              <td th:text="${@priceFormatter.format(item.totalPrice, item.currency)}">₺0,00</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style="margin:10px 0 0;text-align:right;font-weight:700" th:text="'Genel Toplam (KDV Dahil): ' + ${@fmt.orderGrandTotal(order)}">Genel Toplam</p>
+      </div>
+
+      <div class="adp__card">
+        <form method="post" th:action="@{'/admin/orders/' + ${order.id} + '/status'}">
+          <label class="adp__field"><span>Durum</span>
+            <select name="status">
+              <option th:each="s : ${T(com.ikibm.catalog.entity.OrderStatus).values()}"
+                      th:value="${s}" th:text="${@orderStatus.label(s)}" th:selected="${order.status == s}">Beklemede</option>
+            </select></label>
+          <label class="adp__field"><span>Kargo Firması</span>
+            <input type="text" name="carrierName" th:value="${order.carrierName}" placeholder="ör. Aras Kargo"/></label>
+          <label class="adp__field"><span>Takip Numarası</span>
+            <input type="text" name="trackingNumber" th:value="${order.trackingNumber}"/></label>
+          <label class="adp__field"><span>Admin Notu</span>
+            <textarea rows="3" name="adminNote" th:text="${order.adminNote}"></textarea></label>
+          <button class="adp__btn" type="submit">Kaydet</button>
+        </form>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

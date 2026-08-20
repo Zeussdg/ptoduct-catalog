@@ -8,7 +8,10 @@
   <h1 class="custpg__title">Hesabım</h1>
 
   <p style="margin:0 0 16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
-    <a class="custpg__link" th:href="@{/quotes}">Tekliflerim →</a>
+    <span style="display:flex;gap:16px">
+      <a class="custpg__link" th:href="@{/quotes}">Tekliflerim →</a>
+      <a class="custpg__link" th:href="@{/orders}">Siparişlerim →</a>
+    </span>
     <form method="post" th:action="@{/logout}" style="margin:0">
       <button type="submit" class="custpg__btn custpg__btn--danger">Çıkış Yap</button>
     </form>

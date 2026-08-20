@@ -19,12 +19,25 @@
           </p>
         </div>
         <div th:if="${quote.user == null}">
-          <p style="margin:0" th:text="${quote.guestCompany != null ? quote.guestCompany : 'Misafir'}">Firma</p>
+          <p style="margin:0" th:text="${quote.recipientCompany != null ? quote.recipientCompany : 'Misafir'}">Firma</p>
           <p style="margin:0;color:var(--ink-500)">
-            <span th:text="${quote.guestContact}">Yetkili</span>
+            <span th:text="${quote.recipientContact}">Yetkili</span>
             <span style="font-style:italic">(girişsiz "Teklifi PDF'e geçir" akışından — kayıtlı hesap yok)</span>
           </p>
         </div>
+      </div>
+
+      <div class="adp__card">
+        <h2 style="font-size:14px;margin:0 0 8px">Teklifi Alan (3. Taraf Müşteri)</h2>
+        <div th:if="${quote.recipientCompany != null or quote.recipientContact != null or quote.recipientPhone != null}">
+          <p style="margin:0" th:text="${quote.recipientCompany != null and quote.recipientCompany != '' ? quote.recipientCompany : '—'}">Firma</p>
+          <p style="margin:0;color:var(--ink-500)">
+            <span th:text="${quote.recipientContact}">Yetkili</span>
+            <span th:if="${quote.recipientPhone != null and quote.recipientPhone != ''}"> · <span th:text="${quote.recipientPhone}">Telefon</span></span>
+          </p>
+        </div>
+        <p th:unless="${quote.recipientCompany != null or quote.recipientContact != null or quote.recipientPhone != null}"
+           style="margin:0;color:var(--ink-500)">Bu teklif için alıcı bilgisi girilmemiş.</p>
       </div>
 
       <div class="adp__card">

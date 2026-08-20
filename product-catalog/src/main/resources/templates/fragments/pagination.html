@@ -5,7 +5,7 @@
      baseQuery: filtre parametreleri, '&' ile biter ya da boştur (örn. "q=foo&marka=TENDA&"). -->
 <nav class="pgn" aria-label="Sayfalama" th:fragment="pagination(current, total, baseQuery)" th:if="${total > 1}">
   <a class="pgn__nav" th:classappend="${current == 1} ? ' pgn__nav--disabled'"
-     th:href="${current == 1} ? '#' : ('/?' + baseQuery + 'sayfa=' + (current - 1))"
+     th:href="${current == 1 ? '#' : ('/?' + baseQuery + 'sayfa=' + (current - 1))}"
      aria-label="Önceki sayfa">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -24,7 +24,7 @@
   </ul>
 
   <a class="pgn__nav" th:classappend="${current == total} ? ' pgn__nav--disabled'"
-     th:href="${current == total} ? '#' : ('/?' + baseQuery + 'sayfa=' + (current + 1))"
+     th:href="${current == total ? '#' : ('/?' + baseQuery + 'sayfa=' + (current + 1))}"
      aria-label="Sonraki sayfa">
     <span>Sonraki</span>
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">

@@ -2,12 +2,17 @@ package com.ikibm.catalog.service;
 
 import com.ikibm.catalog.dto.DashboardStats;
 import com.ikibm.catalog.dto.MonthlyQuoteStat;
+import com.ikibm.catalog.dto.OrderDashboardStats;
+import com.ikibm.catalog.dto.OrderStatusStat;
 import com.ikibm.catalog.dto.QuoteStatusStat;
 import com.ikibm.catalog.dto.TopCustomerStat;
 import com.ikibm.catalog.dto.TopProductStat;
 import com.ikibm.catalog.entity.Currency;
+import com.ikibm.catalog.entity.OrderStatus;
 import com.ikibm.catalog.entity.QuoteStatus;
 import com.ikibm.catalog.entity.User;
+import com.ikibm.catalog.repository.OrderItemRepository;
+import com.ikibm.catalog.repository.OrderRepository;
 import com.ikibm.catalog.repository.QuoteItemRepository;
 import com.ikibm.catalog.repository.QuoteRepository;
 import com.ikibm.catalog.repository.UserRepository;
@@ -41,13 +46,18 @@ public class DashboardService {
 
     private final QuoteRepository quoteRepository;
     private final QuoteItemRepository quoteItemRepository;
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
     private final UserRepository userRepository;
     private final PriceFormatter priceFormatter;
 
     public DashboardService(QuoteRepository quoteRepository, QuoteItemRepository quoteItemRepository,
+                             OrderRepository orderRepository, OrderItemRepository orderItemRepository,
                              UserRepository userRepository, PriceFormatter priceFormatter) {
         this.quoteRepository = quoteRepository;
         this.quoteItemRepository = quoteItemRepository;
+        this.orderRepository = orderRepository;
+        this.orderItemRepository = orderItemRepository;
         this.userRepository = userRepository;
         this.priceFormatter = priceFormatter;
     }
@@ -61,6 +71,29 @@ public class DashboardService {
         long rejected = quoteRepository.countByStatus(QuoteStatus.REJECTED);
         String totalAmount = formatCurrencySums(quoteItemRepository.sumAmountByCurrency(QuoteStatus.CANCELLED));
         return new DashboardStats(total, pending, monthly, approved, rejected, totalAmount);
+    }
+
+    public OrderDashboardStats orderStats() {
+        Instant startOfMonth = LocalDate.now(ZONE).withDayOfMonth(1).atStartOfDay(ZONE).toInstant();
+        long total = orderRepository.count();
+        long pending = orderRepository.countByStatus(OrderStatus.PENDING);
+        long monthly = orderRepository.countByCreatedAtGreaterThanEqual(startOfMonth);
+        long delivered = orderRepository.countByStatus(OrderStatus.DELIVERED);
+        long cancelled = orderRepository.countByStatus(OrderStatus.CANCELLED);
+        String totalAmount = formatCurrencySums(orderItemRepository.sumAmountByCurrency(OrderStatus.CANCELLED));
+        return new OrderDashboardStats(total, pending, monthly, delivered, cancelled, totalAmount);
+    }
+
+    /** Sistemde en az bir kaydı olan sipariş durumları, enum sırasında. */
+    public List<OrderStatusStat> orderStatusDistribution() {
+        Map<OrderStatus, Long> counts = new EnumMap<>(OrderStatus.class);
+        for (Object[] row : orderRepository.countGroupByStatus()) {
+            counts.put((OrderStatus) row[0], (Long) row[1]);
+        }
+        return counts.entrySet().stream()
+                .sorted(Comparator.comparing(e -> e.getKey().ordinal()))
+                .map(e -> new OrderStatusStat(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
     }
 
     /** Son 6 takvim ayı (bu ay dahil), veri olmayan aylar 0 ile doldurulur, kronolojik sırada. */

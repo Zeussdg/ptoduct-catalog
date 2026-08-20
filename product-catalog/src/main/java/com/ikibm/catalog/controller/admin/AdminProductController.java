@@ -7,6 +7,7 @@ import com.ikibm.catalog.service.AuditLogService;
 import com.ikibm.catalog.service.CategoryService;
 import com.ikibm.catalog.service.ProductService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -33,8 +34,13 @@ public class AdminProductController {
     }
 
     @GetMapping
-    public String list(@RequestParam(required = false) String q, Model model) {
-        model.addAttribute("products", productService.adminList(q));
+    public String list(@RequestParam(required = false) String q,
+                       @RequestParam(defaultValue = "1") int page, Model model) {
+        Page<Product> result = productService.adminList(q, page);
+        model.addAttribute("products", result.getContent());
+        model.addAttribute("currentPage", result.getNumber() + 1);
+        model.addAttribute("totalPages", Math.max(1, result.getTotalPages()));
+        model.addAttribute("totalElements", result.getTotalElements());
         model.addAttribute("q", q);
         return "admin/products";
     }

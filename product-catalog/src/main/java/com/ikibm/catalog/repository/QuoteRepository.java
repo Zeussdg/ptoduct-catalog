@@ -15,9 +15,13 @@ import java.util.Optional;
 
 public interface QuoteRepository extends JpaRepository<Quote, Integer> {
 
-    List<Quote> findByUser_IdOrderByCreatedAtDesc(Integer userId);
-
     Optional<Quote> findByIdAndUser_Id(Integer id, Integer userId);
+
+    /** "Tekliflerim" listesi için: siparişe dönüşmüş teklifler artık burada gösterilmiyor
+     * (o andan itibaren "Siparişlerim"den takip ediliyor). */
+    @Query("select q from Quote q where q.user.id = :userId " +
+            "and q.id not in (select o.quote.id from Order o) order by q.createdAt desc")
+    List<Quote> findByUserIdWithoutOrder(@Param("userId") Integer userId);
 
     Page<Quote> findAllByOrderByCreatedAtDesc(Pageable pageable);
 

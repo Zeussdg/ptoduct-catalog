@@ -28,7 +28,7 @@
           <tbody>
             <tr th:each="q : ${quotes}">
               <td th:text="'#' + ${q.id}">#1</td>
-              <td th:text="${q.user != null ? (q.user.companyName != null ? q.user.companyName : q.user.email) : (q.guestCompany != null ? q.guestCompany : (q.guestContact != null ? q.guestContact : 'Misafir'))}">Müşteri</td>
+              <td th:text="${q.user != null ? (q.user.companyName != null ? q.user.companyName : q.user.email) : (q.recipientCompany != null ? q.recipientCompany : (q.recipientContact != null ? q.recipientContact : 'Misafir'))}">Müşteri</td>
               <td th:text="${#lists.isEmpty(q.items) ? '-' : q.items[0].productName + (q.items.size() > 1 ? (' +' + (q.items.size() - 1) + ' diğer') : '')}">Ürünler</td>
               <td th:text="${@fmt.quoteTotal(q)}">Tutar</td>
               <td><span class="adp__badge" th:text="${@quoteStatus.label(q.status)}">Beklemede</span></td>

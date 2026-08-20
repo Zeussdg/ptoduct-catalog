@@ -66,9 +66,11 @@ public class QuoteService {
         Quote quote = new Quote();
         quote.setUser(authenticatedUserOrNull);
         quote.setStatus(QuoteStatus.PENDING);
-        if (authenticatedUserOrNull == null && req.contact() != null) {
-            quote.setGuestCompany(req.contact().firma());
-            quote.setGuestContact(req.contact().yetkili());
+        quote.setMarginPct(BigDecimal.valueOf(req.margin()));
+        if (req.contact() != null) {
+            quote.setRecipientCompany(req.contact().firma());
+            quote.setRecipientContact(req.contact().yetkili());
+            quote.setRecipientPhone(req.contact().telefon());
         }
 
         for (QuotePdfRequest.Item it : req.items()) {
@@ -88,7 +90,7 @@ public class QuoteService {
     }
 
     public List<Quote> listForUser(Integer userId) {
-        return quoteRepository.findByUser_IdOrderByCreatedAtDesc(userId);
+        return quoteRepository.findByUserIdWithoutOrder(userId);
     }
 
     public Quote getForUser(Integer userId, Integer quoteId) {
@@ -115,6 +117,18 @@ public class QuoteService {
         Quote q = getByIdAdmin(id);
         q.setStatus(QuoteStatus.valueOf(status));
         q.setAdminNote(adminNote);
+        return quoteRepository.save(q);
+    }
+
+    // ---- müşteri (bayi) ----
+
+    /** Teklif, toptancıya değil bayinin kendi (3. taraf) müşterisine yapıldığından
+     * durumu asıl bayi yönetir; sahiplik kontrolü getForUser üzerinden sağlanır. */
+    @Transactional
+    public Quote updateStatusForUser(Integer userId, Integer id, String status, String note) {
+        Quote q = getForUser(userId, id);
+        q.setStatus(QuoteStatus.valueOf(status));
+        q.setNote(note);
         return quoteRepository.save(q);
     }
 
