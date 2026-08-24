@@ -41,7 +41,7 @@ public class ProductViewController {
         model.addAttribute("mainCat", mainCat);
         model.addAttribute("subCat", subCat);
         model.addAttribute("related", related);
-        model.addAttribute("price", productService.resolvePrice(product, userId));
+        model.addAttribute("priceBreakdown", productService.priceBreakdown(product, userId));
         model.addAttribute("relatedPrices", productService.resolvePrices(related, userId));
         return "public/product-detail";
     }

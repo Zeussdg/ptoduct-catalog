@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +14,13 @@ public interface PriceListItemRepository extends JpaRepository<PriceListItem, In
     List<PriceListItem> findByPriceList_IdOrderByCreatedAtDesc(Integer priceListId);
 
     Optional<PriceListItem> findByPriceList_IdAndProduct_Id(Integer priceListId, Integer productId);
+
+    /** Bir müşterinin bağlı olduğu tüm fiyat listelerindeki kalemler — toplu (katalog listesi) fiyat çözümleme için. */
+    List<PriceListItem> findByPriceList_IdIn(Collection<Integer> priceListIds);
+
+    /** Bir müşterinin bağlı olduğu fiyat listelerinden, verilen ürüne ait tüm eşleşmeler
+     * (ör. hem "Taksitli Fiyat" hem "Peşin Fiyat" listesinde bu ürün olabilir). */
+    List<PriceListItem> findByPriceList_IdInAndProduct_Id(Collection<Integer> priceListIds, Integer productId);
 
     /** Bir ürünün aktif fiyat listelerindeki tüm eşleşmeleri — sipariş düzenleme ekranındaki
      * fiyat seçim listesi için (birden fazla liste aynı ürünü içerebilir). */

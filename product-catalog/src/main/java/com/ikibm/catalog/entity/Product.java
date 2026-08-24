@@ -38,6 +38,9 @@ public class Product {
     @Column(name = "discount_price", precision = 12, scale = 2)
     private BigDecimal discountPrice;
 
+    @Column(name = "dealer_price", precision = 12, scale = 2)
+    private BigDecimal dealerPrice;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Currency currency = Currency.TRY;
@@ -73,6 +76,8 @@ public class Product {
     public void setPrice(BigDecimal price) { this.price = price; }
     public BigDecimal getDiscountPrice() { return discountPrice; }
     public void setDiscountPrice(BigDecimal discountPrice) { this.discountPrice = discountPrice; }
+    public BigDecimal getDealerPrice() { return dealerPrice; }
+    public void setDealerPrice(BigDecimal dealerPrice) { this.dealerPrice = dealerPrice; }
     public Currency getCurrency() { return currency; }
     public void setCurrency(Currency currency) { this.currency = currency; }
     public Boolean getIsActive() { return isActive; }

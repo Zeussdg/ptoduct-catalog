@@ -5,6 +5,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -33,6 +35,14 @@ public class User {
 
     @Column(name = "company_name")
     private String companyName;
+
+    /** Müşterinin bağlı olduğu fiyat listeleri — taksitli/peşin/veresiye gibi birden fazla ödeme
+     * yöntemine göre farklı fiyat listelerine aynı anda bağlı olabilir. */
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_price_lists",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "price_list_id"))
+    private Set<PriceList> priceLists = new HashSet<>();
 
     private String name;
 
@@ -65,6 +75,8 @@ public class User {
     public void setStatus(UserStatus status) { this.status = status; }
     public String getCompanyName() { return companyName; }
     public void setCompanyName(String companyName) { this.companyName = companyName; }
+    public Set<PriceList> getPriceLists() { return priceLists; }
+    public void setPriceLists(Set<PriceList> priceLists) { this.priceLists = priceLists; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getSurname() { return surname; }

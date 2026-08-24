@@ -11,6 +11,22 @@
     </div>
     <div id="cartContent"></div>
   </aside>
+
+  <!-- Kart/liste üzerinden "Sepete Ekle": ürünün birden fazla fiyat listesi seçeneği varsa
+       (data-price-options JSON'ı doluysa) cart.js bu modalı açar, tek seçenek yoksa direkt eklenir. -->
+  <div class="pmodal" id="quickAddModal" hidden>
+    <div class="pmodal__backdrop" id="quickAddModalBackdrop"></div>
+    <div class="pmodal__panel" role="dialog" aria-modal="true" aria-labelledby="quickAddModalTitle">
+      <div class="pmodal__head">
+        <h2 id="quickAddModalTitle">Fiyat Seçin</h2>
+        <button type="button" class="pmodal__close" id="quickAddModalClose" aria-label="Kapat">×</button>
+      </div>
+      <div class="pmodal__body" id="quickAddModalBody"></div>
+      <div class="pmodal__foot">
+        <button type="button" class="pdetail__add-btn" id="quickAddModalConfirm">Sepete Ekle</button>
+      </div>
+    </div>
+  </div>
 </th:block>
 </body>
 </html>

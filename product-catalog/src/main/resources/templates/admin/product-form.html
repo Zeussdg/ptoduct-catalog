@@ -33,6 +33,9 @@
           <label class="adp__field"><span>İndirimli Fiyat</span>
             <input type="number" step="0.01" th:field="*{discountPrice}"/>
             <small th:if="${#fields.hasErrors('discountPrice')}" th:errors="*{discountPrice}" style="color:var(--danger-600);font-size:11px">Hata</small></label>
+          <label class="adp__field"><span>Bayi Fiyatı</span>
+            <input type="number" step="0.01" th:field="*{dealerPrice}"/>
+            <small th:if="${#fields.hasErrors('dealerPrice')}" th:errors="*{dealerPrice}" style="color:var(--danger-600);font-size:11px">Hata</small></label>
           <label class="adp__field"><span>Para Birimi</span>
             <select th:field="*{currency}">
               <option value="TRY">TRY</option>

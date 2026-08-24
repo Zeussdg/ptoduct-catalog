@@ -3,6 +3,7 @@ package com.ikibm.catalog.controller.admin;
 import com.ikibm.catalog.entity.Currency;
 import com.ikibm.catalog.service.CustomerPriceImportService;
 import com.ikibm.catalog.service.CustomerPriceService;
+import com.ikibm.catalog.service.PriceListService;
 import com.ikibm.catalog.service.ProductService;
 import com.ikibm.catalog.service.QuoteService;
 import com.ikibm.catalog.service.UserService;
@@ -21,6 +22,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin/customers")
@@ -31,15 +34,18 @@ public class AdminCustomerController {
     private final ProductService productService;
     private final CustomerPriceService customerPriceService;
     private final CustomerPriceImportService customerPriceImportService;
+    private final PriceListService priceListService;
 
     public AdminCustomerController(UserService userService, QuoteService quoteService,
                                    ProductService productService, CustomerPriceService customerPriceService,
-                                   CustomerPriceImportService customerPriceImportService) {
+                                   CustomerPriceImportService customerPriceImportService,
+                                   PriceListService priceListService) {
         this.userService = userService;
         this.quoteService = quoteService;
         this.productService = productService;
         this.customerPriceService = customerPriceService;
         this.customerPriceImportService = customerPriceImportService;
+        this.priceListService = priceListService;
     }
 
     @GetMapping
@@ -58,12 +64,23 @@ public class AdminCustomerController {
 
     @GetMapping("/{id}")
     public String detail(@PathVariable Integer id, @RequestParam(required = false) String q, Model model) {
-        model.addAttribute("customer", userService.getById(id));
+        var customer = userService.getById(id);
+        model.addAttribute("customer", customer);
         model.addAttribute("quotes", quoteService.listForUser(id));
         model.addAttribute("customerPrices", customerPriceService.listForCustomer(id));
         model.addAttribute("q", q);
         model.addAttribute("productResults", (q == null || q.isBlank()) ? List.of() : productService.adminList(q));
+        model.addAttribute("priceLists", priceListService.list());
+        Set<Integer> selectedPriceListIds = customer.getPriceLists().stream()
+                .map(com.ikibm.catalog.entity.PriceList::getId).collect(Collectors.toSet());
+        model.addAttribute("selectedPriceListIds", selectedPriceListIds);
         return "admin/customer-detail";
+    }
+
+    @PostMapping("/{id}/price-list")
+    public String setPriceList(@PathVariable Integer id, @RequestParam(required = false) List<Integer> priceListIds) {
+        userService.assignPriceLists(id, priceListIds);
+        return "redirect:/admin/customers/" + id;
     }
 
     @PostMapping("/{id}/prices")

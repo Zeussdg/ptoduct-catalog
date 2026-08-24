@@ -1,5 +1,5 @@
 // Admin fiyat listesi detayı: aranan ürünlerden çoklu seçim yapıp her birine ayrı
-// KDV dahil fiyat girerek listeye ekleme.
+// KDV hariç fiyat girerek listeye ekleme.
 (function () {
   "use strict";
 
@@ -35,8 +35,8 @@
           row.style.marginBottom = "8px";
           row.innerHTML =
             '<span style="min-width:260px">' + esc(c.getAttribute("data-name")) + ' <span class="mono" style="color:var(--ink-500)">(' + esc(c.getAttribute("data-code")) + ')</span>'
-              + ' <span style="color:var(--ink-500)">(eski KDV dahil: ' + esc(c.getAttribute("data-old-price")) + ')</span></span>' +
-            '<input type="number" step="0.01" min="0" class="js-pli-price" placeholder="KDV dahil fiyat" style="width:140px"/>' +
+              + ' <span style="color:var(--ink-500)">(eski liste fiyatı: ' + esc(c.getAttribute("data-old-price")) + ' + KDV)</span></span>' +
+            '<input type="number" step="0.01" min="0" class="js-pli-price" placeholder="KDV hariç fiyat" style="width:140px"/>' +
             '<select class="js-pli-currency" style="width:90px">' +
             ["TRY", "USD", "EUR"].map(function (c2) {
               var sel = c2 === c.getAttribute("data-currency") ? " selected" : "";

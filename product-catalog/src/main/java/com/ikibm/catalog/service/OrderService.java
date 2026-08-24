@@ -82,6 +82,7 @@ public class OrderService {
                 oi.setUnitPrice(qi.getUnitPrice());
                 oi.setTotalPrice(qi.getTotalPrice());
                 oi.setCurrency(qi.getCurrency());
+                oi.setPriceIncludesVat(Boolean.TRUE.equals(qi.getPriceIncludesVat()));
                 order.getItems().add(oi);
             }
 

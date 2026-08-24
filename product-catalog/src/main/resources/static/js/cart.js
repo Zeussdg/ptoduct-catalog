@@ -21,6 +21,9 @@
   // dolayısıyla tek kayıtlı Quote) paylaşılsın diye — sepet değişince imza değişir,
   // önbellek doğal olarak geçersiz kalır ve yeni bir teklif haklı olarak oluşur.
   var lastQuoteExport = null;
+  // Sepet drawer'ında hangi kalemin fiyat listesi (Taksitli/Peşin vb.) geçiş menüsü açık — tek seferde
+  // en fazla bir kalem için açık kalır, kalem id'si (string) veya hiçbiri açık değilse null.
+  var openPriceMenuId = null;
 
   // ---- yardımcılar ----
   function read() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; } }
@@ -45,6 +48,17 @@
     return t;
   }
 
+  // KDV hariç (net) ve KDV dahil (fiyat listesinden gelmiş) kalemleri para birimi bazında ayrı toplar —
+  // KDV'nin sadece net kalemlere eklenip zaten KDV dahil olan kalemlere tekrar eklenmemesi için.
+  function netTotalsByCurrency(items) {
+    var t = {};
+    items.forEach(function (it) {
+      if (it.price == null || isNaN(it.price) || it.priceIncludesVat) return;
+      t[it.currency] = (t[it.currency] || 0) + it.price * it.qty;
+    });
+    return t;
+  }
+
   function updateBadge() {
     var badge = document.getElementById("cartBadge");
     if (!badge) return;
@@ -59,7 +73,9 @@
     var ex = items.find(function (it) { return String(it.id) === String(p.id); });
     if (ex) ex.qty += (qty || 1);
     else items.push({ id: p.id, name: p.name, brand: p.brand, code: p.code,
-                      price: p.price, currency: p.currency, qty: qty || 1 });
+                      price: p.price, currency: p.currency, qty: qty || 1,
+                      priceIncludesVat: !!p.priceIncludesVat,
+                      priceListName: p.priceListName || null, priceOptions: p.priceOptions || [] });
     write(items); updateBadge();
   }
   function setQty(id, qty) {
@@ -81,9 +97,19 @@
   }
   function removeItem(id) {
     write(read().filter(function (x) { return String(x.id) !== String(id); }));
+    if (openPriceMenuId === id) openPriceMenuId = null;
     updateBadge(); render();
   }
-  function clearCart() { write([]); updateBadge(); render(); }
+  function clearCart() { write([]); openPriceMenuId = null; updateBadge(); render(); }
+  function setItemPrice(id, price, currency, priceListName) {
+    var items = read();
+    var it = items.find(function (x) { return String(x.id) === String(id); });
+    if (!it) return;
+    it.price = price; it.currency = currency; it.priceListName = priceListName; it.priceIncludesVat = false;
+    write(items);
+    openPriceMenuId = null;
+    render();
+  }
 
   // ---- drawer ----
   function openDrawer() { open = true; render(); }
@@ -91,20 +117,22 @@
 
   function footerTotalsHtml(items) {
     var totals = totalsByCurrency(items);
+    var netTotals = netTotalsByCurrency(items);
     var curs = Object.keys(totals);
     return curs.map(function (cur) {
       return '<div class="cdrw__total-row"><span>Ara Toplam (' + cur + ')</span><span class="mono">' + formatPrice(totals[cur], cur) + '</span></div>';
     }).join("")
     + curs.map(function (cur) {
-      return '<div class="cdrw__total-row"><span>KDV (%20) (' + cur + ')</span><span class="mono">' + formatPrice(totals[cur] * VAT, cur) + '</span></div>';
+      return '<div class="cdrw__total-row"><span>KDV (%20) (' + cur + ')</span><span class="mono">' + formatPrice((netTotals[cur] || 0) * VAT, cur) + '</span></div>';
     }).join("")
     + curs.map(function (cur) {
-      return '<div class="cdrw__total-row cdrw__total-row--grand"><span>Genel Toplam (' + cur + ')</span><span class="mono">' + formatPrice(totals[cur] * (1 + VAT), cur) + '</span></div>';
+      return '<div class="cdrw__total-row cdrw__total-row--grand"><span>Genel Toplam (' + cur + ')</span><span class="mono">' + formatPrice(totals[cur] + (netTotals[cur] || 0) * VAT, cur) + '</span></div>';
     }).join("");
   }
 
   function summaryHtml(items) {
     var totals = totalsByCurrency(items);
+    var netTotals = netTotalsByCurrency(items);
     var curs = Object.keys(totals);
     var pct = Number(margin) || 0;
     if (curs.length === 0) return '<p class="cdrw__summary-empty">Fiyatlandırılabilir ürün bulunmuyor.</p>';
@@ -112,7 +140,8 @@
       var before = totals[cur];
       var marginAmt = before * (pct / 100);
       var after = before + marginAmt;
-      var vatAmt = after * VAT;
+      var netAfterMargin = (netTotals[cur] || 0) * (1 + pct / 100);
+      var vatAmt = netAfterMargin * VAT;
       var grand = after + vatAmt;
       return '<div class="cdrw__summary-group">'
         + '<div class="cdrw__summary-row"><span>Ara Toplam (' + cur + ')</span><span class="mono">' + formatPrice(before, cur) + '</span></div>'
@@ -146,6 +175,23 @@
 
     var listHtml = items.map(function (it) {
       var line = (it.price == null || isNaN(it.price)) ? "—" : formatPrice(it.price * it.qty, it.currency);
+      var label = it.priceListName ? esc(it.priceListName) : "Liste Fiyatı";
+      var priceTagHtml;
+      if (it.priceOptions && it.priceOptions.length > 1) {
+        var menuHtml = "";
+        if (openPriceMenuId === it.id) {
+          menuHtml = '<ul class="cdrw__price-menu">' + it.priceOptions.map(function (opt) {
+            return '<li><button type="button" data-act="pick-price" data-id="' + esc(it.id) + '" '
+              + 'data-price="' + esc(opt.price) + '" data-currency="' + esc(opt.currency) + '" data-name="' + esc(opt.name) + '">'
+              + esc(opt.name) + ' — ' + formatPrice(opt.price, opt.currency) + '</button></li>';
+          }).join("") + '</ul>';
+        }
+        priceTagHtml = '<span class="cdrw__price-tag-wrap">'
+          + '<button type="button" class="cdrw__price-tag" data-act="toggle-price" data-id="' + esc(it.id) + '">(' + label + ')</button>'
+          + menuHtml + '</span>';
+      } else {
+        priceTagHtml = '<span class="cdrw__price-tag cdrw__price-tag--static">(' + label + ')</span>';
+      }
       return '<li class="cdrw__item"><div class="cdrw__item-info">'
         + '<span class="cdrw__item-brand">' + esc(it.brand) + '</span>'
         + '<span class="cdrw__item-name">' + esc(it.name) + '</span>'
@@ -155,7 +201,10 @@
         + '<input type="number" min="1" inputMode="numeric" class="cdrw__qty-input mono" '
         + 'data-act="qtyinput" data-id="' + esc(it.id) + '" value="' + it.qty + '" aria-label="Adet">'
         + '<button type="button" data-act="inc" data-id="' + esc(it.id) + '" aria-label="Artır">+</button></div>'
+        + '<div class="cdrw__price-group">'
         + '<span class="cdrw__item-price mono" data-price-for="' + esc(it.id) + '">' + line + '</span>'
+        + priceTagHtml
+        + '</div>'
         + '<button type="button" class="cdrw__remove" data-act="rm" data-id="' + esc(it.id) + '" aria-label="Kaldır">Kaldır</button>'
         + '</div></li>';
     }).join("");
@@ -323,7 +372,7 @@
 
   // ---- WhatsApp'tan paylaş ----
   // Teklifin okunabilir metin özetini üretir (wa.me fallback ve dosya paylaşım metni).
-  function buildQuoteText(items, totals, sellerInfo, contactInfo, marginPct) {
+  function buildQuoteText(items, sellerInfo, contactInfo, marginPct) {
     var factor = 1 + (Number(marginPct) || 0) / 100;
     var lines = [];
     lines.push("*FİYAT TEKLİFİ*");
@@ -346,13 +395,15 @@
     });
     lines.push("");
 
+    var totals = totalsByCurrency(items);
+    var netTotals = netTotalsByCurrency(items);
     var curs = Object.keys(totals);
     if (curs.length > 0) {
       lines.push("*Toplam (KDV dahil)*");
       curs.forEach(function (cur) {
-        var before = Number(totals[cur]) || 0;
-        var after = before + before * ((Number(marginPct) || 0) / 100);
-        var grand = after + after * VAT;
+        var after = (Number(totals[cur]) || 0) * factor;
+        var vat = (Number(netTotals[cur]) || 0) * factor * VAT;
+        var grand = after + vat;
         lines.push(cur + ": " + formatPrice(grand, cur));
       });
       lines.push("");
@@ -404,7 +455,7 @@
 
     var payload = { items: items, seller: seller, contact: contact, margin: Number(margin) || 0 };
     getOrCreateQuotePdf(payload).then(function (r) {
-      var text = buildQuoteText(items, totalsByCurrency(items), seller, contact, margin);
+      var text = buildQuoteText(items, seller, contact, margin);
       return shareOnWhatsApp({ blob: r.blob, fileName: r.filename, text: text, phone: contact.telefon });
     }).catch(function (err) {
       console.error("WhatsApp paylaşımı başarısız:", err);
@@ -419,16 +470,90 @@
   document.addEventListener("DOMContentLoaded", function () {
     updateBadge();
 
-    // sepete ekle butonları (kart + detay)
+    // ---- kart üzerinden hızlı ekle: fiyat seçim modalı ----
+    // Ürünün birden fazla fiyat listesi seçeneği varsa (kartın gizli .js-pcard-option'ları doluysa)
+    // "Sepete Ekle" direkt eklemek yerine bu modalı açar; seçenek yoksa eskisi gibi direkt eklenir.
+    var quickAddModal = document.getElementById("quickAddModal");
+    var quickAddBody = document.getElementById("quickAddModalBody");
+    var quickAddConfirm = document.getElementById("quickAddModalConfirm");
+    var quickAddBackdrop = document.getElementById("quickAddModalBackdrop");
+    var quickAddClose = document.getElementById("quickAddModalClose");
+
+    function closeQuickAddModal() { if (quickAddModal) quickAddModal.hidden = true; }
+    if (quickAddBackdrop) quickAddBackdrop.addEventListener("click", closeQuickAddModal);
+    if (quickAddClose) quickAddClose.addEventListener("click", closeQuickAddModal);
+    document.addEventListener("keydown", function (e) {
+      if (quickAddModal && e.key === "Escape" && !quickAddModal.hidden) closeQuickAddModal();
+    });
+
+    function openQuickAddModal(baseItem, optionEls, qty) {
+      if (!quickAddModal) return;
+      quickAddBody.innerHTML = "";
+      Array.prototype.forEach.call(optionEls, function (el, idx) {
+        var price = el.getAttribute("data-price");
+        var currency = el.getAttribute("data-currency");
+        var name = el.getAttribute("data-name");
+        var label = document.createElement("label");
+        label.className = "pmodal__option" + (idx === 0 ? " pmodal__option--selected" : "");
+        label.innerHTML = '<input type="radio" name="quickAddOption"' + (idx === 0 ? " checked" : "")
+          + ' data-price="' + price + '" data-currency="' + currency + '" data-name="' + esc(name) + '"/>'
+          + '<span class="pmodal__option-name">' + esc(name) + '</span>'
+          + '<span class="pmodal__option-price">' + formatPrice(price, currency) + ' + KDV</span>';
+        quickAddBody.appendChild(label);
+      });
+      Array.prototype.forEach.call(quickAddBody.querySelectorAll('input[type="radio"]'), function (input) {
+        input.addEventListener("change", function () {
+          Array.prototype.forEach.call(quickAddBody.querySelectorAll(".pmodal__option"), function (opt) {
+            opt.classList.toggle("pmodal__option--selected", opt.querySelector("input").checked);
+          });
+        });
+      });
+      quickAddConfirm.onclick = function () {
+        var checked = quickAddBody.querySelector('input[name="quickAddOption"]:checked');
+        if (!checked) return;
+        var allOptions = Array.prototype.map.call(
+          quickAddBody.querySelectorAll('input[name="quickAddOption"]'), function (input) {
+            return { name: input.getAttribute("data-name"), price: parseFloat(input.getAttribute("data-price")),
+                     currency: input.getAttribute("data-currency") };
+          });
+        addItem({
+          id: baseItem.id, name: baseItem.name, brand: baseItem.brand, code: baseItem.code,
+          price: parseFloat(checked.getAttribute("data-price")),
+          currency: checked.getAttribute("data-currency"),
+          priceIncludesVat: false,
+          priceListName: checked.getAttribute("data-name"),
+          priceOptions: allOptions
+        }, qty);
+        openDrawer();
+        closeQuickAddModal();
+      };
+      quickAddModal.hidden = false;
+    }
+
+    // sepete ekle butonları (kart + detay): ürünün birden fazla fiyat listesi seçeneği varsa
+    // yukarıdaki modal açılır; yoksa eskisi gibi butondaki fiyatla direkt eklenir.
     Array.prototype.forEach.call(document.querySelectorAll(".js-add-to-cart"), function (btn) {
       btn.addEventListener("click", function () {
         var qty = 1;
         var target = btn.getAttribute("data-qty-target");
         if (target) { var el = document.getElementById(target); if (el) qty = parseInt(el.textContent, 10) || 1; }
-        addItem({
+
+        var baseItem = {
           id: btn.getAttribute("data-id"), name: btn.getAttribute("data-name"),
-          brand: btn.getAttribute("data-brand"), code: btn.getAttribute("data-code"),
-          price: parseFloat(btn.getAttribute("data-price")), currency: btn.getAttribute("data-currency")
+          brand: btn.getAttribute("data-brand"), code: btn.getAttribute("data-code")
+        };
+
+        var card = btn.closest(".pcard");
+        var optionEls = card ? card.querySelectorAll(".js-pcard-option") : [];
+        if (optionEls.length > 0 && quickAddModal) {
+          openQuickAddModal(baseItem, optionEls, qty);
+          return;
+        }
+
+        addItem({
+          id: baseItem.id, name: baseItem.name, brand: baseItem.brand, code: baseItem.code,
+          price: parseFloat(btn.getAttribute("data-price")), currency: btn.getAttribute("data-currency"),
+          priceIncludesVat: btn.getAttribute("data-price-includes-vat") === "true"
         }, qty);
         openDrawer();
       });
@@ -473,6 +598,10 @@
       else if (act === "pdf") submitPdf();
       else if (act === "whatsapp") handleWhatsApp();
       else if (act === "order") handleCreateOrderFromCart();
+      else if (act === "toggle-price") { openPriceMenuId = (openPriceMenuId === id ? null : id); render(); }
+      else if (act === "pick-price") {
+        setItemPrice(id, parseFloat(b.getAttribute("data-price")), b.getAttribute("data-currency"), b.getAttribute("data-name"));
+      }
     });
 
     render();

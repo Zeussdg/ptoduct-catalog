@@ -3,11 +3,17 @@ package com.ikibm.catalog.controller.admin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ikibm.catalog.dto.PriceListItemsUpdateRequest;
 import com.ikibm.catalog.entity.Currency;
+import com.ikibm.catalog.service.PriceListItemImportService;
 import com.ikibm.catalog.service.PriceListService;
 import com.ikibm.catalog.service.ProductService;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
@@ -18,12 +24,14 @@ public class AdminPriceListController {
 
     private final PriceListService priceListService;
     private final ProductService productService;
+    private final PriceListItemImportService priceListItemImportService;
     private final ObjectMapper objectMapper;
 
     public AdminPriceListController(PriceListService priceListService, ProductService productService,
-                                    ObjectMapper objectMapper) {
+                                    PriceListItemImportService priceListItemImportService, ObjectMapper objectMapper) {
         this.priceListService = priceListService;
         this.productService = productService;
+        this.priceListItemImportService = priceListItemImportService;
         this.objectMapper = objectMapper;
     }
 
@@ -46,6 +54,28 @@ public class AdminPriceListController {
         model.addAttribute("q", q);
         model.addAttribute("productResults", (q == null || q.isBlank()) ? List.of() : productService.adminList(q));
         return "admin/price-list-detail";
+    }
+
+    @GetMapping("/import-template")
+    public ResponseEntity<byte[]> importTemplate() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.setContentDisposition(ContentDisposition.attachment().filename("fiyat-listesi-import-sablonu.xlsx").build());
+        return ResponseEntity.ok().headers(headers).body(priceListItemImportService.buildTemplate());
+    }
+
+    @PostMapping("/{id}/items/import")
+    public String importItems(@PathVariable Integer id, @RequestParam("file") MultipartFile file, RedirectAttributes ra) {
+        if (file.isEmpty()) {
+            ra.addFlashAttribute("error", "Excel dosyası seçilmedi");
+            return "redirect:/admin/price-lists/" + id;
+        }
+        try {
+            ra.addFlashAttribute("priceImportReport", priceListItemImportService.importForPriceList(id, file.getInputStream()));
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "İçe aktarma başarısız: " + e.getMessage());
+        }
+        return "redirect:/admin/price-lists/" + id;
     }
 
     @PostMapping("/{id}/items")

@@ -33,6 +33,23 @@
       </div>
 
       <div class="adp__card">
+        <h2 style="font-size:14px;margin:0 0 12px">Fiyat Listeleri</h2>
+        <p style="margin:0 0 10px;color:var(--ink-500);font-size:12.5px">
+          Bu müşteri birden fazla fiyat listesine aynı anda bağlanabilir (ör. hem Taksitli hem Peşin) —
+          müşteriye özel fiyat tanımlı olmayan ürünlerde, bağlı olduğu listelerden bu ürünü içerenlerin
+          tümü ürün detay sayfasında ayrı seçenekler olarak gösterilir.
+        </p>
+        <form method="post" th:action="@{'/admin/customers/' + ${customer.id} + '/price-list'}">
+          <label class="adp__field"><span>Fiyat Listeleri (Ctrl/Cmd ile birden fazla seçin)</span>
+            <select name="priceListIds" multiple size="5" style="min-height:110px">
+              <option th:each="pl : ${priceLists}" th:value="${pl.id}" th:text="${pl.name}"
+                      th:selected="${selectedPriceListIds.contains(pl.id)}">Liste</option>
+            </select></label>
+          <button type="submit" class="adp__btn adp__btn--sm">Kaydet</button>
+        </form>
+      </div>
+
+      <div class="adp__card">
         <h2 style="font-size:14px;margin:0 0 12px">Toplu Özel Fiyat İçe Aktar (Excel)</h2>
         <p style="margin:0 0 10px;color:var(--ink-500);font-size:12.5px">
           Sütunlar: <strong>Stok Kodu</strong> (zorunlu), <strong>Fiyat</strong> (zorunlu),

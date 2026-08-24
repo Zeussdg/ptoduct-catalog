@@ -31,6 +31,9 @@ public class ProductForm {
     @DecimalMin(value = "0.0", message = "İndirimli fiyat negatif olamaz")
     private BigDecimal discountPrice;
 
+    @DecimalMin(value = "0.0", message = "Bayi fiyatı negatif olamaz")
+    private BigDecimal dealerPrice;
+
     private String currency = "TRY";
     private Boolean isActive = true;
 
@@ -43,6 +46,7 @@ public class ProductForm {
         f.description = p.getDescription();
         f.price = p.getPrice();
         f.discountPrice = p.getDiscountPrice();
+        f.dealerPrice = p.getDealerPrice();
         f.currency = p.getCurrency() != null ? p.getCurrency().name() : "TRY";
         f.isActive = p.getIsActive();
         return f;
@@ -62,6 +66,8 @@ public class ProductForm {
     public void setPrice(BigDecimal price) { this.price = price; }
     public BigDecimal getDiscountPrice() { return discountPrice; }
     public void setDiscountPrice(BigDecimal discountPrice) { this.discountPrice = discountPrice; }
+    public BigDecimal getDealerPrice() { return dealerPrice; }
+    public void setDealerPrice(BigDecimal dealerPrice) { this.dealerPrice = dealerPrice; }
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) { this.currency = currency; }
     public Boolean getIsActive() { return isActive; }

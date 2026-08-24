@@ -57,7 +57,7 @@
         if (!listSelect.value) return;
         priceInput.value = listSelect.value;
         row.setAttribute("data-currency", listSelect.selectedOptions[0].getAttribute("data-currency"));
-        row._priceIncludesVat = true;
+        row._priceIncludesVat = false;
         recompute();
       });
     }
@@ -136,7 +136,7 @@
       if (!listSelect.value) return;
       priceInput.value = listSelect.value;
       row.setAttribute("data-currency", listSelect.selectedOptions[0].getAttribute("data-currency"));
-      row._priceIncludesVat = true;
+      row._priceIncludesVat = false;
       updateNewRowTotal(row);
     });
 

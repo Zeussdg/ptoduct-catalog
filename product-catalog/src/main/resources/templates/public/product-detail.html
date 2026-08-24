@@ -30,9 +30,35 @@
         <h1 class="pdetail__name" th:text="${product.name}">Ürün adı</h1>
         <span class="pdetail__code mono" th:text="'Stok Kodu: ' + ${product.stockCode}">Stok Kodu: —</span>
 
-        <div class="pdetail__price-row">
-          <span th:if="${price.customerSpecific}" class="pdetail__brand" style="color:var(--signal-700)">Özel Fiyat</span>
-          <span class="pdetail__price" th:text="${@priceFormatter.format(price.price, price.currency)}">₺0,00</span>
+        <div class="pdetail__price-card">
+          <div class="pdetail__price-row">
+            <span class="pdetail__brand" id="pdetailBadge" style="color:var(--signal-700)" th:text="${priceBreakdown.badgeLabel()}">Liste Fiyatı</span>
+            <span class="pdetail__price" id="pdetailPrice" th:text="${@priceFormatter.format(priceBreakdown.effectivePrice, priceBreakdown.effectiveCurrency)}">₺0,00</span>
+            <span class="pdetail__price-vat" th:text="${priceBreakdown.vatIncluded} ? '(KDV Dahil)' : '+ KDV'">+ KDV</span>
+          </div>
+
+          <dl class="pdetail__price-list-options" th:if="${!priceBreakdown.priceListOptions.isEmpty()}">
+            <div th:each="opt : ${priceBreakdown.priceListOptions}">
+              <dt th:text="${opt.priceListName}">Liste</dt>
+              <dd th:text="${@priceFormatter.format(opt.price, opt.currency)} + ' + KDV'">—</dd>
+            </div>
+          </dl>
+
+          <dl class="pdetail__price-tiers"
+              th:if="${priceBreakdown.special != null or priceBreakdown.dealer != null or priceBreakdown.source != T(com.ikibm.catalog.dto.PriceSource).LIST}">
+            <div th:if="${priceBreakdown.special != null}">
+              <dt>Özel</dt>
+              <dd th:text="${@priceFormatter.format(priceBreakdown.special.price, priceBreakdown.special.currency)} + ' + KDV'">—</dd>
+            </div>
+            <div th:if="${priceBreakdown.dealer != null}">
+              <dt>Bayi</dt>
+              <dd th:text="${@priceFormatter.format(priceBreakdown.dealer.price, priceBreakdown.dealer.currency)} + ' + KDV'">—</dd>
+            </div>
+            <div>
+              <dt>Liste</dt>
+              <dd th:text="${@priceFormatter.format(priceBreakdown.list.price, priceBreakdown.list.currency)} + ' + KDV'">—</dd>
+            </div>
+          </dl>
         </div>
 
         <div class="pdetail__add-row">
@@ -41,9 +67,9 @@
             <span class="mono" data-qtyval id="detailQty">1</span>
             <button type="button" data-qtyplus>+</button>
           </div>
-          <button type="button" class="pdetail__add-btn js-add-to-cart"
+          <button type="button" class="pdetail__add-btn" id="pdetailAddBtn"
                   data-qty-target="detailQty"
-                  th:attr="data-id=${product.id},data-name=${product.name},data-brand=${product.brand},data-code=${product.stockCode},data-price=${price.price},data-currency=${price.currency.name()}">
+                  th:attr="data-id=${product.id},data-name=${product.name},data-brand=${product.brand},data-code=${product.stockCode}">
             Sepete Ekle
           </button>
         </div>
@@ -53,7 +79,7 @@
           <div><dt>Stok Kodu</dt><dd class="mono" th:text="${product.stockCode}">—</dd></div>
           <div th:if="${mainCat != null}"><dt>Ana Kategori</dt><dd th:text="${mainCat.name}">—</dd></div>
           <div th:if="${subCat != null}"><dt>Kategori</dt><dd th:text="${subCat.name}">—</dd></div>
-          <div><dt>Para Birimi</dt><dd th:text="${price.currency.name()}">TRY</dd></div>
+          <div><dt>Para Birimi</dt><dd th:text="${priceBreakdown.effectiveCurrency.name()}">TRY</dd></div>
         </dl>
 
         <div class="pdetail__desc" th:if="${product.description != null and product.description != ''}">
@@ -78,8 +104,38 @@
   </div>
 </div>
 
+<div class="pmodal" id="pdetailModal" hidden>
+  <div class="pmodal__backdrop" id="pdetailModalBackdrop"></div>
+  <div class="pmodal__panel" role="dialog" aria-modal="true" aria-labelledby="pdetailModalTitle">
+    <div class="pmodal__head">
+      <h2 id="pdetailModalTitle">Fiyat Seçin</h2>
+      <button type="button" class="pmodal__close" id="pdetailModalClose" aria-label="Kapat">×</button>
+    </div>
+    <div class="pmodal__body">
+      <label class="pmodal__option" th:if="${!priceBreakdown.priceListOptions.isEmpty()}"
+             th:each="opt, iter : ${priceBreakdown.priceListOptions}">
+        <input type="radio" name="pdetailPriceOption" th:checked="${iter.first}"
+               th:attr="data-price=${opt.price},data-currency=${opt.currency},data-name=${opt.priceListName}"/>
+        <span class="pmodal__option-name" th:text="${opt.priceListName}">Liste</span>
+        <span class="pmodal__option-price" th:text="${@priceFormatter.format(opt.price, opt.currency)} + ' + KDV'">—</span>
+      </label>
+      <label class="pmodal__option" th:if="${priceBreakdown.priceListOptions.isEmpty()}">
+        <input type="radio" name="pdetailPriceOption" checked="checked"
+               th:attr="data-price=${priceBreakdown.effectivePrice},data-currency=${priceBreakdown.effectiveCurrency.name()}"/>
+        <span class="pmodal__option-name" th:text="${priceBreakdown.badgeLabel()}">Liste Fiyatı</span>
+        <span class="pmodal__option-price"
+              th:text="${@priceFormatter.format(priceBreakdown.effectivePrice, priceBreakdown.effectiveCurrency)} + (${priceBreakdown.vatIncluded} ? ' (KDV Dahil)' : ' + KDV')">—</span>
+      </label>
+    </div>
+    <div class="pmodal__foot">
+      <button type="button" class="pdetail__add-btn" id="pdetailModalConfirm">Sepete Ekle</button>
+    </div>
+  </div>
+</div>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
 <div th:replace="~{fragments/cart-drawer :: drawer}"></div>
 <script th:src="@{/js/cart.js}"></script>
+<script th:src="@{/js/product-detail-price.js}"></script>
 </body>
 </html>

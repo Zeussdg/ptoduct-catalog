@@ -5,22 +5,27 @@ import com.ikibm.catalog.entity.User;
 import com.ikibm.catalog.entity.UserStatus;
 import com.ikibm.catalog.exception.ConflictException;
 import com.ikibm.catalog.exception.NotFoundException;
+import com.ikibm.catalog.repository.PriceListRepository;
 import com.ikibm.catalog.repository.UserRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PriceListRepository priceListRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PriceListRepository priceListRepository,
+                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.priceListRepository = priceListRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -97,5 +102,16 @@ public class UserService {
     @Transactional
     public void deleteUser(Integer id) {
         userRepository.delete(getById(id));
+    }
+
+    /** Bir müşteriyi birden fazla fiyat listesine aynı anda bağlar (ör. Taksitli + Peşin) —
+     * verilen liste, müşterinin önceki fiyat listesi atamalarının tamamen yerini alır. */
+    @Transactional
+    public void assignPriceLists(Integer userId, List<Integer> priceListIds) {
+        User u = getById(userId);
+        u.setPriceLists(priceListIds == null || priceListIds.isEmpty()
+                ? new HashSet<>()
+                : new HashSet<>(priceListRepository.findAllById(priceListIds)));
+        userRepository.save(u);
     }
 }

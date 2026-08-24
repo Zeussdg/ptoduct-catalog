@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="tr">
 <body>
-<article class="pcard" th:fragment="card(product, price)">
+<article class="pcard" th:fragment="card(product, price, priceOptions)">
   <a th:href="@{'/urun/' + ${product.id}}" class="pcard__link">
     <div class="pcard__thumb">
       <img th:if="${product.primaryImage != null}" th:src="${product.primaryImage.url}" alt="" loading="lazy"/>
@@ -16,10 +16,19 @@
   </a>
 
   <div class="pcard__bottom">
-    <span th:if="${price.customerSpecific}" class="pcard__brand" style="color:var(--signal-700)">Özel Fiyat</span>
-    <span class="pcard__price" th:text="${@priceFormatter.format(price.price, price.currency)}">₺0,00</span>
+    <div class="pcard__price-block">
+      <span th:if="${price.customerSpecific}" class="pcard__brand" style="color:var(--signal-700)">Özel Fiyat</span>
+      <span class="pcard__price-row">
+        <span class="pcard__price" th:text="${@priceFormatter.format(product.price, product.currency)}">₺0,00</span>
+        <span class="pcard__price-vat">+ KDV</span>
+      </span>
+      <div class="pcard__price-options" hidden th:if="${!priceOptions.isEmpty()}">
+        <span th:each="opt : ${priceOptions}" class="js-pcard-option"
+              th:attr="data-name=${opt.priceListName},data-price=${opt.price},data-currency=${opt.currency}"></span>
+      </div>
+    </div>
     <button type="button" class="pcard__add js-add-to-cart"
-            th:attr="data-id=${product.id},data-name=${product.name},data-brand=${product.brand},data-code=${product.stockCode},data-price=${price.price},data-currency=${price.currency.name()}"
+            th:attr="data-id=${product.id},data-name=${product.name},data-brand=${product.brand},data-code=${product.stockCode},data-price=${price.price},data-currency=${price.currency.name()},data-price-includes-vat=${price.vatIncluded}"
             th:aria-label="${product.name} + ' sepete ekle'">
       + Sepete Ekle
     </button>

@@ -89,11 +89,22 @@
   color: var(--ink-500);
 }
 
-.pdetail__price-row {
+.pdetail__price-card {
   margin: 18px 0;
+  border-bottom: 1px solid var(--line-200);
+}
+
+.pdetail__price-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
   padding: 14px 0;
   border-top: 1px solid var(--line-200);
-  border-bottom: 1px solid var(--line-200);
+}
+
+.pdetail__price-row > .pdetail__brand {
+  flex-basis: 100%;
 }
 
 .pdetail__price {
@@ -101,6 +112,76 @@
   font-size: 26px;
   font-weight: 700;
   color: var(--ink-900);
+}
+
+.pdetail__price-vat {
+  font-size: 12px;
+  color: var(--ink-500);
+}
+
+.pdetail__price-list-options {
+  margin: 0 0 14px;
+  padding: 12px 16px;
+  background: var(--signal-50);
+  border-radius: var(--radius-md);
+}
+
+.pdetail__price-list-options div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.pdetail__price-list-options div + div {
+  border-top: 1px dashed var(--line-200);
+}
+
+.pdetail__price-list-options dt {
+  font-size: 12px;
+  color: var(--signal-700);
+  font-weight: 600;
+}
+
+.pdetail__price-list-options dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.pdetail__price-tiers {
+  margin: 0 0 14px;
+  padding: 12px 16px;
+  background: var(--surface-50);
+  border-radius: var(--radius-md);
+}
+
+.pdetail__price-tiers div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.pdetail__price-tiers div + div {
+  border-top: 1px dashed var(--line-200);
+}
+
+.pdetail__price-tiers dt {
+  font-size: 12px;
+  color: var(--ink-500);
+}
+
+.pdetail__price-tiers dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-700);
 }
 
 .pdetail__add-row {
@@ -239,4 +320,107 @@
   .pdetail__specs {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+/* ---- "Sepete Ekle" fiyat seçim modalı ---- */
+.pmodal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 21, 29, 0.5);
+  z-index: 60;
+}
+
+.pmodal__panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  background: var(--surface-0);
+  border-radius: var(--radius-md);
+  box-shadow: 0 20px 60px rgba(16, 21, 29, 0.25);
+  z-index: 61;
+}
+
+.pmodal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line-200);
+}
+
+.pmodal__head h2 {
+  font-size: 15px;
+  margin: 0;
+}
+
+.pmodal__close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--ink-500);
+  padding: 2px 6px;
+}
+
+.pmodal__close:hover {
+  color: var(--ink-900);
+}
+
+.pmodal__body {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pmodal__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.pmodal__option:hover {
+  border-color: var(--ink-300);
+}
+
+.pmodal__option--selected {
+  border-color: var(--signal-600);
+  background: var(--signal-50);
+}
+
+.pmodal__option input[type="radio"] {
+  flex: none;
+  accent-color: var(--signal-600);
+}
+
+.pmodal__option-name {
+  flex: 1;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+
+.pmodal__option-price {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink-900);
+}
+
+.pmodal__foot {
+  padding: 4px 20px 20px;
+}
+
+.pmodal__foot .pdetail__add-btn {
+  width: 100%;
 }

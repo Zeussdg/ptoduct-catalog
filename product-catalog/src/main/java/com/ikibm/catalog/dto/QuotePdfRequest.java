@@ -10,7 +10,8 @@ import java.util.List;
 public record QuotePdfRequest(List<Item> items, Party seller, Party contact, double margin) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Item(String name, String brand, String code, BigDecimal price, String currency, int qty) {}
+    public record Item(String name, String brand, String code, BigDecimal price, String currency, int qty,
+                        boolean priceIncludesVat) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Party(String firma, String yetkili, String telefon, String eposta) {}

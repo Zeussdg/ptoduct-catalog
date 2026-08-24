@@ -22,7 +22,7 @@ public class PriceListItem {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    /** KDV dahil fiyat — sipariş kalemine uygulandığında toplamda ayrıca KDV eklenmez. */
+    /** KDV hariç (net) fiyat — ürünün diğer fiyat kademeleri (liste/bayi/özel) gibi. */
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal price;
 

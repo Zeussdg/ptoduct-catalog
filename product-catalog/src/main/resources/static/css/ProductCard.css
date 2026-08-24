@@ -72,11 +72,35 @@
   border-top: 1px solid var(--line-100);
 }
 
+.pcard__price-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pcard__price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
 .pcard__price {
   font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 600;
   color: var(--ink-900);
+}
+
+.pcard__price-vat {
+  font-size: 10px;
+  color: var(--ink-500);
+}
+
+.pcard__list-price {
+  font-size: 10.5px;
+  color: var(--ink-500);
 }
 
 .pcard__add {

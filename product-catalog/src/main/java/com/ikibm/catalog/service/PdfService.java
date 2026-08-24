@@ -17,8 +17,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Teklif PDF üreticisi (OpenPDF). React src/utils/quotePdf.js generateQuotePdf
@@ -134,27 +136,34 @@ public class PdfService {
             doc.add(table);
             doc.add(new Paragraph(" ", font(regular, 8, INK)));
 
-            // ---- Özet (para birimi bazında) ----
-            Map<String, BigDecimal> totals = new LinkedHashMap<>();
+            // ---- Özet (para birimi bazında, KDV dahil/hariç kalemler ayrı toplanır) ----
+            Map<String, BigDecimal> netTotals = new LinkedHashMap<>();
+            Map<String, BigDecimal> inclusiveTotals = new LinkedHashMap<>();
             for (QuotePdfRequest.Item it : items) {
                 if (it.price() == null) continue;
                 String cur = nz(it.currency(), "USD");
-                totals.merge(cur, it.price().multiply(BigDecimal.valueOf(it.qty())), BigDecimal::add);
+                Map<String, BigDecimal> bucket = it.priceIncludesVat() ? inclusiveTotals : netTotals;
+                bucket.merge(cur, it.price().multiply(BigDecimal.valueOf(it.qty())), BigDecimal::add);
             }
+
+            Set<String> currencies = new LinkedHashSet<>();
+            currencies.addAll(netTotals.keySet());
+            currencies.addAll(inclusiveTotals.keySet());
 
             PdfPTable summaryWrap = new PdfPTable(1);
             summaryWrap.setWidthPercentage(45);
             summaryWrap.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            if (totals.isEmpty()) {
+            if (currencies.isEmpty()) {
                 summaryWrap.addCell(borderless(new Paragraph("Fiyatlandırılabilir ürün bulunmuyor.", font(regular, 9.5f, INK_500)), Element.ALIGN_RIGHT));
             } else {
-                for (Map.Entry<String, BigDecimal> e : totals.entrySet()) {
-                    String cur = e.getKey();
-                    BigDecimal before = e.getValue();
-                    BigDecimal after = before.multiply(factor);
-                    BigDecimal vat = after.multiply(VAT);
-                    BigDecimal grand = after.add(vat);
-                    summaryWrap.addCell(summaryRow("Ara Toplam (" + cur + ")", priceFormatter.format(after, cur), false));
+                for (String cur : currencies) {
+                    BigDecimal netBefore = netTotals.getOrDefault(cur, BigDecimal.ZERO);
+                    BigDecimal inclusiveBefore = inclusiveTotals.getOrDefault(cur, BigDecimal.ZERO);
+                    BigDecimal netAfter = netBefore.multiply(factor);
+                    BigDecimal inclusiveAfter = inclusiveBefore.multiply(factor);
+                    BigDecimal vat = netAfter.multiply(VAT);
+                    BigDecimal grand = netAfter.add(vat).add(inclusiveAfter);
+                    summaryWrap.addCell(summaryRow("Ara Toplam (" + cur + ")", priceFormatter.format(netAfter.add(inclusiveAfter), cur), false));
                     summaryWrap.addCell(summaryRow("KDV (%20)", "+" + priceFormatter.format(vat, cur), false));
                     summaryWrap.addCell(summaryRow("Genel Toplam (" + cur + ")", priceFormatter.format(grand, cur), true));
                 }

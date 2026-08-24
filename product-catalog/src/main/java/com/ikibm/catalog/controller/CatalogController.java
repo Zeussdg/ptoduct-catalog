@@ -53,9 +53,10 @@ public class CatalogController {
         boolean noFilters = isBlank(q) && isBlank(marka) && isBlank(kategori) && isBlank(altkategori);
         boolean showHero = noFilters && currentPage == 1;
 
+        Integer userId = principal != null ? principal.getId() : null;
         model.addAttribute("products", page.getContent());
-        model.addAttribute("prices", productService.resolvePrices(page.getContent(),
-                principal != null ? principal.getId() : null));
+        model.addAttribute("prices", productService.resolvePrices(page.getContent(), userId));
+        model.addAttribute("priceOptions", productService.priceListOptions(page.getContent(), userId));
         model.addAttribute("currentPage", currentPage);
         model.addAttribute("totalPages", Math.max(1, page.getTotalPages()));
         model.addAttribute("totalElements", total);

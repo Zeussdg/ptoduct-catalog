@@ -61,6 +61,10 @@ public class PriceListService {
         return priceListItemRepository.save(item);
     }
 
+    public boolean exists(Integer priceListId, Integer productId) {
+        return priceListItemRepository.findByPriceList_IdAndProduct_Id(priceListId, productId).isPresent();
+    }
+
     @Transactional
     public void removeItem(Integer itemId) {
         if (!priceListItemRepository.existsById(itemId)) {
