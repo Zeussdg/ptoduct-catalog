@@ -292,3 +292,68 @@
   border-radius: 999px;
   min-width: 2px;
 }
+
+/* ---- responsive: telefon ---- */
+@media (max-width: 640px) {
+  .adp__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .adp__form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .adp__card {
+    padding: 14px;
+  }
+
+  /* Tablo → kart görünümü: her satır bir karta dönüşür, sütun başlıkları
+     hücre içinde data-label attribute'undan etiket olarak basılır. */
+  .adp__table thead {
+    display: none;
+  }
+
+  .adp__table,
+  .adp__table tbody,
+  .adp__table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .adp__table tr {
+    border: 1px solid var(--line-200);
+    border-radius: var(--radius-md);
+    margin-bottom: 10px;
+    padding: 2px 12px;
+  }
+
+  .adp__table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 0;
+    text-align: right;
+  }
+
+  .adp__table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--ink-500);
+    text-align: left;
+    margin-right: auto;
+  }
+
+  .adp__table td:not(:last-child) {
+    border-bottom: 1px solid var(--line-100);
+  }
+
+  .adp__table td:empty,
+  .adp__table td:has(> :only-child:is(form, a, button)) {
+    justify-content: flex-end;
+  }
+}

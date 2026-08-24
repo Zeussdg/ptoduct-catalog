@@ -5,6 +5,7 @@ import com.ikibm.catalog.entity.*;
 import com.ikibm.catalog.exception.ConflictException;
 import com.ikibm.catalog.exception.NotFoundException;
 import com.ikibm.catalog.repository.CartItemRepository;
+import com.ikibm.catalog.repository.ProductRepository;
 import com.ikibm.catalog.repository.QuoteRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,12 +21,14 @@ public class QuoteService {
     private final QuoteRepository quoteRepository;
     private final CartService cartService;
     private final CartItemRepository cartItemRepository;
+    private final ProductRepository productRepository;
 
     public QuoteService(QuoteRepository quoteRepository, CartService cartService,
-                        CartItemRepository cartItemRepository) {
+                        CartItemRepository cartItemRepository, ProductRepository productRepository) {
         this.quoteRepository = quoteRepository;
         this.cartService = cartService;
         this.cartItemRepository = cartItemRepository;
+        this.productRepository = productRepository;
     }
 
     /** Sepetten teklif oluştur (snapshot'lı) ve sepeti temizle — tek transaction. */
@@ -76,6 +79,9 @@ public class QuoteService {
         for (QuotePdfRequest.Item it : req.items()) {
             QuoteItem qi = new QuoteItem();
             qi.setQuote(quote);
+            // Ürün stok kodu değişmediyse (silinmemiş/yeniden kodlanmamışsa) gerçek Product'a bağlanır —
+            // böylece bu kalemden oluşacak sipariş satırı için müşteriye özel fiyat çözülebilir.
+            qi.setProduct(productRepository.findByStockCode(it.code()).orElse(null));
             qi.setProductName(it.name());
             qi.setProductCode(it.code());
             qi.setQty(it.qty());

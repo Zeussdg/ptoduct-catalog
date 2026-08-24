@@ -408,7 +408,10 @@
   cursor: not-allowed;
 }
 
-/* ---- Responsive: teklif modu tek kolona iner ---- */
+/* ---- Responsive: teklif modu tek kolona iner ----
+   760px kanonik ölçekte değil (640/900 değil) — bilinçli: 360px sabit sol form +
+   sağ sepet iki sütunu gerçek genişlik ihtiyacına göre ayarlanmış, 640'a çekilirse
+   640-760 arası sıkışır, 900'e çekilirse 760-900 arası gereksiz yere erken çöker. */
 @media (max-width: 760px) {
   .cdrw--quote {
     width: 100vw;

@@ -31,11 +31,11 @@
       </thead>
       <tbody>
         <tr th:each="item : ${order.items}">
-          <td th:text="${item.productName}">Ürün</td>
-          <td class="mono" th:text="${item.productCode}">KOD</td>
-          <td th:text="${item.qty}">1</td>
-          <td th:text="${@priceFormatter.format(item.unitPrice, item.currency)}">₺0,00</td>
-          <td th:text="${@priceFormatter.format(item.totalPrice, item.currency)}">₺0,00</td>
+          <td data-label="Ürün" th:text="${item.productName}">Ürün</td>
+          <td class="mono" data-label="Ürün Kodu" th:text="${item.productCode}">KOD</td>
+          <td data-label="Adet" th:text="${item.qty}">1</td>
+          <td data-label="Birim Fiyat" th:text="${@priceFormatter.format(item.unitPrice, item.currency)}">₺0,00</td>
+          <td data-label="Toplam" th:text="${@priceFormatter.format(item.totalPrice, item.currency)}">₺0,00</td>
         </tr>
       </tbody>
     </table>

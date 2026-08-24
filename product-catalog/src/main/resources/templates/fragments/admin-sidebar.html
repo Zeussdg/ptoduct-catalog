@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="tr">
 <body>
-<aside class="adm__sidebar" th:fragment="sidebar">
+<th:block th:fragment="sidebar">
+<aside class="adm__sidebar">
   <a th:href="@{/}" class="adm__brand">Ürün Kataloğu</a>
   <nav class="adm__nav">
     <a th:href="@{/admin}" class="adm__navlink" th:classappend="${currentPath == '/admin'} ? ' adm__navlink--active'">Dashboard</a>
@@ -21,8 +22,11 @@
     </th:block>
   </nav>
 </aside>
+<div class="adm__backdrop" id="admBackdrop"></div>
+</th:block>
 
 <header class="adm__topbar" th:fragment="topbar">
+  <button type="button" class="adm__hamburger" id="admToggle" aria-label="Menüyü aç/kapat">☰</button>
   <div class="adm__topbar-user">
     <span class="adm__topbar-name" th:if="${currentUser != null}">
       <span th:text="${currentUser.displayName}">Admin</span>

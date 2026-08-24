@@ -41,6 +41,11 @@ public class OrderItem {
     @Column(nullable = false)
     private Currency currency;
 
+    /** Bu kalemin fiyatı bir fiyat listesinden (KDV dahil) mi geldi — sipariş toplamı hesaplanırken
+     * bu kalem için üzerine tekrar %20 KDV eklenmesin diye. */
+    @Column(name = "price_includes_vat", nullable = false)
+    private Boolean priceIncludesVat = false;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;
@@ -63,6 +68,8 @@ public class OrderItem {
     public void setTotalPrice(BigDecimal totalPrice) { this.totalPrice = totalPrice; }
     public Currency getCurrency() { return currency; }
     public void setCurrency(Currency currency) { this.currency = currency; }
+    public Boolean getPriceIncludesVat() { return priceIncludesVat; }
+    public void setPriceIncludesVat(Boolean priceIncludesVat) { this.priceIncludesVat = priceIncludesVat; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 }

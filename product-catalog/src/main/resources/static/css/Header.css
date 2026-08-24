@@ -139,6 +139,8 @@
   padding: 0 4px;
 }
 
+/* Gerçek hamburger menü yok — sadece 3 nav linki olduğu için metin küçültme/gizleme
+   yeterli kabul edildi. Nav büyürse burada hamburger deseni eklenmeli. */
 @media (max-width: 640px) {
   .hdr__brand-name {
     display: none;

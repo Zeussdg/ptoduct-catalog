@@ -1,0 +1,1 @@
+ALTER TABLE order_items ADD COLUMN price_includes_vat BOOLEAN NOT NULL DEFAULT FALSE;

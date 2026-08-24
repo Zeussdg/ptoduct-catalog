@@ -16,10 +16,10 @@
           <thead><tr><th>Tarih</th><th>Kullanıcı</th><th>İşlem</th><th>Varlık</th></tr></thead>
           <tbody>
             <tr th:each="log : ${logs}">
-              <td th:text="${@fmt.dateTime(log.createdAt)}">01.01.2026 10:00</td>
-              <td th:text="${log.actor != null ? log.actor.email : 'Sistem'}">Sistem</td>
-              <td><span class="adp__badge" th:text="${log.action}">ACTION</span></td>
-              <td class="mono" th:text="${log.entityType} + ' #' + ${log.entityId}">Entity #1</td>
+              <td data-label="Tarih" th:text="${@fmt.dateTime(log.createdAt)}">01.01.2026 10:00</td>
+              <td data-label="Kullanıcı" th:text="${log.actor != null ? log.actor.email : 'Sistem'}">Sistem</td>
+              <td data-label="İşlem"><span class="adp__badge" th:text="${log.action}">ACTION</span></td>
+              <td class="mono" data-label="Varlık" th:text="${log.entityType} + ' #' + ${log.entityId}">Entity #1</td>
             </tr>
           </tbody>
         </table>

@@ -102,3 +102,63 @@
   padding: 24px;
   max-width: 1200px;
 }
+
+.adm__hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line-200);
+  border-radius: var(--radius-md);
+  background: var(--surface-0);
+  color: var(--ink-700);
+  font-size: 16px;
+  margin-right: auto;
+}
+
+.adm__backdrop {
+  display: none;
+}
+
+/* ---- responsive: sidebar aç/kapa (off-canvas) ---- */
+@media (max-width: 900px) {
+  .adm__hamburger {
+    display: flex;
+  }
+
+  .adm__sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .adm--sidebar-open .adm__sidebar {
+    transform: translateX(0);
+  }
+
+  .adm__backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(16, 21, 29, 0.4);
+    z-index: 40;
+  }
+
+  .adm--sidebar-open .adm__backdrop {
+    display: block;
+  }
+
+  .adm__content {
+    padding: 16px;
+  }
+
+  .adm__topbar {
+    padding: 0 16px;
+  }
+}

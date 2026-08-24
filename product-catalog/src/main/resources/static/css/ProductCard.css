@@ -120,3 +120,17 @@
   color: var(--ink-300);
   text-transform: uppercase;
 }
+
+@media (max-width: 380px) {
+  .pcard__link {
+    padding: 11px 11px 8px;
+  }
+
+  .pcard__thumb {
+    height: 110px;
+  }
+
+  .pcard__bottom {
+    padding: 8px 11px;
+  }
+}

@@ -42,6 +42,13 @@ public class Fmt {
         return instant == null ? "" : DATETIME.format(instant.atZone(ZONE));
     }
 
+    /** Bir fiyatın %20 KDV dahil halini biçimler — ürünün katalog fiyatı (KDV hariç) ile
+     * fiyat listesine girilen (KDV dahil) fiyatın karşılaştırılabilmesi için. */
+    public String priceWithVat(BigDecimal price, Currency currency) {
+        if (price == null) return "-";
+        return priceFormatter.format(price.add(price.multiply(VAT)), currency);
+    }
+
     /** Bir teklifin kalemlerini para birimine göre toplayıp " + " ile birleştirir (ör. ₺2.880,00 + $360,00). */
     public String quoteTotal(Quote quote) {
         Map<Currency, BigDecimal> sums = perCurrencySubtotal(quote);
@@ -104,16 +111,19 @@ public class Fmt {
                 .collect(Collectors.joining(" + "));
     }
 
-    /** Sipariş tutarı: ham (toptancı) fiyat + %20 KDV — kâr marjı içermez, bayi bize
-     * kendi müşterisine uyguladığı marjı değil, mal bedelini öder. */
+    /** Sipariş tutarı: normal kalemler için ham (toptancı) fiyat + %20 KDV; fiyat listesinden
+     * seçilmiş (zaten KDV dahil) kalemler için üzerine tekrar KDV eklenmez. Kâr marjı içermez,
+     * bayi bize kendi müşterisine uyguladığı marjı değil, mal bedelini öder. */
     public String orderGrandTotal(Order order) {
-        Map<Currency, BigDecimal> sums = perCurrencySubtotal(order);
-        if (sums.isEmpty()) return "-";
-        return sums.entrySet().stream()
-                .map(e -> {
-                    BigDecimal grand = e.getValue().add(e.getValue().multiply(VAT));
-                    return priceFormatter.format(grand, e.getKey());
-                })
+        Map<Currency, BigDecimal> net = orderSubtotal(order, false);
+        Map<Currency, BigDecimal> inclusive = orderSubtotal(order, true);
+        Map<Currency, BigDecimal> grand = new EnumMap<>(Currency.class);
+        net.forEach((c, v) -> grand.merge(c, v.add(v.multiply(VAT)), BigDecimal::add));
+        inclusive.forEach((c, v) -> grand.merge(c, v, BigDecimal::add));
+        if (grand.isEmpty()) return "-";
+        return grand.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(e -> priceFormatter.format(e.getValue(), e.getKey()))
                 .collect(Collectors.joining(" + "));
     }
 
@@ -122,6 +132,18 @@ public class Fmt {
         Map<Currency, BigDecimal> sums = new EnumMap<>(Currency.class);
         if (items == null) return sums;
         for (OrderItem it : items) {
+            sums.merge(it.getCurrency(), it.getTotalPrice(), BigDecimal::add);
+        }
+        return sums;
+    }
+
+    /** Sipariş kalemlerini, fiyatı KDV dahil olup olmamasına göre ayrı ayrı para birimi bazında toplar. */
+    private Map<Currency, BigDecimal> orderSubtotal(Order order, boolean vatIncluded) {
+        List<OrderItem> items = order.getItems();
+        Map<Currency, BigDecimal> sums = new EnumMap<>(Currency.class);
+        if (items == null) return sums;
+        for (OrderItem it : items) {
+            if (Boolean.TRUE.equals(it.getPriceIncludesVat()) != vatIncluded) continue;
             sums.merge(it.getCurrency(), it.getTotalPrice(), BigDecimal::add);
         }
         return sums;

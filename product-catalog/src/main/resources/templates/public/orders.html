@@ -15,10 +15,10 @@
       </thead>
       <tbody>
         <tr th:each="o : ${orders}">
-          <td th:text="'#' + ${o.id}">#1</td>
-          <td th:text="${@fmt.date(o.createdAt)}">01.01.2026</td>
-          <td th:text="${@fmt.orderGrandTotal(o)}">₺0,00</td>
-          <td><span class="custpg__badge" th:text="${@orderStatus.label(o.status)}">Beklemede</span></td>
+          <td data-label="Sipariş No" th:text="'#' + ${o.id}">#1</td>
+          <td data-label="Tarih" th:text="${@fmt.date(o.createdAt)}">01.01.2026</td>
+          <td data-label="Tutar" th:text="${@fmt.orderGrandTotal(o)}">₺0,00</td>
+          <td data-label="Durum"><span class="custpg__badge" th:text="${@orderStatus.label(o.status)}">Beklemede</span></td>
           <td><a class="custpg__link" th:href="@{'/orders/' + ${o.id}}">Detay</a></td>
         </tr>
       </tbody>

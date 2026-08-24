@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html utf-8>
 <html lang="tr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Dashboard')}"></head>
 <body>
@@ -59,10 +59,10 @@
             <thead><tr><th>Ürün</th><th>Kod</th><th>Teklif</th><th>Adet</th></tr></thead>
             <tbody>
               <tr th:each="p : ${topProducts}">
-                <td th:text="${p.productName}">Ürün</td>
-                <td th:text="${p.productCode}">SKU</td>
-                <td th:text="${p.offerCount}">0</td>
-                <td>
+                <td data-label="Ürün" th:text="${p.productName}">Ürün</td>
+                <td data-label="Kod" th:text="${p.productCode}">SKU</td>
+                <td data-label="Teklif" th:text="${p.offerCount}">0</td>
+                <td data-label="Adet">
                   <div class="adp__inline-bar-wrap">
                     <span th:text="${p.totalQty}">0</span>
                     <div class="adp__inline-bar">
@@ -128,12 +128,12 @@
           <thead><tr><th>Sipariş No</th><th>Müşteri</th><th>Ürünler</th><th>Tutar</th><th>Durum</th><th>Tarih</th><th></th></tr></thead>
           <tbody>
             <tr th:each="o : ${recentOrders}">
-              <td th:text="'#' + ${o.id}">#1</td>
-              <td th:text="${o.user.companyName != null ? o.user.companyName : o.user.email}">Müşteri</td>
-              <td th:text="${#lists.isEmpty(o.items) ? '-' : o.items[0].productName + (o.items.size() > 1 ? (' +' + (o.items.size() - 1) + ' diğer') : '')}">Ürünler</td>
-              <td th:text="${@fmt.orderGrandTotal(o)}">Tutar</td>
-              <td><span class="adp__badge" th:text="${@orderStatus.label(o.status)}">Beklemede</span></td>
-              <td th:text="${@fmt.date(o.createdAt)}">01.01.2026</td>
+              <td data-label="Sipariş No" th:text="'#' + ${o.id}">#1</td>
+              <td data-label="Müşteri" th:text="${o.user.companyName != null ? o.user.companyName : o.user.email}">Müşteri</td>
+              <td data-label="Ürünler" th:text="${#lists.isEmpty(o.items) ? '-' : o.items[0].productName + (o.items.size() > 1 ? (' +' + (o.items.size() - 1) + ' diğer') : '')}">Ürünler</td>
+              <td data-label="Tutar" th:text="${@fmt.orderGrandTotal(o)}">Tutar</td>
+              <td data-label="Durum"><span class="adp__badge" th:text="${@orderStatus.label(o.status)}">Beklemede</span></td>
+              <td data-label="Tarih" th:text="${@fmt.date(o.createdAt)}">01.01.2026</td>
               <td><a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{'/admin/orders/' + ${o.id}}">Detay</a></td>
             </tr>
           </tbody>
@@ -147,8 +147,8 @@
           <thead><tr><th>Müşteri</th><th>Teklif Sayısı</th><th>Toplam Tutar</th></tr></thead>
           <tbody>
             <tr th:each="c : ${topCustomers}">
-              <td th:text="${c.displayName}">Müşteri</td>
-              <td>
+              <td data-label="Müşteri" th:text="${c.displayName}">Müşteri</td>
+              <td data-label="Teklif Sayısı">
                 <div class="adp__inline-bar-wrap">
                   <span th:text="${c.offerCount}">0</span>
                   <div class="adp__inline-bar">
@@ -157,7 +157,7 @@
                   </div>
                 </div>
               </td>
-              <td th:text="${c.totalAmountFormatted}">-</td>
+              <td data-label="Toplam Tutar" th:text="${c.totalAmountFormatted}">-</td>
             </tr>
           </tbody>
         </table>

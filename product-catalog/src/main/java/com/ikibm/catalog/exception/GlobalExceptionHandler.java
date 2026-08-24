@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -18,6 +19,16 @@ public class GlobalExceptionHandler {
         ModelAndView mv = new ModelAndView("error/404");
         mv.setStatus(HttpStatus.NOT_FOUND);
         mv.addObject("message", ex.getMessage());
+        return mv;
+    }
+
+    /** Var olmayan statik dosya istekleri (ör. tarayıcının otomatik favicon.ico çağrısı) —
+     * genel Exception yakalayıcısına düşüp 500 dönmesin diye ayrıca 404 olarak ele alınır. */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ModelAndView handleNoResource(NoResourceFoundException ex) {
+        ModelAndView mv = new ModelAndView("error/404");
+        mv.setStatus(HttpStatus.NOT_FOUND);
+        mv.addObject("message", "Kaynak bulunamadı");
         return mv;
     }
 

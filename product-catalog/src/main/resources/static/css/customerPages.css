@@ -124,3 +124,57 @@
   font-weight: 600;
   font-size: 13px;
 }
+
+/* ---- responsive: telefon ---- */
+@media (max-width: 640px) {
+  .custpg {
+    padding: 20px 14px 48px;
+  }
+
+  .custpg__card {
+    padding: 14px;
+  }
+
+  /* Tablo → kart görünümü (adminPages.css'teki .adp__table deseniyle aynı). */
+  .custpg__table thead {
+    display: none;
+  }
+
+  .custpg__table,
+  .custpg__table tbody,
+  .custpg__table tr {
+    display: block;
+    width: 100%;
+  }
+
+  .custpg__table tr {
+    border: 1px solid var(--line-200);
+    border-radius: var(--radius-md);
+    margin-bottom: 10px;
+    padding: 2px 12px;
+  }
+
+  .custpg__table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 0;
+    text-align: right;
+  }
+
+  .custpg__table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--ink-500);
+    text-align: left;
+    margin-right: auto;
+  }
+
+  .custpg__table td:not(:last-child) {
+    border-bottom: 1px solid var(--line-100);
+  }
+}

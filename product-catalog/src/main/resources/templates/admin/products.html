@@ -35,11 +35,11 @@
           <thead><tr><th>Ürün</th><th>Kod</th><th>Kategori</th><th>Fiyat</th><th>Durum</th><th></th></tr></thead>
           <tbody>
             <tr th:each="p : ${products}">
-              <td th:text="${p.name}">Ürün</td>
-              <td class="mono" th:text="${p.stockCode}">KOD</td>
-              <td th:text="${p.category != null ? p.category.name : '—'}">—</td>
-              <td th:text="${@priceFormatter.format(p.effectivePrice, p.currency)}">₺0,00</td>
-              <td>
+              <td data-label="Ürün" th:text="${p.name}">Ürün</td>
+              <td class="mono" data-label="Kod" th:text="${p.stockCode}">KOD</td>
+              <td data-label="Kategori" th:text="${p.category != null ? p.category.name : '—'}">—</td>
+              <td data-label="Fiyat" th:text="${@priceFormatter.format(p.effectivePrice, p.currency)}">₺0,00</td>
+              <td data-label="Durum">
                 <form method="post" th:action="@{'/admin/products/' + ${p.id} + '/toggle'}" style="margin:0">
                   <button type="submit" class="adp__badge" th:classappend="${!p.isActive} ? ' adp__badge--muted'"
                           style="border:none;cursor:pointer" th:text="${p.isActive ? 'Aktif' : 'Pasif'}">Aktif</button>

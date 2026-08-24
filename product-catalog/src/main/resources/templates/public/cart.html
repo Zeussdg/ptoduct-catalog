@@ -16,15 +16,15 @@
       </thead>
       <tbody>
         <tr th:each="item : ${cart.items}">
-          <td th:text="${item.product != null ? item.product.name : ''}">Ürün</td>
-          <td>
+          <td data-label="Ürün" th:text="${item.product != null ? item.product.name : ''}">Ürün</td>
+          <td data-label="Adet">
             <form method="post" th:action="@{'/cart/items/' + ${item.id}}" style="margin:0">
               <input type="number" min="1" class="custpg__qty-input" name="qty"
                      th:value="${item.qty}" onchange="this.form.submit()"/>
             </form>
           </td>
-          <td th:text="${@priceFormatter.format(item.unitPrice, item.currency)}">₺0,00</td>
-          <td th:text="${@priceFormatter.format(item.lineTotal, item.currency)}">₺0,00</td>
+          <td data-label="Birim Fiyat" th:text="${@priceFormatter.format(item.unitPrice, item.currency)}">₺0,00</td>
+          <td data-label="Toplam" th:text="${@priceFormatter.format(item.lineTotal, item.currency)}">₺0,00</td>
           <td>
             <form method="post" th:action="@{'/cart/items/' + ${item.id} + '/delete'}" style="margin:0">
               <button class="custpg__btn custpg__btn--danger" type="submit">Sil</button>

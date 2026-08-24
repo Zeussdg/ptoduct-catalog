@@ -29,9 +29,9 @@
           <thead><tr><th>Kategori</th><th>Slug</th><th>Durum</th><th></th></tr></thead>
           <tbody>
             <tr th:each="c : ${categories}">
-              <td th:text="${#strings.repeat('— ', c.depth) + c.name}">Kategori</td>
-              <td class="mono" th:text="${c.slug}">slug</td>
-              <td>
+              <td data-label="Kategori" th:text="${#strings.repeat('— ', c.depth) + c.name}">Kategori</td>
+              <td class="mono" data-label="Slug" th:text="${c.slug}">slug</td>
+              <td data-label="Durum">
                 <form method="post" th:action="@{'/admin/categories/' + ${c.id} + '/toggle'}" style="margin:0">
                   <button type="submit" class="adp__badge" th:classappend="${!c.isActive} ? ' adp__badge--muted'"
                           style="border:none;cursor:pointer" th:text="${c.isActive ? 'Aktif' : 'Pasif'}">Aktif</button>

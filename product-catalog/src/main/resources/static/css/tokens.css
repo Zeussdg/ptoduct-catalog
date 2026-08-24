@@ -1,3 +1,8 @@
+/* Responsive breakpoint sözleşmesi — yeni/güncellenen @media kuralları bunlara uysun:
+   ≤640px  → telefon
+   ≤900px  → tablet / admin sidebar çöküşü
+   (380px gibi daha dar istisnalar sadece gerekçeli, nokta atışı durumlarda kalır) */
+
 :root {
   /* ---- Palette -------------------------------------------------- */
   /* Deep signal-blue derived from network/schematic diagrams, not a

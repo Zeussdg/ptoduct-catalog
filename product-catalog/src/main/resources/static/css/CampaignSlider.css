@@ -107,7 +107,7 @@
 }
 
 /* ---- Responsive ---- */
-@media (max-width: 760px) {
+@media (max-width: 640px) {
   .camp__banner {
     height: 180px;
   }

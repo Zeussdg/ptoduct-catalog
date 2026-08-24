@@ -6,8 +6,14 @@
   <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
   <div class="adm__main">
     <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
-    <main class="adm__content">
-      <h1 class="adp__title" th:text="'Sipariş #' + ${order.id}">Sipariş #1</h1>
+    <main class="adm__content" id="oedRoot">
+      <div class="adp__toolbar">
+        <h1 class="adp__title" th:text="'Sipariş #' + ${order.id}">Sipariş #1</h1>
+        <button type="button" class="adp__btn adp__btn--sm" id="oedToggle">Düzenle</button>
+      </div>
+
+      <p th:if="${error}" th:text="${error}" style="color:var(--danger-600)">Hata</p>
+      <p th:if="${message}" th:text="${message}" style="color:var(--signal-600)">Tamam</p>
 
       <div class="adp__card">
         <h2 style="font-size:14px;margin:0 0 8px">Müşteri Bilgileri</h2>
@@ -23,18 +29,51 @@
 
       <div class="adp__card">
         <table class="adp__table">
-          <thead><tr><th>Ürün</th><th>Kod</th><th>Adet</th><th>Birim Fiyat</th><th>Toplam</th></tr></thead>
-          <tbody>
-            <tr th:each="item : ${order.items}">
-              <td th:text="${item.productName}">Ürün</td>
-              <td class="mono" th:text="${item.productCode}">KOD</td>
-              <td th:text="${item.qty}">1</td>
-              <td th:text="${@priceFormatter.format(item.unitPrice, item.currency)}">₺0,00</td>
-              <td th:text="${@priceFormatter.format(item.totalPrice, item.currency)}">₺0,00</td>
+          <thead><tr><th>Ürün</th><th>Kod</th><th>Adet</th><th>Birim Fiyat</th><th>Toplam</th><th class="oed-only" style="display:none">İşlem</th></tr></thead>
+          <tbody id="oedExistingRows">
+            <tr th:each="item : ${order.items}"
+                th:data-item-id="${item.id}"
+                th:data-product-id="${item.product != null ? item.product.id : ''}"
+                th:data-qty="${item.qty}"
+                th:data-unit-price="${item.unitPrice}"
+                th:data-currency="${item.currency}"
+                th:data-price-includes-vat="${item.priceIncludesVat}">
+              <td data-label="Ürün" th:text="${item.productName}">Ürün</td>
+              <td class="mono" data-label="Kod" th:text="${item.productCode}">KOD</td>
+              <td data-label="Adet">
+                <span class="oed-view" th:text="${item.qty}">1</span>
+                <input class="oed-edit oed-qty" type="number" min="1" th:value="${item.qty}" style="display:none;width:70px"/>
+              </td>
+              <td data-label="Birim Fiyat">
+                <span class="oed-view oed-price-view" th:text="${@priceFormatter.format(item.unitPrice, item.currency)}">₺0,00</span>
+                <input class="oed-edit oed-price" type="number" step="0.01" min="0" th:value="${item.unitPrice}" style="display:none;width:110px"/>
+                <select class="oed-edit oed-list-select" th:if="${priceListMatches.get(item.id) != null}" style="display:none">
+                  <option value="" selected>Fiyat listesinden seç…</option>
+                  <option th:each="m : ${priceListMatches.get(item.id)}" th:value="${m.price}" th:attr="data-currency=${m.currency}"
+                          th:text="${m.priceList.name} + ' — ' + ${@priceFormatter.format(m.price, m.currency)}">Liste — ₺0,00</option>
+                </select>
+              </td>
+              <td data-label="Toplam">
+                <span class="oed-row-total" th:text="${@priceFormatter.format(item.totalPrice, item.currency)}">₺0,00</span>
+                <span class="oed-vat-note" th:if="${item.priceIncludesVat}" style="color:var(--ink-500);font-size:11px;display:block">(KDV dahil)</span>
+              </td>
+              <td class="oed-only" data-label="İşlem" style="display:none">
+                <button type="button" class="oed-remove adp__btn adp__btn--sm adp__btn--ghost">Sil</button>
+              </td>
             </tr>
           </tbody>
+          <tbody id="oedNewRows"></tbody>
         </table>
         <p style="margin:10px 0 0;text-align:right;font-weight:700" th:text="'Genel Toplam (KDV Dahil): ' + ${@fmt.orderGrandTotal(order)}">Genel Toplam</p>
+
+        <div class="oed-only" id="oedAddArea" style="display:none;margin-top:16px">
+          <button type="button" class="qbp__add" id="oedAddRow">+ Ürün Ekle</button>
+        </div>
+
+        <div class="oed-only" id="oedActions" style="display:none;margin-top:16px;gap:8px">
+          <button type="button" class="adp__btn" id="oedSave">Kaydet</button>
+          <button type="button" class="adp__btn adp__btn--ghost" id="oedCancel">İptal</button>
+        </div>
       </div>
 
       <div class="adp__card">
@@ -53,9 +92,50 @@
           <button class="adp__btn" type="submit">Kaydet</button>
         </form>
       </div>
+
+      <form id="oedForm" method="post" th:action="@{'/admin/orders/' + ${order.id} + '/items'}" style="display:none">
+        <input type="hidden" name="payload" id="oedPayload"/>
+      </form>
     </main>
   </div>
 </div>
+
+<!-- Yeni ürün satırı şablonu (JS klonlar) -->
+<template id="oedRowTemplate">
+  <tr class="oed-new-row">
+    <td colspan="2" data-label="Ürün">
+      <div class="pcombo js-combo">
+        <button type="button" class="pcombo__trigger pcombo__trigger--empty js-combo-trigger" aria-haspopup="listbox" aria-expanded="false">
+          <span class="pcombo__label">Ürün ara ve seç…</span>
+          <span class="pcombo__caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="pcombo__panel js-combo-panel" hidden>
+          <input type="text" class="pcombo__search js-combo-search" placeholder="Ürün ara (ad, marka, stok kodu)…"/>
+          <ul class="pcombo__list js-combo-list" role="listbox"></ul>
+        </div>
+      </div>
+    </td>
+    <td data-label="Adet">
+      <div class="qqty qqty--disabled js-qty">
+        <button type="button" data-qm disabled aria-label="Azalt">−</button>
+        <input type="number" min="1" value="1" disabled aria-label="Adet"/>
+        <button type="button" data-qp disabled aria-label="Artır">+</button>
+      </div>
+    </td>
+    <td data-label="Birim Fiyat">
+      <input type="number" step="0.01" min="0" class="js-new-price" style="width:110px" disabled/>
+      <select class="js-new-list-select" style="display:none">
+        <option value="" selected>Fiyat listesinden seç…</option>
+      </select>
+    </td>
+    <td class="js-new-total mono" data-label="Toplam">—</td>
+    <td data-label="İşlem">
+      <button type="button" class="js-remove adp__btn adp__btn--sm adp__btn--ghost">Sil</button>
+    </td>
+  </tr>
+</template>
+
 <script th:src="@{/js/admin.js}"></script>
+<script th:src="@{/js/admin-order-edit.js}"></script>
 </body>
 </html>

@@ -44,9 +44,9 @@
           <thead><tr><th>E-posta</th><th>Ad Soyad</th><th>Rol</th><th>Durum</th><th></th></tr></thead>
           <tbody>
             <tr th:each="u : ${users}" th:with="isSelf=${currentUser != null and u.id == currentUser.id}">
-              <td th:text="${u.email}">e-posta</td>
-              <td><span th:text="${u.name}">Ad</span> <span th:text="${u.surname}">Soyad</span></td>
-              <td>
+              <td data-label="E-posta" th:text="${u.email}">e-posta</td>
+              <td data-label="Ad Soyad"><span th:text="${u.name}">Ad</span> <span th:text="${u.surname}">Soyad</span></td>
+              <td data-label="Rol">
                 <form method="post" th:action="@{'/admin/users/' + ${u.id} + '/role'}" style="margin:0">
                   <select class="adp__select-inline" name="role" th:disabled="${isSelf}" onchange="this.form.submit()">
                     <option th:each="r : ${T(com.ikibm.catalog.entity.Role).values()}" th:value="${r}" th:text="${r}"
@@ -54,7 +54,7 @@
                   </select>
                 </form>
               </td>
-              <td>
+              <td data-label="Durum">
                 <form method="post" th:action="@{'/admin/users/' + ${u.id} + '/status'}" style="margin:0">
                   <select class="adp__select-inline" name="status" th:disabled="${isSelf}" onchange="this.form.submit()">
                     <option th:each="s : ${T(com.ikibm.catalog.entity.UserStatus).values()}" th:value="${s}" th:text="${s}"

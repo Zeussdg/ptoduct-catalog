@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${priceList.name})}"></head>
+<body>
+<div class="adm">
+  <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+  <div class="adm__main">
+    <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
+    <main class="adm__content" id="pliRoot" th:attr="data-price-list-id=${priceList.id}">
+      <p><a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{/admin/price-lists}">‹ Fiyatlandırma</a></p>
+      <h1 class="adp__title" th:text="${priceList.name}">Fiyat Listesi</h1>
+      <p class="adp__subtitle">Bu listedeki her ürünün kendi KDV dahil fiyatı vardır. Sipariş düzenlerken bu ürünler için burada girilen fiyatlar seçenek olarak sunulur.</p>
+
+      <p th:if="${error}" th:text="${error}" style="color:var(--danger-600)">Hata</p>
+      <p th:if="${message}" th:text="${message}" style="color:var(--signal-600)">Tamam</p>
+
+      <div class="adp__card">
+        <h2 style="font-size:14px;margin:0 0 12px">Listedeki Ürünler</h2>
+        <div th:if="${#lists.isEmpty(items)}" class="adp__empty">Bu listeye henüz ürün eklenmemiş.</div>
+        <table th:unless="${#lists.isEmpty(items)}" class="adp__table">
+          <thead><tr><th>Ürün</th><th>Kod</th><th>Fiyat (KDV Dahil)</th><th></th></tr></thead>
+          <tbody>
+            <tr th:each="it : ${items}">
+              <td data-label="Ürün" th:text="${it.product.name}">Ürün</td>
+              <td class="mono" data-label="Kod" th:text="${it.product.stockCode}">KOD</td>
+              <td data-label="Fiyat (KDV Dahil)" th:text="${@priceFormatter.format(it.price, it.currency)} + ' (eski KDV dahil: ' + ${@fmt.priceWithVat(it.product.effectivePrice, it.product.currency)} + ')'">₺0,00</td>
+              <td>
+                <form method="post" th:action="@{'/admin/price-lists/' + ${priceList.id} + '/items/' + ${it.id} + '/delete'}"
+                      th:attr="data-confirm='&quot;' + ${it.product.name} + '&quot; ürününü listeden çıkarmak istediğinize emin misiniz?'">
+                  <button type="submit" class="adp__btn adp__btn--sm adp__btn--ghost">Sil</button>
+                </form>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="adp__card">
+        <h2 style="font-size:14px;margin:0 0 12px">Ürün Ekle</h2>
+        <form method="get" th:action="@{'/admin/price-lists/' + ${priceList.id}}">
+          <label class="adp__field"><span>Ürün ara</span>
+            <input type="text" name="q" th:value="${q}" placeholder="Ürün adı, stok kodu veya marka"/></label>
+          <button type="submit" class="adp__btn adp__btn--sm">Ara</button>
+        </form>
+
+        <div th:if="${!#lists.isEmpty(productResults)}" style="margin-top:14px">
+          <table class="adp__table">
+            <thead><tr><th></th><th>Ürün</th><th>Kod</th><th>Standart Fiyat (KDV Dahil)</th></tr></thead>
+            <tbody>
+              <tr th:each="p : ${productResults}" th:with="oldPrice=${@fmt.priceWithVat(p.effectivePrice, p.currency)}">
+                <td data-label="Seç"><input type="checkbox" class="js-pli-check" th:value="${p.id}"
+                           th:attr="data-name=${p.name},data-code=${p.stockCode},data-currency=${p.currency},data-old-price=${oldPrice}"/></td>
+                <td data-label="Ürün" th:text="${p.name}">Ürün</td>
+                <td class="mono" data-label="Kod" th:text="${p.stockCode}">KOD</td>
+                <td data-label="Standart Fiyat (KDV Dahil)" th:text="${oldPrice}">₺0,00</td>
+              </tr>
+            </tbody>
+          </table>
+          <button type="button" class="adp__btn adp__btn--sm" id="pliPickBtn">Seçilenleri Ekle</button>
+        </div>
+        <p th:if="${q != null and !q.isBlank() and #lists.isEmpty(productResults)}" class="adp__empty">Aramanızla eşleşen ürün bulunamadı.</p>
+
+        <div id="pliPriceRows" style="margin-top:16px"></div>
+        <div id="pliSaveArea" style="display:none;margin-top:12px">
+          <button type="button" class="adp__btn" id="pliSave">Kaydet</button>
+        </div>
+      </div>
+
+      <form id="pliForm" method="post" th:action="@{'/admin/price-lists/' + ${priceList.id} + '/items'}" style="display:none">
+        <input type="hidden" name="payload" id="pliPayload"/>
+      </form>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+<script th:src="@{/js/admin-pricelist-items.js}"></script>
+</body>
+</html>

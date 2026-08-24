@@ -27,12 +27,12 @@
           <thead><tr><th>Sipariş No</th><th>Müşteri</th><th>Teklif</th><th>Tutar</th><th>Durum</th><th>Tarih</th><th></th></tr></thead>
           <tbody>
             <tr th:each="o : ${orders}">
-              <td th:text="'#' + ${o.id}">#1</td>
-              <td th:text="${o.user.companyName != null ? o.user.companyName : o.user.email}">Müşteri</td>
-              <td><a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{'/admin/quotes/' + ${o.quote.id}}">Teklif #<span th:text="${o.quote.id}">1</span></a></td>
-              <td th:text="${@fmt.orderGrandTotal(o)}">Tutar</td>
-              <td><span class="adp__badge" th:text="${@orderStatus.label(o.status)}">Beklemede</span></td>
-              <td th:text="${@fmt.date(o.createdAt)}">01.01.2026</td>
+              <td data-label="Sipariş No" th:text="'#' + ${o.id}">#1</td>
+              <td data-label="Müşteri" th:text="${o.user.companyName != null ? o.user.companyName : o.user.email}">Müşteri</td>
+              <td data-label="Teklif"><a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{'/admin/quotes/' + ${o.quote.id}}">Teklif #<span th:text="${o.quote.id}">1</span></a></td>
+              <td data-label="Tutar" th:text="${@fmt.orderGrandTotal(o)}">Tutar</td>
+              <td data-label="Durum"><span class="adp__badge" th:text="${@orderStatus.label(o.status)}">Beklemede</span></td>
+              <td data-label="Tarih" th:text="${@fmt.date(o.createdAt)}">01.01.2026</td>
               <td><a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{'/admin/orders/' + ${o.id}}">Detay</a></td>
             </tr>
           </tbody>
