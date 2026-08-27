@@ -50,6 +50,17 @@ public class User {
 
     private String phone;
 
+    /** Fatura kesebilmek için gerekli bilgiler — mevcut kullanıcılarda boş olabilir (fatura oluşturma
+     * sırasında InvoiceService bunların doluluğunu kontrol eder, eksikse fatura oluşturmayı engeller). */
+    @Column(name = "tax_number", length = 50)
+    private String taxNumber;
+
+    @Column(name = "tax_office", length = 150)
+    private String taxOffice;
+
+    @Column(name = "billing_address", length = 500)
+    private String billingAddress;
+
     @Column(name = "last_login_at")
     private Instant lastLoginAt;
 
@@ -83,6 +94,12 @@ public class User {
     public void setSurname(String surname) { this.surname = surname; }
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
+    public String getTaxNumber() { return taxNumber; }
+    public void setTaxNumber(String taxNumber) { this.taxNumber = taxNumber; }
+    public String getTaxOffice() { return taxOffice; }
+    public void setTaxOffice(String taxOffice) { this.taxOffice = taxOffice; }
+    public String getBillingAddress() { return billingAddress; }
+    public void setBillingAddress(String billingAddress) { this.billingAddress = billingAddress; }
     public Instant getLastLoginAt() { return lastLoginAt; }
     public void setLastLoginAt(Instant lastLoginAt) { this.lastLoginAt = lastLoginAt; }
     public Instant getCreatedAt() { return createdAt; }

@@ -16,3 +16,12 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
   flyway:
     enabled: false
+
+app:
+  company:
+    name: "2M Bilişim Ltd. Şti."
+    tax-number: "1234567890"
+    tax-office: "Kadıköy Vergi Dairesi"
+    address: "Örnek Mah. Örnek Cad. No:1 Kadıköy/İstanbul"
+    phone: "+90 216 000 00 00"
+    email: "info@2mbilisim.local"

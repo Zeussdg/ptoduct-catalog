@@ -90,6 +90,7 @@ public class QuoteService {
             qi.setTotalPrice(unit.multiply(BigDecimal.valueOf(it.qty())));
             qi.setCurrency(Currency.valueOf(it.currency()));
             qi.setPriceIncludesVat(it.priceIncludesVat());
+            qi.setPriceListName(it.priceListName());
             quote.getItems().add(qi);
         }
 

@@ -1,10 +1,12 @@
 package com.ikibm.catalog.util;
 
 import com.ikibm.catalog.entity.Currency;
+import com.ikibm.catalog.entity.Invoice;
 import com.ikibm.catalog.entity.Order;
 import com.ikibm.catalog.entity.OrderItem;
 import com.ikibm.catalog.entity.Quote;
 import com.ikibm.catalog.entity.QuoteItem;
+import com.ikibm.catalog.util.InvoiceCalculator;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -152,6 +154,16 @@ public class Fmt {
             sums.merge(it.getCurrency(), it.getTotalPrice(), BigDecimal::add);
         }
         return sums;
+    }
+
+    /** Bir faturanın para birimi başına genel toplamlarını " + " ile birleştirir (order/quote'takiyle
+     * aynı stil) — farklı para birimleri kesinlikle toplanmaz, InvoiceCalculator.summarize kullanılır. */
+    public String invoiceGrandTotal(Invoice invoice) {
+        var summaries = InvoiceCalculator.summarize(invoice.getItems());
+        if (summaries.isEmpty()) return "-";
+        return summaries.stream()
+                .map(s -> priceFormatter.format(s.grandTotal(), s.currency()))
+                .collect(Collectors.joining(" + "));
     }
 
     /** Sipariş kalemlerini, fiyatı KDV dahil olup olmamasına göre ayrı ayrı para birimi bazında toplar. */

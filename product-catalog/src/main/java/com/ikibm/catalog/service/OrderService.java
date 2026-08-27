@@ -83,9 +83,15 @@ public class OrderService {
                 oi.setTotalPrice(qi.getTotalPrice());
                 oi.setCurrency(qi.getCurrency());
                 oi.setPriceIncludesVat(Boolean.TRUE.equals(qi.getPriceIncludesVat()));
+                oi.setPriceListName(qi.getPriceListName());
                 order.getItems().add(oi);
             }
 
+            // NOT: Sipariş oluşturulduğunda cari hesaba HİÇBİR ŞEY yazılmaz — "Veresiye" fiyat listesinden
+            // gelen kalemler dahil. Cari borç artık SADECE admin "Faturalandır" dediğinde, InvoiceService
+            // üzerinden oluşturulur (bkz. InvoiceService.createFromOrder → CariAccountService.recordInvoiceDebt).
+            // Eskiden burada sipariş oluşur oluşmaz otomatik borç yazan bir mekanizma vardı; onaylanmadan/
+            // faturalandırılmadan cariye yansımaması gerektiği için kaldırıldı.
             return orderRepository.save(order);
         });
     }

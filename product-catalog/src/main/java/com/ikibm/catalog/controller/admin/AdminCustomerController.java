@@ -1,6 +1,7 @@
 package com.ikibm.catalog.controller.admin;
 
 import com.ikibm.catalog.entity.Currency;
+import com.ikibm.catalog.service.CariAccountService;
 import com.ikibm.catalog.service.CustomerPriceImportService;
 import com.ikibm.catalog.service.CustomerPriceService;
 import com.ikibm.catalog.service.PriceListService;
@@ -35,17 +36,19 @@ public class AdminCustomerController {
     private final CustomerPriceService customerPriceService;
     private final CustomerPriceImportService customerPriceImportService;
     private final PriceListService priceListService;
+    private final CariAccountService cariAccountService;
 
     public AdminCustomerController(UserService userService, QuoteService quoteService,
                                    ProductService productService, CustomerPriceService customerPriceService,
                                    CustomerPriceImportService customerPriceImportService,
-                                   PriceListService priceListService) {
+                                   PriceListService priceListService, CariAccountService cariAccountService) {
         this.userService = userService;
         this.quoteService = quoteService;
         this.productService = productService;
         this.customerPriceService = customerPriceService;
         this.customerPriceImportService = customerPriceImportService;
         this.priceListService = priceListService;
+        this.cariAccountService = cariAccountService;
     }
 
     @GetMapping
@@ -74,7 +77,19 @@ public class AdminCustomerController {
         Set<Integer> selectedPriceListIds = customer.getPriceLists().stream()
                 .map(com.ikibm.catalog.entity.PriceList::getId).collect(Collectors.toSet());
         model.addAttribute("selectedPriceListIds", selectedPriceListIds);
+        model.addAttribute("cariAccount", cariAccountService.getOrCreateForUser(id));
         return "admin/customer-detail";
+    }
+
+    /** Fatura kesebilmek için gerekli bilgiler (InvoiceService fatura oluşturmadan önce bunların
+     * doluluğunu kontrol eder) — mevcut kullanıcı akışlarına dokunmadan ayrı bir form/endpoint. */
+    @PostMapping("/{id}/billing-info")
+    public String updateBillingInfo(@PathVariable Integer id,
+                                    @RequestParam(required = false) String taxNumber,
+                                    @RequestParam(required = false) String taxOffice,
+                                    @RequestParam(required = false) String billingAddress) {
+        userService.updateBillingInfo(id, taxNumber, taxOffice, billingAddress);
+        return "redirect:/admin/customers/" + id;
     }
 
     @PostMapping("/{id}/price-list")

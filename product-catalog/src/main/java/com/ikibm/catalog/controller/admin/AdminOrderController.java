@@ -11,6 +11,7 @@ import com.ikibm.catalog.exception.ConflictException;
 import com.ikibm.catalog.exception.NotFoundException;
 import com.ikibm.catalog.security.CatalogUserDetails;
 import com.ikibm.catalog.service.AuditLogService;
+import com.ikibm.catalog.service.InvoiceService;
 import com.ikibm.catalog.service.OrderService;
 import com.ikibm.catalog.service.PriceListService;
 import com.ikibm.catalog.service.ProductService;
@@ -32,15 +33,17 @@ public class AdminOrderController {
     private final ProductService productService;
     private final PriceListService priceListService;
     private final AuditLogService auditLogService;
+    private final InvoiceService invoiceService;
     private final ObjectMapper objectMapper;
 
     public AdminOrderController(OrderService orderService, ProductService productService,
                                 PriceListService priceListService, AuditLogService auditLogService,
-                                ObjectMapper objectMapper) {
+                                InvoiceService invoiceService, ObjectMapper objectMapper) {
         this.orderService = orderService;
         this.productService = productService;
         this.priceListService = priceListService;
         this.auditLogService = auditLogService;
+        this.invoiceService = invoiceService;
         this.objectMapper = objectMapper;
     }
 
@@ -63,6 +66,7 @@ public class AdminOrderController {
             if (!matches.isEmpty()) priceListMatches.put(item.getId(), matches);
         }
         model.addAttribute("priceListMatches", priceListMatches);
+        model.addAttribute("invoice", invoiceService.findByOrderId(id).orElse(null));
         return "admin/order-detail";
     }
 

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Cari Hesabım')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="custpg">
+  <h1 class="custpg__title">Cari Hesabım</h1>
+
+  <div th:if="${account == null}" class="custpg__card">
+    <div class="custpg__empty">Henüz cari hareketiniz bulunmuyor.</div>
+  </div>
+
+  <div th:if="${account != null}" class="custpg__card">
+    <p style="margin:0 0 8px">Cari Bakiye:
+      <strong th:text="${@priceFormatter.format(account.currentBalance, account.currency)}">₺0,00</strong>
+    </p>
+    <p style="margin:0">Kullanılabilir Limit:
+      <strong th:text="${@priceFormatter.format(availableLimit, account.currency)}">₺0,00</strong>
+    </p>
+  </div>
+
+  <div th:if="${account != null}" class="custpg__card">
+    <div th:if="${#lists.isEmpty(transactions)}" class="custpg__empty">Henüz cari hareket yok.</div>
+    <table th:unless="${#lists.isEmpty(transactions)}" class="custpg__table">
+      <thead><tr><th>Tarih</th><th>İşlem</th><th>Açıklama</th><th>Borç</th><th>Alacak</th><th>Vade</th><th>Bakiye</th></tr></thead>
+      <tbody>
+        <tr th:each="t : ${transactions}">
+          <td data-label="Tarih" th:text="${@fmt.date(t.transactionDate)}">01.01.2026</td>
+          <td data-label="İşlem" th:text="${t.type}">DEBT</td>
+          <td data-label="Açıklama" th:text="${t.description ?: '—'}">—</td>
+          <td data-label="Borç" th:text="${t.type.name() == 'DEBT' or t.type.name() == 'ADJUSTMENT' ? @priceFormatter.format(t.amount, t.currency) : '—'}">—</td>
+          <td data-label="Alacak" th:text="${t.type.name() == 'PAYMENT' or t.type.name() == 'REFUND' ? @priceFormatter.format(t.amount, t.currency) : '—'}">—</td>
+          <td data-label="Vade" th:text="${t.dueDate != null ? @fmt.date(t.dueDate) : '—'}">—</td>
+          <td data-label="Bakiye" th:text="${t.balanceAfter != null ? @priceFormatter.format(t.balanceAfter, t.currency) : '—'}">—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div th:replace="~{fragments/cart-drawer :: drawer}"></div>
+<script th:src="@{/js/cart.js}"></script>
+<script th:src="@{/js/exchange-rate.js}"></script>
+</body>
+</html>

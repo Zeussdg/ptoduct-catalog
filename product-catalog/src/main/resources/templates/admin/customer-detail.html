@@ -17,6 +17,23 @@
       </div>
 
       <div class="adp__card">
+        <h2 style="font-size:14px;margin:0 0 12px">Fatura Bilgileri</h2>
+        <p style="margin:0 0 10px;color:var(--ink-500);font-size:12.5px">
+          Bir sipariş faturalandırılmadan önce bu bilgilerin dolu olması gerekir (Firma/Ad Soyad zaten yukarıda,
+          bu alanlar ayrıca vergi no/vergi dairesi/fatura adresi içindir).
+        </p>
+        <form method="post" th:action="@{'/admin/customers/' + ${customer.id} + '/billing-info'}">
+          <label class="adp__field"><span>Vergi No / TCKN</span>
+            <input type="text" name="taxNumber" th:value="${customer.taxNumber}"/></label>
+          <label class="adp__field"><span>Vergi Dairesi</span>
+            <input type="text" name="taxOffice" th:value="${customer.taxOffice}"/></label>
+          <label class="adp__field"><span>Fatura Adresi</span>
+            <textarea rows="2" name="billingAddress" th:text="${customer.billingAddress}"></textarea></label>
+          <button type="submit" class="adp__btn adp__btn--sm">Kaydet</button>
+        </form>
+      </div>
+
+      <div class="adp__card">
         <h2 style="font-size:14px;margin:0 0 12px">Teklif Geçmişi</h2>
         <div th:if="${#lists.isEmpty(quotes)}" class="adp__empty">Teklif geçmişi yok.</div>
         <table th:unless="${#lists.isEmpty(quotes)}" class="adp__table">
@@ -133,6 +150,14 @@
           <button type="submit" class="adp__btn adp__btn--sm">Özel Fiyat Ekle</button>
         </form>
         <p th:if="${q != null and !q.isBlank() and #lists.isEmpty(productResults)}" class="adp__empty">Aramanızla eşleşen ürün bulunamadı.</p>
+      </div>
+
+      <div class="adp__card">
+        <h2 style="font-size:14px;margin:0 0 12px">Cari Hesap</h2>
+        <p style="margin:0 0 10px">Cari Bakiye:
+          <strong th:text="${@priceFormatter.format(cariAccount.currentBalance, cariAccount.currency)}">₺0,00</strong>
+        </p>
+        <a class="adp__btn adp__btn--sm" th:href="@{'/admin/customers/' + ${customer.id} + '/cari'}">Cari Hesabı Gör →</a>
       </div>
     </main>
   </div>

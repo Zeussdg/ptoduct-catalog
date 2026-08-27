@@ -3,6 +3,7 @@ package com.ikibm.catalog.controller.admin;
 import com.ikibm.catalog.security.CatalogUserDetails;
 import com.ikibm.catalog.service.AuditLogService;
 import com.ikibm.catalog.service.CampaignBannerService;
+import com.ikibm.catalog.service.CategoryService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,15 +17,19 @@ public class AdminCampaignBannerController {
 
     private final CampaignBannerService campaignBannerService;
     private final AuditLogService auditLogService;
+    private final CategoryService categoryService;
 
-    public AdminCampaignBannerController(CampaignBannerService campaignBannerService, AuditLogService auditLogService) {
+    public AdminCampaignBannerController(CampaignBannerService campaignBannerService, AuditLogService auditLogService,
+                                         CategoryService categoryService) {
         this.campaignBannerService = campaignBannerService;
         this.auditLogService = auditLogService;
+        this.categoryService = categoryService;
     }
 
     @GetMapping
     public String list(Model model) {
         model.addAttribute("campaigns", campaignBannerService.campaignsWithImages());
+        model.addAttribute("categoryRows", categoryService.flatRows());
         return "admin/campaign-banners";
     }
 
@@ -35,6 +40,19 @@ public class AdminCampaignBannerController {
             if (image.isEmpty()) throw new IllegalArgumentException("Görsel dosyası zorunludur");
             campaignBannerService.setBannerImage(campaignId, image.getBytes(), image.getContentType(), image.getOriginalFilename());
             auditLogService.record(me.getId(), "CAMPAIGN_BANNER_SET", "CampaignBanner", campaignId, null);
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/campaign-banners";
+    }
+
+    @PostMapping("/{campaignId}/target-category")
+    public String setTargetCategory(@PathVariable String campaignId,
+                                    @RequestParam(required = false) Integer targetCategoryId,
+                                    @AuthenticationPrincipal CatalogUserDetails me, RedirectAttributes ra) {
+        try {
+            campaignBannerService.setTargetCategory(campaignId, targetCategoryId);
+            auditLogService.record(me.getId(), "CAMPAIGN_BANNER_LINKED", "CampaignBanner", campaignId, null);
         } catch (Exception e) {
             ra.addFlashAttribute("error", e.getMessage());
         }

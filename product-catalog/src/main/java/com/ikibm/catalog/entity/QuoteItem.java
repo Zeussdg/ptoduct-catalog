@@ -44,6 +44,11 @@ public class QuoteItem {
     @Column(name = "price_includes_vat", nullable = false)
     private Boolean priceIncludesVat = false;
 
+    /** Sepette seçilen fiyat listesinin adı (ör. "Veresiye") — sipariş oluşunca OrderItem'a da taşınır,
+     * cari hesaba otomatik borç yazılıp yazılmayacağına bu isim bakılarak karar verilir. */
+    @Column(name = "price_list_name")
+    private String priceListName;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;
@@ -68,6 +73,8 @@ public class QuoteItem {
     public void setCurrency(Currency currency) { this.currency = currency; }
     public Boolean getPriceIncludesVat() { return priceIncludesVat; }
     public void setPriceIncludesVat(Boolean priceIncludesVat) { this.priceIncludesVat = priceIncludesVat; }
+    public String getPriceListName() { return priceListName; }
+    public void setPriceListName(String priceListName) { this.priceListName = priceListName; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 }

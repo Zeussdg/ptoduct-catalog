@@ -28,7 +28,13 @@
       <a sec:authorize="isAuthenticated()" th:href="@{/account}" class="hdr__nav-link">Hesabım</a>
       <a sec:authorize="isAuthenticated()" th:href="@{/quotes}" class="hdr__nav-link">Tekliflerim</a>
       <a sec:authorize="isAuthenticated()" th:href="@{/orders}" class="hdr__nav-link">Siparişlerim</a>
+      <a sec:authorize="isAuthenticated()" th:href="@{/invoices}" class="hdr__nav-link">Faturalarım</a>
       <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="hdr__nav-link">Giriş</a>
+
+      <div class="hdr__fx" id="fxRates" hidden aria-live="polite">
+        <span class="hdr__fx-item">USD <b id="fxUsd">–</b></span>
+        <span class="hdr__fx-item">EUR <b id="fxEur">–</b></span>
+      </div>
 
       <button type="button" class="hdr__cart" id="cartOpenBtn" aria-label="Sepeti aç">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">

@@ -27,11 +27,21 @@
             <div style="font-size:15px;font-weight:600" th:text="${c.title}">Başlık</div>
             <div style="font-size:13px;color:var(--ink-500)" th:text="${c.subtitle}">Alt başlık</div>
           </div>
-          <div style="display:flex;gap:8px;align-items:center">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <form method="post" enctype="multipart/form-data"
                   th:action="@{'/admin/campaign-banners/' + ${c.id} + '/image'}" style="margin:0">
               <input type="file" name="image" accept="image/*" required style="max-width:180px"/>
               <button class="adp__btn adp__btn--sm" type="submit" th:text="${c.image != null ? 'Değiştir' : 'Yükle'}">Yükle</button>
+            </form>
+            <form th:if="${c.image != null}" method="post"
+                  th:action="@{'/admin/campaign-banners/' + ${c.id} + '/target-category'}" style="margin:0;display:flex;gap:6px;align-items:center">
+              <select name="targetCategoryId" aria-label="Hedef kategori" style="max-width:200px">
+                <option value="">— Yönlendirme yok —</option>
+                <option th:each="row : ${categoryRows}" th:value="${row.id}"
+                        th:selected="${c.targetCategoryId != null and c.targetCategoryId == row.id}"
+                        th:text="${#strings.repeat('— ', row.depth) + row.name}">Kategori</option>
+              </select>
+              <button class="adp__btn adp__btn--sm adp__btn--ghost" type="submit">Bağla</button>
             </form>
             <form th:if="${c.image != null}" method="post"
                   th:action="@{'/admin/campaign-banners/' + ${c.id} + '/delete'}" style="margin:0"

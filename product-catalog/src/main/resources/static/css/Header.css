@@ -139,6 +139,25 @@
   padding: 0 4px;
 }
 
+/* Salt gösterim amaçlı TCMB güncel kur rozeti — hiçbir hesaplamada kullanılmaz. */
+.hdr__fx {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--ink-300);
+  white-space: nowrap;
+}
+
+.hdr__fx-item b {
+  color: #fff;
+  font-weight: 600;
+}
+
 /* Gerçek hamburger menü yok — sadece 3 nav linki olduğu için metin küçültme/gizleme
    yeterli kabul edildi. Nav büyürse burada hamburger deseni eklenmeli. */
 @media (max-width: 640px) {
@@ -149,6 +168,9 @@
     font-size: 12px;
   }
   .hdr__cart span:not(.hdr__cart-badge) {
+    display: none;
+  }
+  .hdr__fx {
     display: none;
   }
   .hdr__cart {

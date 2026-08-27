@@ -1,0 +1,22 @@
+CREATE TABLE cari_transactions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  cari_account_id INT NOT NULL,
+  type VARCHAR(20) NOT NULL,
+  amount DECIMAL(12,2) NOT NULL,
+  currency VARCHAR(10) NOT NULL DEFAULT 'TRY',
+  balance_after DECIMAL(12,2) NULL,
+  paid_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+  transaction_date DATETIME(6) NOT NULL,
+  due_date DATETIME(6) NULL,
+  payment_method VARCHAR(20) NULL,
+  reference_type VARCHAR(30) NULL,
+  reference_id INT NULL,
+  description VARCHAR(500) NULL,
+  created_by INT NULL,
+  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  KEY idx_cari_tx_account_date (cari_account_id, transaction_date),
+  KEY idx_cari_tx_due_date (due_date),
+  KEY idx_cari_tx_reference (reference_type, reference_id),
+  CONSTRAINT fk_cari_tx_account FOREIGN KEY (cari_account_id) REFERENCES cari_accounts(id) ON DELETE CASCADE,
+  CONSTRAINT fk_cari_tx_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+);

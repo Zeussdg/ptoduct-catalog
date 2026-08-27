@@ -2,7 +2,11 @@ package com.ikibm.catalog.controller.admin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ikibm.catalog.dto.PriceListItemsUpdateRequest;
+import com.ikibm.catalog.entity.CariAccount;
 import com.ikibm.catalog.entity.Currency;
+import com.ikibm.catalog.entity.User;
+import com.ikibm.catalog.repository.UserRepository;
+import com.ikibm.catalog.service.CariAccountService;
 import com.ikibm.catalog.service.PriceListItemImportService;
 import com.ikibm.catalog.service.PriceListService;
 import com.ikibm.catalog.service.ProductService;
@@ -26,14 +30,22 @@ public class AdminPriceListController {
     private final ProductService productService;
     private final PriceListItemImportService priceListItemImportService;
     private final ObjectMapper objectMapper;
+    private final UserRepository userRepository;
+    private final CariAccountService cariAccountService;
 
     public AdminPriceListController(PriceListService priceListService, ProductService productService,
-                                    PriceListItemImportService priceListItemImportService, ObjectMapper objectMapper) {
+                                    PriceListItemImportService priceListItemImportService, ObjectMapper objectMapper,
+                                    UserRepository userRepository, CariAccountService cariAccountService) {
         this.priceListService = priceListService;
         this.productService = productService;
         this.priceListItemImportService = priceListItemImportService;
         this.objectMapper = objectMapper;
+        this.userRepository = userRepository;
+        this.cariAccountService = cariAccountService;
     }
+
+    /** Veresiye price-list detay sayfasındaki "bağlı müşteriler" kartı için — sadece görüntüleme amaçlı satır. */
+    public record LinkedCustomerCariRow(User customer, CariAccount account, java.math.BigDecimal availableLimit) {}
 
     @GetMapping
     public String list(Model model) {
@@ -53,6 +65,14 @@ public class AdminPriceListController {
         model.addAttribute("items", priceListService.items(id));
         model.addAttribute("q", q);
         model.addAttribute("productResults", (q == null || q.isBlank()) ? List.of() : productService.adminList(q));
+
+        List<User> linkedCustomers = userRepository.findByPriceLists_Id(id);
+        model.addAttribute("linkedCustomerCari", linkedCustomers.stream()
+                .map(u -> {
+                    CariAccount account = cariAccountService.getOrCreateForUser(u.getId());
+                    return new LinkedCustomerCariRow(u, account, cariAccountService.availableLimit(account.getId()));
+                })
+                .toList());
         return "admin/price-list-detail";
     }
 

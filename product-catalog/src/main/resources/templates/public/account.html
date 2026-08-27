@@ -11,6 +11,7 @@
     <span style="display:flex;gap:16px">
       <a class="custpg__link" th:href="@{/quotes}">Tekliflerim →</a>
       <a class="custpg__link" th:href="@{/orders}">Siparişlerim →</a>
+      <a class="custpg__link" th:href="@{/cari-hesabim}">Cari Hesabım →</a>
     </span>
     <form method="post" th:action="@{/logout}" style="margin:0">
       <button type="submit" class="custpg__btn custpg__btn--danger">Çıkış Yap</button>
@@ -65,5 +66,6 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 <div th:replace="~{fragments/cart-drawer :: drawer}"></div>
 <script th:src="@{/js/cart.js}"></script>
+<script th:src="@{/js/exchange-rate.js}"></script>
 </body>
 </html>

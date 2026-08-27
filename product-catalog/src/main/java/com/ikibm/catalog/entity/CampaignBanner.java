@@ -23,6 +23,12 @@ public class CampaignBanner {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String url;
 
+    /** Banner tıklanınca yönlendirilecek kategori (ve varsa üst kategorisi üzerinden alt kategori
+     * linki kurulur) — admin seçmediyse null kalır, statik varsayılan "to" kullanılmaya devam eder. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "target_category_id")
+    private Category targetCategory;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;
@@ -39,6 +45,8 @@ public class CampaignBanner {
     public void setKey(String key) { this.key = key; }
     public String getUrl() { return url; }
     public void setUrl(String url) { this.url = url; }
+    public Category getTargetCategory() { return targetCategory; }
+    public void setTargetCategory(Category targetCategory) { this.targetCategory = targetCategory; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

@@ -30,6 +30,12 @@ spring:
       max-file-size: 5MB
       max-request-size: 6MB
 
+  # "Güncel Kur" widget'ının TCMB'ye giden isteği için — başka hiçbir dış çağrı bu ayarı kullanmıyor.
+  http:
+    client:
+      connect-timeout: ${APP_EXCHANGE_RATE_CONNECT_TIMEOUT:3s}
+      read-timeout: ${APP_EXCHANGE_RATE_READ_TIMEOUT:4s}
+
 server:
   port: ${SERVER_PORT:8080}
 
@@ -39,6 +45,20 @@ app:
     super-admin-password: ${APP_SEED_SUPER_ADMIN_PASSWORD:ChangeMe123!}
   upload:
     dir: ${APP_UPLOAD_DIR:uploads}
+  # GEÇİCİ ÖRNEK DEĞERLER — gerçek şirket bilgileriyle değiştirilmeli (env var ile override edilebilir).
+  company:
+    name: ${APP_COMPANY_NAME:2M Bilişim Ltd. Şti.}
+    tax-number: ${APP_COMPANY_TAX_NUMBER:1234567890}
+    tax-office: ${APP_COMPANY_TAX_OFFICE:Kadıköy Vergi Dairesi}
+    address: ${APP_COMPANY_ADDRESS:Örnek Mah. Örnek Cad. No:1 Kadıköy/İstanbul}
+    phone: ${APP_COMPANY_PHONE:+90 216 000 00 00}
+    email: ${APP_COMPANY_EMAIL:info@2mbilisim.local}
+  invoice:
+    default-vat-rate: ${APP_INVOICE_DEFAULT_VAT_RATE:20}
+  # SADECE header'daki "Güncel Kur" görsel rozeti için — hiçbir hesaplamada kullanılmaz.
+  exchange-rate:
+    url: ${APP_EXCHANGE_RATE_URL:https://www.tcmb.gov.tr/kurlar/today.xml}
+    cache-minutes: ${APP_EXCHANGE_RATE_CACHE_MINUTES:60}
 
 logging:
   level:

@@ -14,6 +14,21 @@
       <p th:if="${error}" th:text="${error}" style="color:var(--danger-600)">Hata</p>
       <p th:if="${message}" th:text="${message}" style="color:var(--signal-600)">Tamam</p>
 
+      <div class="adp__card" th:if="${!#lists.isEmpty(linkedCustomerCari)}">
+        <h2 style="font-size:14px;margin:0 0 12px">Bu Fiyat Listesine Bağlı Müşteriler</h2>
+        <table class="adp__table">
+          <thead><tr><th>Müşteri</th><th>Cari Bakiye</th><th>Kullanılabilir Limit</th><th></th></tr></thead>
+          <tbody>
+            <tr th:each="row : ${linkedCustomerCari}">
+              <td data-label="Müşteri" th:text="${row.customer().displayName}">Müşteri</td>
+              <td data-label="Cari Bakiye" th:text="${@priceFormatter.format(row.account().currentBalance, row.account().currency)}">₺0,00</td>
+              <td data-label="Kullanılabilir Limit" th:text="${@priceFormatter.format(row.availableLimit(), row.account().currency)}">₺0,00</td>
+              <td><a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{'/admin/customers/' + ${row.customer().id} + '/cari'}">Cari Hesabı Gör</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       <div class="adp__card">
         <h2 style="font-size:14px;margin:0 0 12px">Listedeki Ürünler</h2>
         <div th:if="${#lists.isEmpty(items)}" class="adp__empty">Bu listeye henüz ürün eklenmemiş.</div>

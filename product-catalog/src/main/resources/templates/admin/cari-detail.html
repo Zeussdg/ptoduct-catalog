@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Cari Hesap — ' + ${customer.displayName})}"></head>
+<body>
+<div class="adm">
+  <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+  <div class="adm__main">
+    <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
+    <main class="adm__content">
+      <p><a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{'/admin/customers/' + ${customer.id}}">‹ Müşteri Detayı</a></p>
+      <h1 class="adp__title" th:text="'Cari Hesap — ' + ${customer.displayName}">Cari Hesap</h1>
+      <p class="adp__subtitle">Bu ekran müşterinin borç/ödeme/bakiye ve vade geçmişini gösterir. Fiyat listeleri
+        ("Fiyatlandırma" bölümü) ile hiçbir ilişkisi yoktur.</p>
+
+      <p th:if="${error}" th:text="${error}" style="color:var(--danger-600)">Hata</p>
+      <p th:if="${message}" th:text="${message}" style="color:var(--signal-600)">Tamam</p>
+
+      <div class="adp__kpis">
+        <div class="adp__kpi">
+          <div class="adp__kpi-value" th:text="${@priceFormatter.format(account.currentBalance, account.currency)}">₺0,00</div>
+          <div class="adp__kpi-label">Cari Bakiye</div>
+        </div>
+        <div class="adp__kpi">
+          <div class="adp__kpi-value" th:text="${@priceFormatter.format(account.creditLimit, account.currency)}">₺0,00</div>
+          <div class="adp__kpi-label">Kredi Limiti</div>
+        </div>
+        <div class="adp__kpi">
+          <div class="adp__kpi-value" th:text="${@priceFormatter.format(availableLimit, account.currency)}">₺0,00</div>
+          <div class="adp__kpi-label">Kullanılabilir Limit</div>
+        </div>
+        <div class="adp__kpi">
+          <div class="adp__kpi-value" th:text="${@priceFormatter.format(overdueTotal, account.currency)}">₺0,00</div>
+          <div class="adp__kpi-label">Vadesi Geçen Borç</div>
+        </div>
+        <div class="adp__kpi">
+          <div class="adp__kpi-value" th:text="${@priceFormatter.format(upcomingDueTotal, account.currency)}">₺0,00</div>
+          <div class="adp__kpi-label">Yaklaşan Vadeler (30 gün)</div>
+        </div>
+      </div>
+
+      <p th:if="${#maps.size(balanceBreakdown) > 1}" style="font-size:12.5px;color:var(--ink-500);margin:0 0 16px">
+        Diğer para birimlerinde de hareket var:
+        <span th:each="entry, iter : ${balanceBreakdown}" th:if="${entry.key != account.currency}">
+          <span th:text="${@priceFormatter.format(entry.value, entry.key)}">—</span><span th:unless="${iter.last}">, </span>
+        </span>
+        (kur çevrimi yapılmaz, ayrı takip edilir)
+      </p>
+
+      <div class="adp__card">
+        <h2 style="font-size:14px;margin:0 0 12px">Ödeme Al</h2>
+        <button type="button" class="adp__btn adp__btn--sm" id="cariPaymentOpenBtn">+ Ödeme Al</button>
+      </div>
+
+      <div class="adp__card">
+        <h2 style="font-size:14px;margin:0 0 12px">Cari Hareket Ekle</h2>
+        <form method="post" th:action="@{'/admin/customers/' + ${customer.id} + '/cari/transactions'}">
+          <label class="adp__field"><span>İşlem Türü</span>
+            <select name="type" id="cariTxType">
+              <option value="DEBT">Borç Ekle</option>
+              <option value="ADJUSTMENT">Borç Düzeltmesi</option>
+            </select>
+          </label>
+          <label class="adp__field"><span>Tutar</span>
+            <input type="number" step="0.01" name="amount" required/>
+          </label>
+          <label class="adp__field"><span>Para Birimi</span>
+            <select name="currency">
+              <option th:each="c : ${currencies}" th:value="${c}" th:text="${c}" th:selected="${c == account.currency}">TRY</option>
+            </select>
+          </label>
+          <label class="adp__field"><span>Tarih</span>
+            <input type="date" name="transactionDate" required/>
+          </label>
+          <label class="adp__field" id="cariDueDateField"><span>Vade Tarihi</span>
+            <input type="date" name="dueDate"/>
+          </label>
+          <label class="adp__field"><span>Açıklama</span>
+            <input type="text" name="description"/>
+          </label>
+          <button type="submit" class="adp__btn adp__btn--sm">Ekle</button>
+        </form>
+      </div>
+
+      <div class="adp__card">
+        <h2 style="font-size:14px;margin:0 0 12px">Cari Hareket Geçmişi</h2>
+        <div th:if="${#lists.isEmpty(transactions)}" class="adp__empty">Henüz cari hareket yok.</div>
+        <table th:unless="${#lists.isEmpty(transactions)}" class="adp__table">
+          <thead><tr><th>Tarih</th><th>İşlem</th><th>Açıklama</th><th>Borç</th><th>Alacak</th><th>Vade</th><th>Bakiye</th></tr></thead>
+          <tbody>
+            <tr th:each="t : ${transactions}">
+              <td data-label="Tarih" th:text="${@fmt.date(t.transactionDate)}">01.01.2026</td>
+              <td data-label="İşlem" th:text="${t.type}">DEBT</td>
+              <td data-label="Açıklama" th:text="${t.description ?: '—'}">—</td>
+              <td data-label="Borç" th:text="${t.type.name() == 'DEBT' or t.type.name() == 'ADJUSTMENT' ? @priceFormatter.format(t.amount, t.currency) : '—'}">—</td>
+              <td data-label="Alacak" th:text="${t.type.name() == 'PAYMENT' or t.type.name() == 'REFUND' ? @priceFormatter.format(t.amount, t.currency) : '—'}">—</td>
+              <td data-label="Vade">
+                <span th:if="${t.dueDate != null}" th:text="${@fmt.date(t.dueDate)}">—</span>
+                <span th:unless="${t.dueDate != null}">—</span>
+                <span th:if="${t.type.name() == 'DEBT'}" class="adp__badge"
+                      th:with="status=${@cariAccountService.dueStatus(t)}"
+                      th:classappend="${@cariAccountService.dueStatusBadgeClass(status)}"
+                      th:text="${status}">BEKLIYOR</span>
+              </td>
+              <td data-label="Bakiye" th:text="${t.balanceAfter != null ? @priceFormatter.format(t.balanceAfter, t.currency) : '—'}">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="pmodal" id="cariPaymentModal" hidden>
+  <div class="pmodal__backdrop" id="cariPaymentModalBackdrop"></div>
+  <div class="pmodal__panel" role="dialog" aria-modal="true" aria-labelledby="cariPaymentModalTitle">
+    <div class="pmodal__head">
+      <h2 id="cariPaymentModalTitle">Ödeme Al</h2>
+      <button type="button" class="pmodal__close" id="cariPaymentModalClose" aria-label="Kapat">×</button>
+    </div>
+    <form method="post" th:action="@{'/admin/customers/' + ${customer.id} + '/cari/payments'}" class="pmodal__body" style="display:flex;flex-direction:column;gap:10px">
+      <label class="adp__field"><span>Ödeme Tutarı</span>
+        <input type="number" step="0.01" name="amount" required/>
+      </label>
+      <label class="adp__field"><span>Para Birimi</span>
+        <select name="currency">
+          <option th:each="c : ${currencies}" th:value="${c}" th:text="${c}" th:selected="${c == account.currency}">TRY</option>
+        </select>
+      </label>
+      <label class="adp__field"><span>Ödeme Tarihi</span>
+        <input type="date" name="paymentDate" required/>
+      </label>
+      <label class="adp__field"><span>Ödeme Yöntemi</span>
+        <select name="method">
+          <option th:each="m : ${paymentMethods}" th:value="${m}" th:text="${m}">NAKIT</option>
+        </select>
+      </label>
+      <label class="adp__field"><span>Açıklama</span>
+        <input type="text" name="description"/>
+      </label>
+      <div class="pmodal__foot">
+        <button type="submit" class="adp__btn">Ödemeyi Kaydet</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script th:src="@{/js/admin.js}"></script>
+<script th:src="@{/js/admin-cari.js}"></script>
+</body>
+</html>

@@ -15,9 +15,15 @@ public record CampaignView(
         String icon,
         String accent,
         String accent2,
-        String image
+        String image,
+        Integer targetCategoryId
 ) {
     public CampaignView withImage(String img) {
-        return new CampaignView(id, brand, badge, eyebrow, title, subtitle, cta, to, icon, accent, accent2, img);
+        return new CampaignView(id, brand, badge, eyebrow, title, subtitle, cta, to, icon, accent, accent2, img, targetCategoryId);
+    }
+
+    /** Admin panelinde seçilen hedef kategoriye göre gerçek yönlendirme linki ve seçili kategori id'si. */
+    public CampaignView withLink(String newTo, Integer newTargetCategoryId) {
+        return new CampaignView(id, brand, badge, eyebrow, title, subtitle, cta, newTo, icon, accent, accent2, image, newTargetCategoryId);
     }
 }

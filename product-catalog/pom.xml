@@ -30,6 +30,13 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
+    <!-- Boot 4'te RestClient.Builder auto-configuration'ı starter-web'e dahil değil, ayrı modülde
+         (aynı Boot 4 modül-bölünmesi flyway-starter yorumundaki gibi) — "Güncel Kur" widget'ının
+         TCMB'den veri çekmesi için gerekli. -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-restclient</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-thymeleaf</artifactId>

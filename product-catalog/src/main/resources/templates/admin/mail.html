@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Mail Gönderme')}"></head>
+<body>
+<div class="adm">
+  <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+  <div class="adm__main">
+    <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
+    <main class="adm__content">
+      <h1 class="adp__title">Mail Gönderme</h1>
+      <p class="adp__subtitle">Müşterilerinize özel içerikler, kampanyalar ve duyurular hazırlayın.</p>
+
+      <div class="adp__tabs">
+        <button type="button" class="adp__tab adp__tab--active" id="mailTabComposeBtn" data-tab="compose">Mail Oluştur</button>
+        <button type="button" class="adp__tab" id="mailTabTemplatesBtn" data-tab="templates">Mail Şablonları</button>
+      </div>
+
+      <!-- ================= MAIL OLUŞTUR ================= -->
+      <div id="mailTabCompose">
+        <div class="adm__mailgrid">
+
+          <!-- Sol: form -->
+          <div>
+            <div class="adp__card">
+              <h2 style="font-size:14px;margin:0 0 12px">Alıcılar</h2>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink-900);margin-bottom:8px">
+                <input type="radio" name="mailRecipients" value="ALL" id="mailRecipAll" checked/> Tüm Müşteriler
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink-900);margin-bottom:8px">
+                <input type="radio" name="mailRecipients" value="GROUP" id="mailRecipGroup"/> Müşteri Grubu
+              </label>
+              <div id="mailGroupBox" hidden style="margin:0 0 10px 22px">
+                <select id="mailGroupSelect" aria-label="Müşteri grubu" style="border:1px solid var(--line-200);border-radius:var(--radius-sm);padding:7px 9px;font-size:13px;width:100%;max-width:260px">
+                  <option>Bayi Müşteriler</option>
+                  <option>Perakende Müşteriler</option>
+                  <option>VIP Müşteriler</option>
+                </select>
+                <p style="font-size:11.5px;color:var(--ink-500);margin:6px 0 0">Örnek veri — gerçek müşteri grupları ileride bağlanacak.</p>
+              </div>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink-900)">
+                <input type="radio" name="mailRecipients" value="SELECTED" id="mailRecipSelected"/> Seçili Müşteriler
+              </label>
+              <div id="mailSelectedBox" hidden style="margin:10px 0 0 22px;display:flex;flex-direction:column;gap:6px">
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-900)"><input type="checkbox"/> Ahmet Yılmaz — ABC Elektrik</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-900)"><input type="checkbox"/> Elif Demir — Demir Ticaret</label>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-900)"><input type="checkbox"/> Mehmet Kaya — Kaya Elektronik</label>
+                <p style="font-size:11.5px;color:var(--ink-500);margin:4px 0 0">Örnek veri — gerçek müşteri listesi ileride bağlanacak.</p>
+              </div>
+            </div>
+
+            <div class="adp__card">
+              <label class="adp__field"><span>Mail Konusu</span>
+                <input type="text" id="mailSubject" placeholder="Mail konu başlığını girin..."/>
+              </label>
+              <label class="adp__field"><span>Mail Başlığı</span>
+                <input type="text" id="mailTitle" placeholder="Mail içerisinde gösterilecek başlığı girin..."/>
+              </label>
+              <label class="adp__field" style="margin-bottom:0"><span>Mail Metni</span>
+                <textarea id="mailBody" rows="8" placeholder="Mail içeriğinizi buraya yazın..."></textarea>
+              </label>
+            </div>
+
+            <div class="adp__card">
+              <h2 style="font-size:14px;margin:0 0 12px">Mail Görseli</h2>
+              <input type="file" id="mailImageInput" accept="image/*" aria-label="Mail görseli seç" style="max-width:220px"/>
+              <button type="button" class="adp__btn adp__btn--sm adp__btn--ghost" id="mailImageRemoveBtn" hidden style="margin-left:8px">Kaldır</button>
+              <div style="margin-top:10px">
+                <img id="mailImagePreview" hidden alt="" style="max-width:100%;max-height:160px;border-radius:var(--radius-sm);border:1px solid var(--line-200)"/>
+              </div>
+
+              <h2 style="font-size:14px;margin:20px 0 4px">Mevcut Kampanya Görseli Kullan</h2>
+              <p style="font-size:11.5px;color:var(--ink-500);margin:0 0 4px">Bir kampanya görseline tıklayarak mail görseli olarak kullanabilirsiniz.</p>
+              <div class="adp__thumbgrid">
+                <button type="button" class="adp__thumb js-campaign-thumb" th:each="c : ${campaigns}" th:if="${c.image != null}"
+                        th:attr="data-image=${c.image},data-title=${c.title},aria-label='Kampanya görselini kullan: ' + ${c.title}"
+                        th:style="'background-image:url(' + ${c.image} + ')'"
+                        th:title="${c.title}">
+                </button>
+              </div>
+              <p th:if="${#lists.isEmpty(campaigns.?[image != null])}" class="adp__empty" style="padding:12px 0">Henüz yüklenmiş kampanya görseli yok.</p>
+            </div>
+
+            <div class="adp__card">
+              <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+                <button type="button" class="adp__btn adp__btn--ghost" id="mailPreviewBtn">Önizle</button>
+                <button type="button" class="adp__btn adp__btn--ghost" id="mailClearBtn">Temizle</button>
+                <button type="button" class="adp__btn adp__btn--ghost" id="mailSaveTemplateBtn">Şablon Olarak Kaydet</button>
+                <button type="button" class="adp__btn" id="mailSendBtn" disabled>Mail Gönder</button>
+                <span style="font-size:11.5px;color:var(--ink-500)">Mail gönderme servisi henüz aktif değil.</span>
+              </div>
+              <p id="mailSaveError" hidden style="color:var(--danger-600);font-size:12.5px;margin:10px 0 0"></p>
+              <p id="mailSaveSuccess" hidden style="color:var(--signal-600);font-size:12.5px;margin:10px 0 0"></p>
+            </div>
+          </div>
+
+          <!-- Sağ: önizleme -->
+          <div>
+            <div class="adp__card" style="padding:0;overflow:hidden">
+              <h2 style="font-size:14px;margin:0;padding:16px 16px 0">Mail Önizleme</h2>
+              <div class="adp__mailpreview" style="margin:16px;width:auto">
+                <div class="adp__mailpreview__bar">
+                  <div><strong>Kimden:</strong> 2M Bilişim &lt;bilgi@2mbilisim.local&gt;</div>
+                  <div><strong>Konu:</strong> <span id="mailPreviewSubject">—</span></div>
+                </div>
+                <div class="adp__mailpreview__body">
+                  <div id="mailPreviewEmpty" class="adp__mailpreview__empty">Önizlemek için soldaki formu doldurun.</div>
+                  <div id="mailPreviewContent" hidden>
+                    <img id="mailPreviewImage" class="adp__mailpreview__image" hidden alt=""/>
+                    <h3 id="mailPreviewTitle" class="adp__mailpreview__title"></h3>
+                    <div id="mailPreviewText" class="adp__mailpreview__text"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ================= MAIL ŞABLONLARI ================= -->
+      <div id="mailTabTemplates" hidden>
+        <div class="adp__card">
+          <label class="adp__field" style="margin-bottom:0;max-width:320px"><span>Şablon Ara</span>
+            <input type="text" id="mailTemplateSearch" placeholder="Şablon ara..."/>
+          </label>
+        </div>
+        <p id="mailTemplateError" hidden class="adp__card" style="color:var(--danger-600);font-size:12.5px"></p>
+        <div id="mailTemplateLoading" class="adp__card adp__empty">Şablonlar yükleniyor...</div>
+        <div id="mailTemplateEmpty" class="adp__card adp__empty" hidden>
+          <p style="margin:0 0 10px">Henüz oluşturulmuş bir mail şablonu bulunmuyor.</p>
+          <button type="button" class="adp__btn adp__btn--sm" id="mailTemplateEmptyCreateBtn">Yeni Şablon Oluştur</button>
+        </div>
+        <div id="mailTemplateList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+<script th:src="@{/js/admin-mail.js}"></script>
+</body>
+</html>

@@ -104,6 +104,17 @@ public class UserService {
         userRepository.delete(getById(id));
     }
 
+    /** Fatura kesebilmek için gerekli müşteri bilgilerini admin panelinden düzenler — InvoiceService
+     * fatura oluşturmadan önce bu alanların doluluğunu ayrıca kontrol eder. */
+    @Transactional
+    public void updateBillingInfo(Integer id, String taxNumber, String taxOffice, String billingAddress) {
+        User u = getById(id);
+        u.setTaxNumber(taxNumber);
+        u.setTaxOffice(taxOffice);
+        u.setBillingAddress(billingAddress);
+        userRepository.save(u);
+    }
+
     /** Bir müşteriyi birden fazla fiyat listesine aynı anda bağlar (ör. Taksitli + Peşin) —
      * verilen liste, müşterinin önceki fiyat listesi atamalarının tamamen yerini alır. */
     @Transactional

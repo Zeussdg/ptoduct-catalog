@@ -77,6 +77,44 @@
       </div>
 
       <div class="adp__card">
+        <h2 style="font-size:14px;margin:0 0 12px">Fatura</h2>
+
+        <div th:if="${invoice == null}">
+          <p th:if="${order.status.name() == 'CANCELLED'}" class="adp__empty">İptal edilmiş sipariş faturalandırılamaz.</p>
+          <form th:unless="${order.status.name() == 'CANCELLED'}" method="post"
+                th:action="@{'/admin/orders/' + ${order.id} + '/invoice'}"
+                data-confirm="Bu sipariş faturalandırılacak ve cari hesaba borç yazılacak. Onaylıyor musunuz?">
+            <button type="submit" class="adp__btn">Faturalandır</button>
+          </form>
+        </div>
+
+        <div th:if="${invoice != null}">
+          <table class="adp__table" style="margin-bottom:12px">
+            <tbody>
+              <tr><td>Fatura No</td><td th:text="${invoice.invoiceNumber}">FTR-2026-0001</td></tr>
+              <tr><td>Tarih</td><td th:text="${@fmt.date(invoice.issuedAt)}">01.01.2026</td></tr>
+              <tr><td>Vade Tarihi</td><td th:text="${invoice.dueDate != null ? @fmt.date(invoice.dueDate) : '—'}">—</td></tr>
+              <tr><td>Durum</td><td><span class="adp__badge" th:text="${@invoiceStatus.label(invoice.status)}">Kesildi</span></td></tr>
+              <tr><td>Toplam</td><td th:text="${@fmt.invoiceGrandTotal(invoice)}">₺0,00</td></tr>
+            </tbody>
+          </table>
+          <p style="margin:0 0 10px;color:var(--ink-500);font-size:11px">
+            Bu fatura numarası resmi bir e-Fatura/e-Arşiv/GİB numarası değildir, sadece dahili bir referanstır.
+          </p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <a class="adp__btn adp__btn--sm adp__btn--ghost" target="_blank"
+               th:href="@{'/admin/invoices/' + ${invoice.id} + '/pdf'}">PDF Görüntüle</a>
+            <a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{'/admin/invoices/' + ${invoice.id} + '/pdf/download'}">PDF İndir</a>
+            <form th:if="${invoice.status.name() == 'ISSUED'}" method="post"
+                  th:action="@{'/admin/invoices/' + ${invoice.id} + '/cancel'}"
+                  data-confirm="Bu faturayı iptal etmek istediğinize emin misiniz? (Ödeme alınmışsa iptal reddedilecektir)">
+              <button type="submit" class="adp__btn adp__btn--sm adp__btn--ghost">İptal Et</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="adp__card">
         <form method="post" th:action="@{'/admin/orders/' + ${order.id} + '/status'}">
           <label class="adp__field"><span>Durum</span>
             <select name="status">
