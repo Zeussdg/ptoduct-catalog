@@ -17,6 +17,10 @@ import com.ikibm.catalog.repository.OrderRepository;
 import com.ikibm.catalog.repository.UserRepository;
 import com.ikibm.catalog.util.InvoiceCalculator;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,6 +82,30 @@ public class InvoiceService {
 
     public Optional<Invoice> findByOrderId(Integer orderId) {
         return invoiceRepository.findByOrder_Id(orderId);
+    }
+
+    /** Admin fatura listesi — fatura no/müşteri adı/sipariş no araması, durum ve tarih aralığı filtresi
+     * (ProductService.adminList ile aynı Specification+Page deseni), 20 kayıt/sayfa, en yeni önce. */
+    public Page<Invoice> listAllAdmin(String q, InvoiceStatus status, Instant issuedFrom, Instant issuedBeforeExclusive, int page) {
+        Specification<Invoice> spec = combine(
+                InvoiceSpecifications.search(q),
+                InvoiceSpecifications.status(status),
+                InvoiceSpecifications.issuedFrom(issuedFrom),
+                InvoiceSpecifications.issuedBefore(issuedBeforeExclusive));
+        PageRequest pr = PageRequest.of(Math.max(0, page - 1), 20, Sort.by(Sort.Direction.DESC, "issuedAt"));
+        return spec != null ? invoiceRepository.findAll(spec, pr) : invoiceRepository.findAll(pr);
+    }
+
+    /** Spring Data JPA 4.x'te Specification.and(null)/where(null) exception fırlattığı için (bkz.
+     * ProductService.adminList'teki aynı not), null olan filtreler burada elenerek birleştirilir. */
+    @SafeVarargs
+    private Specification<Invoice> combine(Specification<Invoice>... specs) {
+        Specification<Invoice> result = null;
+        for (Specification<Invoice> s : specs) {
+            if (s == null) continue;
+            result = (result == null) ? Specification.where(s) : result.and(s);
+        }
+        return result;
     }
 
     @Transactional

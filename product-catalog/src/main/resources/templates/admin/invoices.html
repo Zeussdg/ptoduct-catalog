@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Faturalar')}"></head>
+<body>
+<div class="adm">
+  <div th:replace="~{fragments/admin-sidebar :: sidebar}"></div>
+  <div class="adm__main">
+    <div th:replace="~{fragments/admin-sidebar :: topbar}"></div>
+    <main class="adm__content">
+      <div class="adp__toolbar">
+        <div>
+          <h1 class="adp__title">Faturalar</h1>
+          <p class="adp__subtitle">Oluşturulan faturaları görüntüleyin ve yönetin.</p>
+        </div>
+      </div>
+
+      <div class="adp__card">
+        <form method="get" th:action="@{/admin/invoices}" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+          <label class="adp__field" style="flex:1;min-width:220px">
+            <span>Ara</span>
+            <input type="text" name="q" th:value="${q}" placeholder="Fatura no, sipariş no veya müşteri ara…"/>
+          </label>
+          <label class="adp__field">
+            <span>Durum</span>
+            <select name="status">
+              <option value="" th:selected="${status == null or status == ''}">Tüm durumlar</option>
+              <option th:each="s : ${T(com.ikibm.catalog.entity.InvoiceStatus).values()}"
+                      th:value="${s}" th:text="${@invoiceStatus.label(s)}" th:selected="${status == s.name()}">Kesildi</option>
+            </select>
+          </label>
+          <label class="adp__field">
+            <span>Başlangıç Tarihi</span>
+            <input type="date" name="from" th:value="${from}"/>
+          </label>
+          <label class="adp__field">
+            <span>Bitiş Tarihi</span>
+            <input type="date" name="to" th:value="${to}"/>
+          </label>
+          <button type="submit" class="adp__btn adp__btn--sm">Filtrele</button>
+          <a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{/admin/invoices}">Temizle</a>
+        </form>
+      </div>
+
+      <div class="adp__card">
+        <div th:if="${#lists.isEmpty(invoices)}" class="adp__empty">
+          <span th:if="${(q == null or q.isBlank()) and (status == null or status.isBlank()) and (from == null or from.isBlank()) and (to == null or to.isBlank())}">Henüz oluşturulmuş bir fatura bulunmuyor.</span>
+          <span th:unless="${(q == null or q.isBlank()) and (status == null or status.isBlank()) and (from == null or from.isBlank()) and (to == null or to.isBlank())}">Aramanızla eşleşen fatura bulunamadı.</span>
+        </div>
+
+        <table th:unless="${#lists.isEmpty(invoices)}" class="adp__table">
+          <thead>
+            <tr>
+              <th>Fatura No</th><th>Sipariş No</th><th>Müşteri</th><th>Fatura Tarihi</th>
+              <th>Vade Tarihi</th><th>Tutar</th><th>Durum</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="inv : ${invoices}">
+              <td data-label="Fatura No" th:text="${inv.invoiceNumber}">FTR-2026-0001</td>
+              <td data-label="Sipariş No"><a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{'/admin/orders/' + ${inv.order.id}}">Sipariş #<span th:text="${inv.order.id}">1</span></a></td>
+              <td data-label="Müşteri" th:text="${inv.customerCompanyName}">Müşteri</td>
+              <td data-label="Fatura Tarihi" th:text="${@fmt.date(inv.issuedAt)}">01.01.2026</td>
+              <td data-label="Vade Tarihi" th:text="${inv.dueDate != null ? @fmt.date(inv.dueDate) : '—'}">—</td>
+              <td data-label="Tutar" th:text="${@fmt.invoiceGrandTotal(inv)}">₺0,00</td>
+              <td data-label="Durum"><span class="adp__badge" th:text="${@invoiceStatus.label(inv.status)}">Kesildi</span></td>
+              <td style="display:flex;gap:8px;flex-wrap:wrap">
+                <a class="adp__btn adp__btn--sm adp__btn--ghost" target="_blank" th:href="@{'/admin/invoices/' + ${inv.id} + '/pdf'}">PDF Görüntüle</a>
+                <a class="adp__btn adp__btn--sm adp__btn--ghost" th:href="@{'/admin/invoices/' + ${inv.id} + '/pdf/download'}">PDF İndir</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <nav class="pgn" aria-label="Sayfalama" th:if="${totalPages > 1}" style="margin-top:16px">
+          <a class="pgn__nav" th:classappend="${currentPage == 1} ? ' pgn__nav--disabled'"
+             th:href="@{/admin/invoices(q=${q},status=${status},from=${from},to=${to},page=${currentPage == 1 ? 1 : currentPage - 1})}"
+             aria-label="Önceki sayfa">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Önceki</span>
+          </a>
+
+          <ul class="pgn__list">
+            <li th:each="it : ${@paginations.items(currentPage, totalPages)}">
+              <span th:if="${it == '…'}" class="pgn__gap" aria-hidden="true">…</span>
+              <a th:unless="${it == '…'}" class="pgn__page"
+                 th:classappend="${it == #strings.toString(currentPage)} ? ' pgn__page--active'"
+                 th:href="@{/admin/invoices(q=${q},status=${status},from=${from},to=${to},page=${it})}"
+                 th:text="${it}">1</a>
+            </li>
+          </ul>
+
+          <a class="pgn__nav" th:classappend="${currentPage == totalPages} ? ' pgn__nav--disabled'"
+             th:href="@{/admin/invoices(q=${q},status=${status},from=${from},to=${to},page=${currentPage == totalPages ? totalPages : currentPage + 1})}"
+             aria-label="Sonraki sayfa">
+            <span>Sonraki</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </nav>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

@@ -120,6 +120,21 @@ public class StorageService {
         return new Uploaded(key, PUBLIC_BASE + "/" + key);
     }
 
+    /** Daha önce put(...) ile yazılmış bir dosyanın ham baytlarını, public URL'inden ("/uploads/...")
+     * geri okur — Mail Gönderme modülünün görseli e-postaya gömebilmesi (base64) için kullanılır.
+     * Dosya yoksa/URL bu depoya ait değilse null döner (çağıran taraf görseli sessizce atlar). */
+    public byte[] readByPublicUrl(String publicUrl) {
+        if (publicUrl == null || !publicUrl.startsWith(PUBLIC_BASE + "/")) return null;
+        String key = publicUrl.substring((PUBLIC_BASE + "/").length());
+        Path target = root.resolve(key).normalize();
+        if (!target.startsWith(root) || !Files.isRegularFile(target)) return null;
+        try {
+            return Files.readAllBytes(target);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
     public void deleteObject(String key) {
         if (key == null || key.isBlank()) return;
         Path target = root.resolve(key).normalize();

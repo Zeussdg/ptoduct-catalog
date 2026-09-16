@@ -6,8 +6,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,4 +33,8 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
     @Query("select o.status, count(o) from Order o group by o.status")
     List<Object[]> countGroupByStatus();
+
+    /** Cari ekstre (detaylı) PDF'i için — birden fazla siparişin kalemlerini TEK sorguda, N+1 oluşturmadan getirir. */
+    @Query("select distinct o from Order o left join fetch o.items where o.id in :ids")
+    List<Order> findAllWithItemsByIdIn(@Param("ids") Collection<Integer> ids);
 }

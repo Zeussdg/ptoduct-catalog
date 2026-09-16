@@ -82,7 +82,10 @@
       </div>
 
       <div class="adp__card">
-        <h2 style="font-size:14px;margin:0 0 12px">Cari Hareket Geçmişi</h2>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+          <h2 style="font-size:14px;margin:0">Cari Hareket Geçmişi</h2>
+          <button type="button" class="adp__btn adp__btn--sm adp__btn--ghost" id="cariPdfOpenBtn">PDF Olarak Çıkart</button>
+        </div>
         <div th:if="${#lists.isEmpty(transactions)}" class="adp__empty">Henüz cari hareket yok.</div>
         <table th:unless="${#lists.isEmpty(transactions)}" class="adp__table">
           <thead><tr><th>Tarih</th><th>İşlem</th><th>Açıklama</th><th>Borç</th><th>Alacak</th><th>Vade</th><th>Bakiye</th></tr></thead>
@@ -139,6 +142,37 @@
       </label>
       <div class="pmodal__foot">
         <button type="submit" class="adp__btn">Ödemeyi Kaydet</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="pmodal" id="cariPdfModal" hidden>
+  <div class="pmodal__backdrop" id="cariPdfModalBackdrop"></div>
+  <div class="pmodal__panel" role="dialog" aria-modal="true" aria-labelledby="cariPdfModalTitle">
+    <div class="pmodal__head">
+      <h2 id="cariPdfModalTitle">Cari Hesap Ekstresi — PDF</h2>
+      <button type="button" class="pmodal__close" id="cariPdfModalClose" aria-label="Kapat">×</button>
+    </div>
+    <form method="get" th:action="@{'/admin/customers/' + ${customer.id} + '/cari/pdf'}" target="_blank"
+          class="pmodal__body" style="display:flex;flex-direction:column;gap:10px">
+      <label class="adp__field"><span>Rapor Türü</span></label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13.5px">
+        <input type="radio" name="type" value="summary" checked/> Detaysız
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13.5px">
+        <input type="radio" name="type" value="detailed"/> Detaylı
+      </label>
+      <label class="adp__field"><span>Başlangıç Tarihi (opsiyonel)</span>
+        <input type="date" name="from"/>
+      </label>
+      <label class="adp__field"><span>Bitiş Tarihi (opsiyonel)</span>
+        <input type="date" name="to"/>
+      </label>
+      <div class="pmodal__foot" style="display:flex;gap:8px">
+        <button type="submit" class="adp__btn">PDF'i Görüntüle</button>
+        <button type="submit" formtarget="_self" class="adp__btn adp__btn--ghost"
+                th:formaction="@{'/admin/customers/' + ${customer.id} + '/cari/pdf/download'}">PDF İndir</button>
       </div>
     </form>
   </div>

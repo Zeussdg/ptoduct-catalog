@@ -59,6 +59,11 @@ app:
   exchange-rate:
     url: ${APP_EXCHANGE_RATE_URL:https://www.tcmb.gov.tr/kurlar/today.xml}
     cache-minutes: ${APP_EXCHANGE_RATE_CACHE_MINUTES:60}
+  # Resend (mail gönderme) — api-key KESİNLİKLE burada açık yazılmaz, sadece ortam değişkeninden
+  # okunur (varsayılan boş). Uygulamayı başlatırken: RESEND_API_KEY=re_xxx ... java -jar ...
+  resend:
+    api-key: ${RESEND_API_KEY:}
+    from: ${RESEND_FROM:noreply@2mbilisim.net}
 
 logging:
   level:

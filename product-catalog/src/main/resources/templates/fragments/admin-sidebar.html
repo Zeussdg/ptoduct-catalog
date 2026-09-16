@@ -14,6 +14,7 @@
     <a th:href="@{/admin/price-lists}" class="adm__navlink" th:classappend="${#strings.startsWith(currentPath,'/admin/price-lists')} ? ' adm__navlink--active'">Fiyatlandırma</a>
     <a th:href="@{/admin/quotes}" class="adm__navlink" th:classappend="${#strings.startsWith(currentPath,'/admin/quotes')} ? ' adm__navlink--active'">Teklifler</a>
     <a th:href="@{/admin/orders}" class="adm__navlink" th:classappend="${#strings.startsWith(currentPath,'/admin/orders')} ? ' adm__navlink--active'">Siparişler</a>
+    <a th:href="@{/admin/invoices}" class="adm__navlink" th:classappend="${#strings.startsWith(currentPath,'/admin/invoices')} ? ' adm__navlink--active'">Faturalar</a>
     <a th:href="@{/admin/customers}" class="adm__navlink" th:classappend="${#strings.startsWith(currentPath,'/admin/customers')} ? ' adm__navlink--active'">Müşteriler</a>
 
     <th:block th:if="${currentUser != null and currentUser.role == 'SUPER_ADMIN'}">

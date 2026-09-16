@@ -63,7 +63,10 @@
     tabComposeBtn.addEventListener("click", function () { showTab("compose"); });
     tabTemplatesBtn.addEventListener("click", function () { showTab("templates"); });
 
-    // ---- Alıcılar (mock — gerçek müşteri/grup verisi ileride bağlanacak) ----
+    // ---- Alıcılar ----
+    // "Müşteri Grubu" seçeneği hâlâ örnek/mock veridir (gerçek müşteri grupları bu projede henüz
+    // bir varlık olarak yok) — bu yüzden gönderim sırasında ayrıca engellenir (bkz. mailSendBtn).
+    // "Tüm Müşteriler" / "Seçili Müşteriler" ise gerçek müşteri kayıtlarına bağlıdır.
     var recipRadios = document.querySelectorAll('input[name="mailRecipients"]');
     var groupBox = document.getElementById("mailGroupBox");
     var selectedBox = document.getElementById("mailSelectedBox");
@@ -73,6 +76,36 @@
         selectedBox.hidden = document.getElementById("mailRecipSelected").checked !== true;
       });
     });
+
+    // ---- Gerçek müşteri listesi (Seçili Müşteriler kutusu için) ----
+    var selectedCustomerListEl = document.getElementById("mailSelectedCustomerList");
+    var selectedCustomerEmptyEl = document.getElementById("mailSelectedCustomerEmpty");
+
+    function loadCustomers() {
+      apiFetch("/admin/mail/customers", { method: "GET" })
+        .then(function (customers) {
+          renderCustomerCheckboxes(customers || []);
+        })
+        .catch(function () {
+          selectedCustomerListEl.innerHTML = "";
+          selectedCustomerEmptyEl.textContent = "Müşteri listesi yüklenemedi.";
+          selectedCustomerEmptyEl.hidden = false;
+        });
+    }
+
+    function renderCustomerCheckboxes(customers) {
+      selectedCustomerListEl.innerHTML = "";
+      selectedCustomerEmptyEl.hidden = customers.length > 0;
+      customers.forEach(function (c) {
+        var label = document.createElement("label");
+        label.style.cssText = "display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-900)";
+        label.innerHTML = '<input type="checkbox" class="js-mail-customer" data-customer-id="' + c.id + '"/> '
+          + esc(c.displayName) + ' — ' + esc(c.email);
+        selectedCustomerListEl.appendChild(label);
+      });
+    }
+
+    loadCustomers();
 
     // ---- Form alanları ----
     var subjectEl = document.getElementById("mailSubject");
@@ -399,6 +432,82 @@
     searchInput.addEventListener("input", function () {
       clearTimeout(searchDebounceTimer);
       searchDebounceTimer = setTimeout(loadTemplateList, 300);
+    });
+
+    // ---- Mail Gönder (gerçek gönderim — backend /admin/mail/send üzerinden Resend API) ----
+    var sendBtn = document.getElementById("mailSendBtn");
+    var sendErrorEl = document.getElementById("mailSendError");
+    var sendSuccessEl = document.getElementById("mailSendSuccess");
+
+    function hideSendMessages() {
+      sendErrorEl.hidden = true;
+      sendSuccessEl.hidden = true;
+    }
+    function showSendError(message) {
+      sendSuccessEl.hidden = true;
+      sendErrorEl.textContent = message;
+      sendErrorEl.hidden = false;
+    }
+    function showSendSuccess(message) {
+      sendErrorEl.hidden = true;
+      sendSuccessEl.textContent = message;
+      sendSuccessEl.hidden = false;
+    }
+
+    sendBtn.addEventListener("click", function () {
+      hideSendMessages();
+
+      var subject = subjectEl.value.trim();
+      var title = titleEl.value.trim();
+      var content = bodyEl.value.trim();
+      if (!subject) { showSendError("Mail konusu boş olamaz."); return; }
+      if (!content) { showSendError("Mail metni boş olamaz."); return; }
+
+      var recipientType = document.querySelector('input[name="mailRecipients"]:checked').value;
+      if (recipientType === "GROUP") {
+        showSendError("Müşteri grubu ile gönderim henüz desteklenmiyor. Lütfen 'Tüm Müşteriler' veya 'Seçili Müşteriler' seçin.");
+        return;
+      }
+
+      var customerIds = null;
+      if (recipientType === "SELECTED") {
+        customerIds = Array.prototype.filter.call(
+          document.querySelectorAll(".js-mail-customer"), function (cb) { return cb.checked; }
+        ).map(function (cb) { return parseInt(cb.getAttribute("data-customer-id"), 10); });
+        if (customerIds.length === 0) { showSendError("Lütfen en az bir müşteri seçin."); return; }
+      }
+
+      // Görsel sadece gerçek, sunucuda barınan bir URL'e sahipse maile eklenir — henüz yüklenmemiş
+      // (pendingImageFile dolu) bir seçim yerel bir önizlemedir (dataURL), mail HTML'inde kullanılamaz.
+      if (pendingImageFile) {
+        showSendError("Seçtiğiniz görsel henüz sunucuya yüklenmedi. Göndermeden önce 'Şablon Olarak Kaydet' ile yükleyin ya da görseli kaldırın.");
+        return;
+      }
+
+      var payload = {
+        recipientType: recipientType,
+        customerIds: customerIds,
+        subject: subject,
+        title: title,
+        content: content,
+        imageUrl: selectedImage || null
+      };
+
+      sendBtn.disabled = true;
+      var originalText = sendBtn.textContent;
+      sendBtn.textContent = "Gönderiliyor...";
+
+      apiFetch("/admin/mail/send", { method: "POST", headers: jsonHeaders(), body: JSON.stringify(payload) })
+        .then(function (result) {
+          showSendSuccess((result && result.message) || "Mail başarıyla gönderildi.");
+        })
+        .catch(function (err) {
+          showSendError(err.message || "Mail gönderilemedi. Lütfen tekrar deneyin.");
+        })
+        .finally(function () {
+          sendBtn.disabled = false;
+          sendBtn.textContent = originalText;
+        });
     });
 
     // İlk yüklemede önizleme boş durumda başlasın.

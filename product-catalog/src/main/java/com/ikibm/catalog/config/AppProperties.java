@@ -12,6 +12,7 @@ public class AppProperties {
     private Company company = new Company();
     private Invoice invoice = new Invoice();
     private ExchangeRate exchangeRate = new ExchangeRate();
+    private Resend resend = new Resend();
 
     public Seed getSeed() { return seed; }
     public void setSeed(Seed seed) { this.seed = seed; }
@@ -23,6 +24,8 @@ public class AppProperties {
     public void setInvoice(Invoice invoice) { this.invoice = invoice; }
     public ExchangeRate getExchangeRate() { return exchangeRate; }
     public void setExchangeRate(ExchangeRate exchangeRate) { this.exchangeRate = exchangeRate; }
+    public Resend getResend() { return resend; }
+    public void setResend(Resend resend) { this.resend = resend; }
 
     public static class Seed {
         private String superAdminEmail = "superadmin@2mbilisim.local";
@@ -80,5 +83,16 @@ public class AppProperties {
         public void setUrl(String url) { this.url = url; }
         public int getCacheMinutes() { return cacheMinutes; }
         public void setCacheMinutes(int cacheMinutes) { this.cacheMinutes = cacheMinutes; }
+    }
+
+    /** Resend (mail gönderme) ayarları — apiKey KESİNLİKLE bir varsayılan değer taşımaz, sadece
+     * RESEND_API_KEY ortam değişkeninden okunur; boşsa MailService gönderimi reddeder. */
+    public static class Resend {
+        private String apiKey = "";
+        private String from = "noreply@2mbilisim.net";
+        public String getApiKey() { return apiKey; }
+        public void setApiKey(String apiKey) { this.apiKey = apiKey; }
+        public String getFrom() { return from; }
+        public void setFrom(String from) { this.from = from; }
     }
 }

@@ -1,12 +1,20 @@
 package com.ikibm.catalog.controller.admin;
 
+import com.ikibm.catalog.dto.CariStatementData;
 import com.ikibm.catalog.entity.CariPaymentMethod;
 import com.ikibm.catalog.entity.CariTransactionType;
 import com.ikibm.catalog.entity.Currency;
+import com.ikibm.catalog.entity.User;
 import com.ikibm.catalog.exception.ConflictException;
 import com.ikibm.catalog.security.CatalogUserDetails;
 import com.ikibm.catalog.service.CariAccountService;
+import com.ikibm.catalog.service.CariStatementPdfService;
+import com.ikibm.catalog.service.CariStatementService;
 import com.ikibm.catalog.service.UserService;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +25,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 
 @Controller
 @RequestMapping("/admin/customers/{customerId}/cari")
@@ -24,10 +33,15 @@ public class AdminCariController {
 
     private final CariAccountService cariAccountService;
     private final UserService userService;
+    private final CariStatementService cariStatementService;
+    private final CariStatementPdfService cariStatementPdfService;
 
-    public AdminCariController(CariAccountService cariAccountService, UserService userService) {
+    public AdminCariController(CariAccountService cariAccountService, UserService userService,
+                               CariStatementService cariStatementService, CariStatementPdfService cariStatementPdfService) {
         this.cariAccountService = cariAccountService;
         this.userService = userService;
+        this.cariStatementService = cariStatementService;
+        this.cariStatementPdfService = cariStatementPdfService;
     }
 
     @GetMapping
@@ -76,6 +90,43 @@ public class AdminCariController {
             ra.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/admin/customers/" + customerId + "/cari";
+    }
+
+    /** Cari ekstre PDF'i — mevcut AdminInvoiceController'daki view/download endpoint çifti deseniyle
+     * aynı: tek bir private yardımcı, ContentDisposition farkıyla iki GET endpoint'i. Yetkilendirme
+     * mevcut /admin/** kuralına tabidir, ayrıca bir SecurityConfig değişikliği gerekmiyor. */
+    @GetMapping("/pdf")
+    public ResponseEntity<byte[]> viewStatementPdf(@PathVariable Integer customerId,
+            @RequestParam(defaultValue = "summary") String type,
+            @RequestParam(required = false) String from, @RequestParam(required = false) String to) {
+        return statementPdfResponse(customerId, type, from, to, ContentDisposition.inline());
+    }
+
+    @GetMapping("/pdf/download")
+    public ResponseEntity<byte[]> downloadStatementPdf(@PathVariable Integer customerId,
+            @RequestParam(defaultValue = "summary") String type,
+            @RequestParam(required = false) String from, @RequestParam(required = false) String to) {
+        return statementPdfResponse(customerId, type, from, to, ContentDisposition.attachment());
+    }
+
+    private ResponseEntity<byte[]> statementPdfResponse(Integer customerId, String type, String from, String to,
+            ContentDisposition.Builder disposition) {
+        User customer = userService.getById(customerId);
+        boolean detailed = "detailed".equalsIgnoreCase(type);
+        Instant fromInstant = toInstant(from);
+        Instant toExclusive = toInstant(to);
+        if (toExclusive != null) {
+            toExclusive = toExclusive.plus(1, ChronoUnit.DAYS);
+        }
+
+        CariStatementData data = cariStatementService.build(customer, detailed, fromInstant, toExclusive);
+        byte[] pdf = cariStatementPdfService.generate(data);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        String filename = "cari-ekstre-" + customerId + (detailed ? "-detayli" : "-ozet") + ".pdf";
+        headers.setContentDisposition(disposition.filename(filename).build());
+        return ResponseEntity.ok().headers(headers).body(pdf);
     }
 
     private Instant toInstant(String isoDate) {
